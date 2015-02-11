@@ -137,8 +137,12 @@ function addTooltipIfPossible(jquery_element, value, content) {
 	}
 }
 
-function getFormattedTD(rawdata, rawdata_details) {
-	var td = $("<td/>");
+function getFormattedTD(rawdata, rawdata_details, is_table, column_classes) {
+	var td = is_table ? $("<td/>") : $("<div/>");
+	if (column_classes) {
+		td.addClass(column_classes);
+	}
+
 	// If we have raw details
 	if (rawdata_details != null) {
 		// If a known content
@@ -183,6 +187,7 @@ function getFormattedTD(rawdata, rawdata_details) {
 function SortedTable(table, rawdata_details, rawdata) {
 	// HTML element to sort
 	this.table = table;
+	this.is_table = (table.tagName == "TABLE");
 
 	// Give details concerning the input data:
 	//  type: Specify which kind of data is available in each column
@@ -195,12 +200,16 @@ function SortedTable(table, rawdata_details, rawdata) {
 	// The data that should be put in the table 
 	this.rawdata = rawdata;
 
+	// Column classes
+	this.column_classes = new Array();
+
 	this.init = function() {
 		// Add links on columns
 		var my_id = list_sortedtables.length;
 		list_sortedtables.push(this);
-		var head_columns = this.table.getElementsByTagName("thead")[0]
-				.getElementsByTagName("th");
+		var head_columns = this.is_table
+				? $(this.table).find("th")
+				: $(this.table).find(".sorted-table-header > .row > div");
 		for (var i=0 ; i!=head_columns.length ; i++) {
 			var column = $(head_columns[i]);
 			var content = column.html();
@@ -224,6 +233,7 @@ function SortedTable(table, rawdata_details, rawdata) {
 				new_content.attr("data-sortedtable-disabled", my_id);
 				new_content.attr("data-sortedtable-column-disabled", i);
 			}
+			this.column_classes[i] = column.attr("class");
 			column.html(new_content);
 		}
 
@@ -237,8 +247,9 @@ function SortedTable(table, rawdata_details, rawdata) {
 	};
 	this.update = function(order_on_column) {
 		var new_order = "";
-		var head_columns = table.getElementsByTagName("thead")[0]
-				.getElementsByTagName("th");
+		var head_columns = this.is_table
+				? $(this.table).find("th")
+				: $(this.table).find(".sorted-table-header > .row > div");
 		if (order_on_column == -1) {
 			//Unspecified column, equivalent to refresh
 			for (var i=0 ; i!=head_columns.length ; i++) {
@@ -271,13 +282,22 @@ function SortedTable(table, rawdata_details, rawdata) {
 		this.rawdata.sortOnColumn(order_on_column, new_order == "desc");
 
 		// Display the data
-		tbody = $(table.getElementsByTagName("tbody")[0]);
+		var tbody = this.is_table
+				? $(this.table).find("tbody")
+				: $(this.table).find(".sorted-table-body");
 		tbody.html("");
 		for (var i=0 ; i!=this.rawdata.length ; i++) {
-			var tr = $("<tr/>");
+			var tr = null;
+			if (this.is_table) {
+				tr = $("<tr/>");
+			} else {
+				tr = $("<div/>");
+				tr.addClass("row");
+			}
 			for (var j=0 ; j!=this.rawdata_details.length +1 ; j++) {
 				var td = getFormattedTD(this.rawdata[i][j],
-						j>0 ? this.rawdata_details[j-1] : null)
+						j>0 ? this.rawdata_details[j-1] : null,
+						this.is_table, this.column_classes[j])
 				tr.append(td);
 			}
 			tbody.append(tr);

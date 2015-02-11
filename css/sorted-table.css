@@ -1,10 +1,34 @@
-table thead a {
+table.sorted-table td,
+.sorted-table .row {
+    padding: 8px;
+    line-height: 1.42857;
+    border-top: 1px solid #dddddd;
+    background-color: #ffffff;
+}
+
+table.sorted-table td:nth-child(2n+1),
+.sorted-table .row:nth-child(2n+1) {
+    background-color: #f9f9f9;
+}
+
+table.sorted-table th,
+.sorted-table .sorted-table-header .row {
+    border-top: 0px none;
+    border-bottom: 2px solid #dddddd;
+    background-color: #ffffff;
+    font-weight: bold;
+}
+
+table.sorted-table thead a,
+.sorted-table .sorted-table-header a {
     position: relative;
     display: inline-block;
     padding-right: 25px;
 }
 
-table thead a:after {
+table.sorted-table thead a:after,
+.sorted-table .sorted-table-header a:after
+{
     position: absolute;
     bottom: 0px;
     right: 0px;
@@ -17,15 +41,22 @@ table thead a:after {
     content: ' ';
 }
 
-table thead a[data-sortedtable-order='asc']:after {
+table.sorted-table thead a[data-sortedtable-order='asc']:after,
+.sorted-table .sorted-table-header a[data-sortedtable-order='asc']:after
+{
     content: "\e113";
 }
-table thead a[data-sortedtable-order='desc']:after {
+
+table.sorted-table thead a[data-sortedtable-order='desc']:after,
+.sorted-table .sorted-table-header a[data-sortedtable-order='desc']:after
+{
     content:"\e114";
 }
 
-table.sorted-table-hide-id td:first-child,
-table.sorted-table-hide-id th:first-child {
+table.sorted-table.sorted-table-hide-id td:first-child,
+table.sorted-table.sorted-table-hide-id th:first-child,
+.sorted-table.sorted-table-hide-id .row > div:first-child
+{
     display: none;
 }
 
