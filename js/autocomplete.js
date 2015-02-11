@@ -1,0 +1,252 @@
+Array.prototype.sortOnBestScore = function() {
+	this.sort(function(a, b){
+		if(a['autocomplete_score'] < b['autocomplete_score']){
+			return -1;
+		} else if(a['autocomplete_score'] > b['autocomplete_score']) {
+			return 1;
+		} else if (a['autocomplete_rawdata_on'] < b['autocomplete_rawdata_on']) {
+			return -1;
+		} else if (a['autocomplete_rawdata_on'] > b['autocomplete_rawdata_on']) {
+			return 1;
+		}
+		return 0;
+	});
+}
+
+function toSafeHtml(text) {
+	return $("<a/>").text(text).html();
+}
+
+function AutocompleteItem(jquery_input, available_elts) {
+	var self = this;
+
+	// jQuery element corresponding to a text input
+	// This text input will benefit from autocompletion feature
+	self.jquery_input = jquery_input;
+
+	// A list of available elements that can be displayed to the end-user
+	// Each element should have the fields:
+	// - autocomplete_id
+	// - autocomplete_rawdata_on: text to display during completion
+	// - autocomplete_rawdata_after: text to display once the element has been selected
+	self.available_elts = available_elts;
+	
+	// Update available elements available
+	self.updateList = function(available_elts) {
+		self.available_elts = available_elts;
+	}
+
+	// Behaviour on 'focus out' event
+	// Hide the autocomplete list
+	self.reactFocusOut = function() {
+		$(this).parent().find(".autocomplete-list").hide(400);
+	};
+
+	// Behaviour on 'key up' event
+	// Update autocomplete list
+	self.reactKeyUp = function(event) {
+		// Refresh the content of the autocomplete list
+		// $(this) == self.jquery_input
+
+		// Get autocomplete list or create it if not displayed
+		var jquery_input_parent = $(this).parent();
+		var autocomplete_list = jquery_input_parent.find(".autocomplete-list");
+		if (autocomplete_list.length == 0) {
+			autocomplete_list = $("<ul/>");
+			autocomplete_list.addClass("autocomplete-list");
+			jquery_input_parent.append(autocomplete_list);
+		}
+
+		// Show the autocomplete list at the right place
+		autocomplete_list.show(); //should have been hidden following a 'focus out'
+		var position_left = $(this).position()['left'];
+		var position_top = $(this).position()['top'] + $(this).height();
+		autocomplete_list.css('left', position_left + 'px');
+		autocomplete_list.css('top', position_top + 'px');
+		
+		// Get already selected elements position
+		var selected_elt = autocomplete_list.find('.autocomplete-list-selected').first();
+		var selected_elt_id = -1;
+		if (selected_elt.length == 1) {
+			selected_elt_id = parseInt(selected_elt.attr('data-autocomplete-id'));
+		}
+		if (selected_elt_id != -1 && event.keyCode == 13) { // Enter
+			self.confirmChoice(selected_elt_id);
+			$(this).val("");
+			autocomplete_list.remove();
+			event.preventDefault();
+			return;
+		}
+		else if (event.keyCode == 38 || event.keyCode == 40) { // Up or Down
+			var autocomplete_elts = autocomplete_list.children();
+			var current_index = 0;
+			for (current_index=0 ; current_index != autocomplete_elts.length ; current_index++) {
+				if ($(autocomplete_elts[current_index]).hasClass('autocomplete-list-selected')) {
+					break;
+				}
+			}
+			if (autocomplete_elts.length > 0) {
+				if (current_index == autocomplete_elts.length) {
+					$(autocomplete_elts[0]).addClass('autocomplete-list-selected');
+				} else if (event.keyCode == 38) {
+					if (current_index > 0) {
+						$(autocomplete_elts[current_index]).removeClass('autocomplete-list-selected');
+						$(autocomplete_elts[current_index -1]).addClass('autocomplete-list-selected');
+					}
+				} else if (event.keyCode == 40) {
+					if (current_index < autocomplete_elts.length -1) {
+						$(autocomplete_elts[current_index]).removeClass('autocomplete-list-selected');
+						$(autocomplete_elts[current_index +1]).addClass('autocomplete-list-selected');
+					}
+				}
+				event.preventDefault();
+				return;
+			}
+		} else if (event.keyCode == 27) {
+			autocomplete_list.remove();
+		}
+		
+		// Create autocomplete list
+		var elts_to_display = self.computeChoices($(this).val());
+		
+		// Display elements
+		autocomplete_list.empty();
+		for (var i=0 ; i != elts_to_display.length ; i++) {
+			var autocomplete_elt = $("<li/>");
+			autocomplete_elt.attr('data-autocomplete-id', elts_to_display[i]['autocomplete_id']);
+			if (elts_to_display[i]['autocomplete_id'] == selected_elt_id) {
+				autocomplete_elt.addClass('autocomplete-list-selected');
+			}
+			autocomplete_elt.click(function() {
+				self.confirmChoice($(this).attr("data-autocomplete-id"));
+				$(this).parent().parent().find("input").val("");
+				$(this).parent().remove(); //remove list
+			});
+			autocomplete_elt.html(elts_to_display[i]['autocomplete_display']);
+			autocomplete_elt.mouseover(function() {
+				var autocomplete_list = $(this).parent();
+				var autocomplete_choices = autocomplete_list.children();
+				for (var i = 0 ; i != autocomplete_choices.length ; i++) {
+					$(autocomplete_choices[i]).removeClass('autocomplete-list-selected');
+				}
+				$(this).addClass('autocomplete-list-selected');
+			});
+			autocomplete_list.append(autocomplete_elt);
+		}
+		if (elts_to_display.length == 0) {
+			autocomplete_list.remove();
+		}
+	};
+	
+	// Compute the list of available choices based on the query
+	self.computeChoices = function(query) {
+		var elts_to_display = new Array();
+		for (var i=0 ; i!=self.available_elts.length ; i++) {
+			var new_elt = self.computePriority(query, i);
+			if (new_elt) {
+				elts_to_display.push(new_elt);
+			}
+		}
+		elts_to_display.sortOnBestScore();
+		return elts_to_display;
+	}
+	
+	// Compute the score for element i
+	// Score is stored into the element itself
+	self.computePriority = function(query, i) {
+		var elt = self.available_elts[i];
+		var elt_text = elt['autocomplete_rawdata_on'];
+		var elt_text_lower = elt_text.toLowerCase();
+		var query_lower = query.toLowerCase();
+		
+		var best_origin = -1;
+		var best_score = -1;
+		for (var i=0 ; i!=elt_text_lower.length ; i++) { // Look for a string starting from this element
+			if (query_lower.length == 0 || elt_text_lower[i] != query_lower[0]) {
+				continue;
+			}
+			var padding_pos = 0;
+			var query_pos = 0;
+			for (query_pos = 0 ; i+padding_pos != elt_text_lower.length && query_pos != query_lower.length ; padding_pos++) {
+				if (elt_text_lower[i+padding_pos] == query_lower[query_pos]) {
+					query_pos++;
+				}
+			}
+
+			// Is there a match?
+			// If so, is it better than current one?
+			if (query_pos == query_lower.length) {//match
+				if (best_score == -1 || best_score > padding_pos-query_pos) {
+					best_origin = i;
+					best_score = padding_pos-query_pos;
+					if (best_score == 0) {
+						break;
+					}
+				}
+			}
+		}
+
+		// Highlight match characteristics
+		if (best_score != -1) {
+			var new_elt = elt;
+			new_elt["autocomplete_score"] = best_score;
+			if (query.length == 0) {
+				new_elt['autocomplete_display'] = toSafeHtml(elt_text);
+			} else {
+				new_elt['autocomplete_display'] = "";
+				var i = 0;
+				var query_pos = 0;
+				for ( ; i != elt_text_lower.length ; i++) {
+					if (i >= best_origin && query_pos != query_lower.length && elt_text_lower[i] == query_lower[query_pos]) {
+						new_elt['autocomplete_display'] += "<b>" + toSafeHtml(elt_text[i]) + "</b>";
+						query_pos++;
+					}
+					else
+					{
+						new_elt['autocomplete_display'] += toSafeHtml(elt_text[i]);
+					}
+				}
+			}
+			return new_elt;
+		}
+		return undefined;
+	}
+
+	self.confirmChoice = function(selected_elt_id) {
+		var i = 0;
+		for (i = 0 ; i != self.available_elts.length ; i++) {
+			if (self.available_elts[i]['autocomplete_id'] == selected_elt_id) {
+				break;
+			}
+		}
+		if (i != self.available_elts.length) {
+			var choice = self.available_elts[i];
+			var selection = self.jquery_input.parent().find("ul.autocomplete-selection");
+			if (selection.length == 0) {
+				selection = $("<ul/>");
+				selection.addClass("autocomplete-selection");
+				self.jquery_input.parent().append(selection);
+			}
+			var elt_dom = $("<li/>");
+			elt_dom.attr("data-id", choice['autocomplete_id']);
+			elt_dom.attr("title", choice['autocomplete_rawdata_on']);
+			elt_dom.html(toSafeHtml(choice['autocomplete_rawdata_after']) + " &times;");
+			elt_dom.click(function() {
+				var selection = $(this).parent();
+				$(this).remove();
+				if (selection.children().length == 0) {
+					selection.remove();
+				}
+			});
+			selection.append(elt_dom);
+		}
+	}
+	
+	// Add autocompletion trigger to the input field
+	{
+		self.jquery_input.focusout(self.reactFocusOut);
+		self.jquery_input.keyup(self.reactKeyUp);
+		self.jquery_input.parent().css('position', 'relative');
+	}
+}
+
