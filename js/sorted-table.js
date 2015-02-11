@@ -5,6 +5,10 @@ Array.prototype.sortOnColumn = function(column, reversed) {
 			return reversed ? 1 : -1;
 		} else if(a[column] > b[column]) {
 			return reversed ? -1 : 1;
+		} else if(a[0] < b[0]){
+			return reversed ? 1 : -1;
+		} else if(a[0] > b[0]) {
+			return reversed ? -1 : 1;
 		}
 		return 0;
 	});
