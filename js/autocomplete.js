@@ -44,6 +44,13 @@ function AutocompleteItem($input, available_elts) {
 		self.onSelectCallback = callback;
 	};
 
+	// Boolean to specify whether or not the field should be freed
+	// after each selection
+	self.automaticallyEraseValue = true;
+	self.setAutomaticallyEraseValue = function(automaticallyEraseValue) {
+		self.automaticallyEraseValue = automaticallyEraseValue;
+	};
+
 	// Behaviour on 'key up' event
 	// Update autocomplete list
 	self.reactKeyUp = function(event) {
@@ -73,7 +80,9 @@ function AutocompleteItem($input, available_elts) {
 		}
 		if (selected_elt_id != -1 && event.keyCode == 13) { // Enter
 			self.confirmChoice(selected_elt_id);
-			$(this).val("");
+			if (self.automaticallyEraseValue) {
+				$(this).val("");
+			}
 			$autocomplete_list.remove();
 			event.preventDefault();
 			return;
@@ -120,7 +129,9 @@ function AutocompleteItem($input, available_elts) {
 			}
 			$autocomplete_elt.click(function() {
 				self.confirmChoice($(this).attr("data-autocomplete-id"));
-				$(this).parent().parent().find("input").val("");
+				if (self.automaticallyEraseValue) {
+					$(this).parent().parent().find("input").val("");
+				}
 				$(this).parent().remove(); //remove list
 			});
 			$autocomplete_elt.html(elts_to_display[i]['autocomplete_display']);
