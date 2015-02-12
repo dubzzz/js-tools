@@ -34,12 +34,6 @@ function AutocompleteItem(jquery_input, available_elts) {
 	// Update available elements available
 	self.updateList = function(available_elts) {
 		self.available_elts = available_elts;
-	}
-
-	// Behaviour on 'focus out' event
-	// Hide the autocomplete list
-	self.reactFocusOut = function() {
-		$(this).parent().find(".autocomplete-list").hide(400);
 	};
 
 	// Behaviour on 'key up' event
@@ -58,7 +52,6 @@ function AutocompleteItem(jquery_input, available_elts) {
 		}
 
 		// Show the autocomplete list at the right place
-		autocomplete_list.show(); //should have been hidden following a 'focus out'
 		var position_left = $(this).position()['left'];
 		var position_top = $(this).position()['top'] + $(this).height();
 		autocomplete_list.css('left', position_left + 'px');
@@ -149,7 +142,7 @@ function AutocompleteItem(jquery_input, available_elts) {
 		}
 		elts_to_display.sortOnBestScore();
 		return elts_to_display;
-	}
+	};
 	
 	// Compute the score for element i
 	// Score is stored into the element itself
@@ -210,7 +203,7 @@ function AutocompleteItem(jquery_input, available_elts) {
 			return new_elt;
 		}
 		return undefined;
-	}
+	};
 
 	self.confirmChoice = function(selected_elt_id) {
 		var i = 0;
@@ -240,13 +233,29 @@ function AutocompleteItem(jquery_input, available_elts) {
 			});
 			selection.append(elt_dom);
 		}
-	}
+	};
+	
+	// Check whether or not the autocompletion list
+	// should still be visible
+	self.clickSomewhere = function(event) {
+		var expected_parent = self.jquery_input.parent();
+		if ($(this) == expected_parent) {
+			return;
+		}
+		var parents = $(this).parents();
+		for (var i = 0 ; i != parents.length ; i++) {
+			if ($(this) == $(parents[i])) {
+				return;
+			}
+		}
+		self.jquery_input.parent().find(".autocomplete-list").remove();
+	};
 	
 	// Add autocompletion trigger to the input field
 	{
-		self.jquery_input.focusout(self.reactFocusOut);
 		self.jquery_input.keyup(self.reactKeyUp);
 		self.jquery_input.parent().css('position', 'relative');
+		$(document).click(self.clickSomewhere);
 	}
 }
 
