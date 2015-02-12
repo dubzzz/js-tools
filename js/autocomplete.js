@@ -44,6 +44,17 @@ function AutocompleteItem($input, available_elts) {
 		self.onSelectCallback = callback;
 	};
 
+	// Callback called during the creation of the autocomplete-list
+	// Parameters are: function($input, elt)
+	// - $input: the input linked to this object ie. self.$input
+	// - elt: an element from self.available_elts (self.available_elts[i])
+	// Return:
+	// - false: the element can be added to the list
+	self.onFilterChoicesCallback = undefined;
+	self.setOnFilterChoicesCallback = function(callback) {
+		self.onFilterChoicesCallback = callback;
+	};
+
 	// Boolean to specify whether or not the field should be freed
 	// after each selection
 	self.automaticallyEraseValue = true;
@@ -154,6 +165,10 @@ function AutocompleteItem($input, available_elts) {
 	self.computeChoices = function(query) {
 		var elts_to_display = new Array();
 		for (var i=0 ; i!=self.available_elts.length ; i++) {
+			if (self.onFilterChoicesCallback
+					&& self.onFilterChoicesCallback(self.$input, self.available_elts[i])) {
+				continue;
+			}
 			var new_elt = self.computePriority(query, i);
 			if (new_elt) {
 				elts_to_display.push(new_elt);
