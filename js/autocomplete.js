@@ -17,12 +17,12 @@ function toSafeHtml(text) {
 	return $("<a/>").text(text).html();
 }
 
-function AutocompleteItem(jquery_input, available_elts) {
+function AutocompleteItem($input, available_elts) {
 	var self = this;
 
 	// jQuery element corresponding to a text input
 	// This text input will benefit from autocompletion feature
-	self.jquery_input = jquery_input;
+	self.$input = $input;
 
 	// A list of available elements that can be displayed to the end-user
 	// Each element should have the fields:
@@ -43,91 +43,91 @@ function AutocompleteItem(jquery_input, available_elts) {
 		// $(this) == self.jquery_input
 
 		// Get autocomplete list or create it if not displayed
-		var jquery_input_parent = $(this).parent();
-		var autocomplete_list = jquery_input_parent.find(".autocomplete-list");
-		if (autocomplete_list.length == 0) {
-			autocomplete_list = $("<ul/>");
-			autocomplete_list.addClass("autocomplete-list");
-			jquery_input_parent.append(autocomplete_list);
+		var $input_parent = $(this).parent();
+		var $autocomplete_list = $input_parent.find(".autocomplete-list");
+		if ($autocomplete_list.length == 0) {
+			$autocomplete_list = $("<ul/>");
+			$autocomplete_list.addClass("autocomplete-list");
+			$input_parent.append($autocomplete_list);
 		}
 
 		// Show the autocomplete list at the right place
 		var position_left = $(this).position()['left'];
 		var position_top = $(this).position()['top'] + $(this).height();
-		autocomplete_list.css('left', position_left + 'px');
-		autocomplete_list.css('top', position_top + 'px');
+		$autocomplete_list.css('left', position_left + 'px');
+		$autocomplete_list.css('top', position_top + 'px');
 		
 		// Get already selected elements position
-		var selected_elt = autocomplete_list.find('.autocomplete-list-selected').first();
+		var $selected_elt = $autocomplete_list.find('.autocomplete-list-selected').first();
 		var selected_elt_id = -1;
-		if (selected_elt.length == 1) {
-			selected_elt_id = parseInt(selected_elt.attr('data-autocomplete-id'));
+		if ($selected_elt.length == 1) {
+			selected_elt_id = parseInt($selected_elt.attr('data-autocomplete-id'));
 		}
 		if (selected_elt_id != -1 && event.keyCode == 13) { // Enter
 			self.confirmChoice(selected_elt_id);
 			$(this).val("");
-			autocomplete_list.remove();
+			$autocomplete_list.remove();
 			event.preventDefault();
 			return;
 		}
 		else if (event.keyCode == 38 || event.keyCode == 40) { // Up or Down
-			var autocomplete_elts = autocomplete_list.children();
+			var $autocomplete_elts = $autocomplete_list.children();
 			var current_index = 0;
-			for (current_index=0 ; current_index != autocomplete_elts.length ; current_index++) {
-				if ($(autocomplete_elts[current_index]).hasClass('autocomplete-list-selected')) {
+			for (current_index=0 ; current_index != $autocomplete_elts.length ; current_index++) {
+				if ($($autocomplete_elts[current_index]).hasClass('autocomplete-list-selected')) {
 					break;
 				}
 			}
-			if (autocomplete_elts.length > 0) {
-				if (current_index == autocomplete_elts.length) {
-					$(autocomplete_elts[0]).addClass('autocomplete-list-selected');
+			if ($autocomplete_elts.length > 0) {
+				if (current_index == $autocomplete_elts.length) {
+					$($autocomplete_elts[0]).addClass('autocomplete-list-selected');
 				} else if (event.keyCode == 38) {
 					if (current_index > 0) {
-						$(autocomplete_elts[current_index]).removeClass('autocomplete-list-selected');
-						$(autocomplete_elts[current_index -1]).addClass('autocomplete-list-selected');
+						$($autocomplete_elts[current_index]).removeClass('autocomplete-list-selected');
+						$($autocomplete_elts[current_index -1]).addClass('autocomplete-list-selected');
 					}
 				} else if (event.keyCode == 40) {
-					if (current_index < autocomplete_elts.length -1) {
-						$(autocomplete_elts[current_index]).removeClass('autocomplete-list-selected');
-						$(autocomplete_elts[current_index +1]).addClass('autocomplete-list-selected');
+					if (current_index < $autocomplete_elts.length -1) {
+						$($autocomplete_elts[current_index]).removeClass('autocomplete-list-selected');
+						$($autocomplete_elts[current_index +1]).addClass('autocomplete-list-selected');
 					}
 				}
 				event.preventDefault();
 				return;
 			}
 		} else if (event.keyCode == 27) {
-			autocomplete_list.remove();
+			$autocomplete_list.remove();
 		}
 		
 		// Create autocomplete list
 		var elts_to_display = self.computeChoices($(this).val());
 		
 		// Display elements
-		autocomplete_list.empty();
+		$autocomplete_list.empty();
 		for (var i=0 ; i != elts_to_display.length ; i++) {
-			var autocomplete_elt = $("<li/>");
-			autocomplete_elt.attr('data-autocomplete-id', elts_to_display[i]['autocomplete_id']);
+			var $autocomplete_elt = $("<li/>");
+			$autocomplete_elt.attr('data-autocomplete-id', elts_to_display[i]['autocomplete_id']);
 			if (elts_to_display[i]['autocomplete_id'] == selected_elt_id) {
-				autocomplete_elt.addClass('autocomplete-list-selected');
+				$autocomplete_elt.addClass('autocomplete-list-selected');
 			}
-			autocomplete_elt.click(function() {
+			$autocomplete_elt.click(function() {
 				self.confirmChoice($(this).attr("data-autocomplete-id"));
 				$(this).parent().parent().find("input").val("");
 				$(this).parent().remove(); //remove list
 			});
-			autocomplete_elt.html(elts_to_display[i]['autocomplete_display']);
-			autocomplete_elt.mouseover(function() {
-				var autocomplete_list = $(this).parent();
-				var autocomplete_choices = autocomplete_list.children();
-				for (var i = 0 ; i != autocomplete_choices.length ; i++) {
-					$(autocomplete_choices[i]).removeClass('autocomplete-list-selected');
+			$autocomplete_elt.html(elts_to_display[i]['autocomplete_display']);
+			$autocomplete_elt.mouseover(function() {
+				var $autocomplete_list = $(this).parent();
+				var $autocomplete_choices = $autocomplete_list.children();
+				for (var i = 0 ; i != $autocomplete_choices.length ; i++) {
+					$($autocomplete_choices[i]).removeClass('autocomplete-list-selected');
 				}
 				$(this).addClass('autocomplete-list-selected');
 			});
-			autocomplete_list.append(autocomplete_elt);
+			$autocomplete_list.append($autocomplete_elt);
 		}
 		if (elts_to_display.length == 0) {
-			autocomplete_list.remove();
+			$autocomplete_list.remove();
 		}
 	};
 	
@@ -214,47 +214,47 @@ function AutocompleteItem(jquery_input, available_elts) {
 		}
 		if (i != self.available_elts.length) {
 			var choice = self.available_elts[i];
-			var selection = self.jquery_input.parent().find("ul.autocomplete-selection");
-			if (selection.length == 0) {
-				selection = $("<ul/>");
-				selection.addClass("autocomplete-selection");
-				self.jquery_input.parent().append(selection);
+			var $selection = self.$input.parent().find("ul.autocomplete-selection");
+			if ($selection.length == 0) {
+				$selection = $("<ul/>");
+				$selection.addClass("autocomplete-selection");
+				self.$input.parent().append($selection);
 			}
-			var elt_dom = $("<li/>");
-			elt_dom.attr("data-id", choice['autocomplete_id']);
-			elt_dom.attr("title", choice['autocomplete_rawdata_on']);
-			elt_dom.html(toSafeHtml(choice['autocomplete_rawdata_after']) + " &times;");
-			elt_dom.click(function() {
-				var selection = $(this).parent();
+			var $elt_dom = $("<li/>");
+			$elt_dom.attr("data-id", choice['autocomplete_id']);
+			$elt_dom.attr("title", choice['autocomplete_rawdata_on']);
+			$elt_dom.html(toSafeHtml(choice['autocomplete_rawdata_after']) + " &times;");
+			$elt_dom.click(function() {
+				var $selection = $(this).parent();
 				$(this).remove();
-				if (selection.children().length == 0) {
-					selection.remove();
+				if ($selection.children().length == 0) {
+					$selection.remove();
 				}
 			});
-			selection.append(elt_dom);
+			$selection.append($elt_dom);
 		}
 	};
 	
 	// Check whether or not the autocompletion list
 	// should still be visible
 	self.clickSomewhere = function(event) {
-		var expected_parent = self.jquery_input.parent();
-		if ($(this) == expected_parent) {
+		var $expected_parent = self.$input.parent();
+		if ($(this) == $expected_parent) {
 			return;
 		}
-		var parents = $(this).parents();
-		for (var i = 0 ; i != parents.length ; i++) {
-			if ($(this) == $(parents[i])) {
+		var $parents = $(this).parents();
+		for (var i = 0 ; i != $parents.length ; i++) {
+			if ($(this) == $($parents[i])) {
 				return;
 			}
 		}
-		self.jquery_input.parent().find(".autocomplete-list").remove();
+		self.$input.parent().find(".autocomplete-list").remove();
 	};
 	
 	// Add autocompletion trigger to the input field
 	{
-		self.jquery_input.keyup(self.reactKeyUp);
-		self.jquery_input.parent().css('position', 'relative');
+		self.$input.keyup(self.reactKeyUp);
+		self.$input.parent().css('position', 'relative');
 		$(document).click(self.clickSomewhere);
 	}
 }
