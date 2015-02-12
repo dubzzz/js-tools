@@ -1,3 +1,7 @@
+ul.autocomplete-list {
+    z-index: 9999;
+}
+
 ul.autocomplete-list li {
     cursor: pointer;
 }
