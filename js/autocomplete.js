@@ -28,12 +28,20 @@ function AutocompleteItem($input, available_elts) {
 	// Each element should have the fields:
 	// - autocomplete_id
 	// - autocomplete_rawdata_on: text to display during completion
-	// - autocomplete_rawdata_after: text to display once the element has been selected
 	self.available_elts = available_elts;
 	
 	// Update available elements available
 	self.updateList = function(available_elts) {
 		self.available_elts = available_elts;
+	};
+
+	// Callback called when selecting an element from the autocomplete-list
+	// Paramaters are: function($input, selected_elt)
+	// - $input: the input linked to this object ie. self.$input
+	// - selected_elt: an element from self.available_elts (self.available_elts[i])
+	self.onSelectCallback = undefined;
+	self.setOnSelectCallback = function(callback) {
+		self.onSelectCallback = callback;
 	};
 
 	// Behaviour on 'key up' event
@@ -206,6 +214,11 @@ function AutocompleteItem($input, available_elts) {
 	};
 
 	self.confirmChoice = function(selected_elt_id) {
+		if (! self.onSelectCallback) {
+			console.warn("No callback has been specified for onSelect");
+			return;
+		}
+
 		var i = 0;
 		for (i = 0 ; i != self.available_elts.length ; i++) {
 			if (self.available_elts[i]['autocomplete_id'] == selected_elt_id) {
@@ -214,24 +227,7 @@ function AutocompleteItem($input, available_elts) {
 		}
 		if (i != self.available_elts.length) {
 			var choice = self.available_elts[i];
-			var $selection = self.$input.parent().find("ul.autocomplete-selection");
-			if ($selection.length == 0) {
-				$selection = $("<ul/>");
-				$selection.addClass("autocomplete-selection");
-				self.$input.parent().append($selection);
-			}
-			var $elt_dom = $("<li/>");
-			$elt_dom.attr("data-id", choice['autocomplete_id']);
-			$elt_dom.attr("title", choice['autocomplete_rawdata_on']);
-			$elt_dom.html(toSafeHtml(choice['autocomplete_rawdata_after']) + " &times;");
-			$elt_dom.click(function() {
-				var $selection = $(this).parent();
-				$(this).remove();
-				if ($selection.children().length == 0) {
-					$selection.remove();
-				}
-			});
-			$selection.append($elt_dom);
+			self.onSelectCallback(self.$input, self.available_elts[i]);
 		}
 	};
 	
