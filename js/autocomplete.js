@@ -237,8 +237,14 @@ function AutocompleteItem($input, available_elts) {
 	
 	// Check whether or not the autocompletion list
 	// should still be visible
+	// Hide the autocomplete-list if the click is not on:
+	// - the input
+	// - the autocomplete-list or one of its children
 	self.clickSomewhere = function(event) {
-		var $expected_parent = self.$input.parent();
+		if ($(this) == self.$input) {
+			return;
+		}
+		var $expected_parent = self.$input.parent().find(".autocomplete-list");
 		if ($(this) == $expected_parent) {
 			return;
 		}
