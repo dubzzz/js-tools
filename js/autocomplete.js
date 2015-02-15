@@ -189,7 +189,7 @@ function AutocompleteItem($input, available_elts) {
 		var best_origin = -1;
 		var best_score = -1;
 		for (var i=0 ; i!=elt_text_lower.length ; i++) { // Look for a string starting from this element
-			if (query_lower.length == 0 || elt_text_lower[i] != query_lower[0]) {
+			if (query_lower.length != 0 && elt_text_lower[i] != query_lower[0]) {
 				continue;
 			}
 			var padding_pos = 0;
