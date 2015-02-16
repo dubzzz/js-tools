@@ -331,6 +331,79 @@
             $(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
             "1", "Second item selected");
       });
+      QUnit.test("Select with enter", function(assert) {
+        var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+        autocomp.setOnSelectCallback(function($input, selected_elt) {
+          assert.strictEqual(selected_elt["autocomplete_id"], 0, "Selected item is #0");
+        });
+        
+        assert.expect(6);
+        var event = $.Event("keyup");
+        event.keyCode = 40;
+        assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+        
+        $("input#autocomplete").trigger(event);
+        $("input#autocomplete").trigger(event);
+        assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+        assert.equal(
+            $(".autocomplete-list .autocomplete-list-selected").length,
+            1, "One item is selected");
+        assert.strictEqual(
+            $(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
+            "0", "First item selected");
+            
+        event.keyCode = 13;    
+        $("input#autocomplete").trigger(event);
+        assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+      });
+      QUnit.test("Erase on selection", function(assert) {
+        var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+        autocomp.setAutomaticallyEraseValue(true);
+
+        var event = $.Event("keyup");
+        event.keyCode = 40;
+        assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+
+        $("input#autocomplete").val("e");
+        $("input#autocomplete").trigger(event);
+        $("input#autocomplete").trigger(event);
+        assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+        assert.equal(
+            $(".autocomplete-list .autocomplete-list-selected").length,
+            1, "One item is selected");
+        assert.strictEqual(
+            $(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
+            "0", "First item selected");
+            
+        event.keyCode = 13;    
+        $("input#autocomplete").trigger(event);
+        assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+        assert.strictEqual($("input#autocomplete").val(), "", "Input is empty");
+      });
+      QUnit.test("Do not erase on selection", function(assert) {
+        var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+        autocomp.setAutomaticallyEraseValue(false);
+
+        var event = $.Event("keyup");
+        event.keyCode = 40;
+        assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+
+        $("input#autocomplete").val("e");
+        $("input#autocomplete").trigger(event);
+        $("input#autocomplete").trigger(event);
+        assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+        assert.equal(
+            $(".autocomplete-list .autocomplete-list-selected").length,
+            1, "One item is selected");
+        assert.strictEqual(
+            $(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
+            "0", "First item selected");
+            
+        event.keyCode = 13;    
+        $("input#autocomplete").trigger(event);
+        assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+        assert.strictEqual($("input#autocomplete").val(), "e", "Input is empty");
+      });
     </script>
   </head>
   <body>
