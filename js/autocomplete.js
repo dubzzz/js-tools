@@ -263,14 +263,15 @@ function AutocompleteItem($input, available_elts) {
 	// - the input
 	// - the autocomplete-list or one of its children
 	self.clickSomewhere = function(event) {
-		if ($(this) == self.$input) {
+		target = event.target;
+		if (target == self.$input[0]) {
 			return;
 		}
 		var $expected_parent = self.$input.parent().find(".autocomplete-list");
-		if ($(this) == $expected_parent) {
+		if (target == $expected_parent[0]) {
 			return;
 		}
-		var $parents = $(this).parents();
+		var $parents = $(target).parents();
 		for (var i = 0 ; i != $parents.length ; i++) {
 			if ($(this) == $($parents[i])) {
 				return;
