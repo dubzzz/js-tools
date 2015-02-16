@@ -263,7 +263,7 @@ function AutocompleteItem($input, available_elts) {
 	// - the input
 	// - the autocomplete-list or one of its children
 	self.clickSomewhere = function(event) {
-		target = event.target;
+		var target = event.target;
 		if (target == self.$input[0]) {
 			return;
 		}

@@ -158,7 +158,6 @@
         event.keyCode = 40;
         $("input#autocomplete").trigger(event);
         assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
-        $t = $("input#autocomplete");
         $("input#autocomplete").click();
         assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
       });
