@@ -41,7 +41,6 @@ function HierarchyNode(data, _parent) {
 			return this.data;
 		}
 	};
-	this.display = this.str;
 
 	this.getPathFromRoot = function() {
 		if (this._parent) {
@@ -155,6 +154,7 @@ function HierarchyTable($table, titles, rows) {
 					var $aggregation_row = $("<tr/>");
 					var $value = $("<td/>");
 					$value.attr("colspan", self.numNodes);
+					$value.css("padding-left", String(20*j) + "px");
 					$value.text(current_path[j].display());
 					$aggregation_row.append($value);
 					for (var k = 1 ; k < self.rows[i].length ; k++) {
