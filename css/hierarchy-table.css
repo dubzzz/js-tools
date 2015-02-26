@@ -1,0 +1,62 @@
+table.hierarchy-table
+{
+    margin-bottom: 10px;
+}
+
+table.hierarchy-table tbody tr
+{
+    border-top: 1px solid #dddddd;
+    background-color: #ffffff;
+}
+
+table.hierarchy-table tbody tr:nth-child(2n+1)
+{
+    background-color: #f9f9f9;
+}
+
+table.hierarchy-table tbody tr td,
+table.hierarchy-table thead tr th
+{
+    padding: 8px;
+    line-height: 1.42857;
+}
+
+table.hierarchy-table thead tr
+{
+    border-top: 0px none;
+    border-bottom: 2px solid #dddddd;
+    background-color: #ffffff;
+    font-weight: bold;
+}
+
+table.hierarchy-table thead a
+{
+    position: relative;
+    display: inline-block;
+    padding-right: 25px;
+}
+
+table.hierarchy-table thead a:after
+{
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: 400;
+    
+    width: 20px;
+    content: ' ';
+}
+
+table.hierarchy-table thead a[data-sortedtable-order='asc']:after
+{
+    content: "\e113";
+}
+
+table.hierarchy-table thead a[data-sortedtable-order='desc']:after
+{
+    content:"\e114";
+}
+
