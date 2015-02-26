@@ -142,13 +142,19 @@ function HierarchyTable($table, titles, rows) {
 		var $tbody = $("<tbody/>");
 		var previous_row = undefined;
 		for (var i = 0 ; i != self.rows.length ; i++) {
-			var previous_path = previous_row ? previous_row[0].getPathFromRoot() : new Array();
-			var current_path = self.rows[i][0].getPathFromRoot();
-			
+			var previous_path = new Array();
+			var current_path = new Array();
+			for (var j = 0 ; j != self.numNodes ; j++) {
+				if (previous_row) {
+					previous_path = previous_path.concat(previous_row[j].getPathFromRoot());
+				}
+				current_path = current_path.concat(self.rows[i][j].getPathFromRoot());
+			}
 			for (var j = 0 ; j != current_path.length ; j++) {
 				if (j >= previous_path.length || previous_path[j] != current_path[j]) {
 					var $aggregation_row = $("<tr/>");
 					var $value = $("<td/>");
+					$value.attr("colspan", self.numNodes);
 					$value.text(current_path[j].display());
 					$aggregation_row.append($value);
 					for (var k = 1 ; k < self.rows[i].length ; k++) {
@@ -159,9 +165,11 @@ function HierarchyTable($table, titles, rows) {
 			}
 
 			var $row = $("<tr/>");
-			for (var j = 0 ; j != self.rows[i].length ; j++) {
+			for (var j = 0 ; j < self.rows[i].length ; j++) {
 				var $value = $("<td/>");
-				$value.text(self.rows[i][j].display());
+				if (j >= self.numNodes) {
+					$value.text(self.rows[i][j].display());
+				}
 				$row.append($value);
 			}
 			$tbody.append($row);
