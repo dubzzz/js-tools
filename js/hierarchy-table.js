@@ -43,6 +43,15 @@ function HierarchyNode(data, _parent) {
 	};
 	this.display = this.str;
 
+	this.getPathFromRoot = function() {
+		if (this._parent) {
+			var list = this._parent.getPathFromRoot();
+			list.push(this);
+			return list;
+		}
+		return new Array(this);
+	};
+
 	// Compare two nodes
 	this.compare = function(other) {
 		if (other.depth < this.depth) {
@@ -131,7 +140,24 @@ function HierarchyTable($table, titles, rows) {
 		self.$table.append($thead);
 		
 		var $tbody = $("<tbody/>");
+		var previous_row = undefined;
 		for (var i = 0 ; i != self.rows.length ; i++) {
+			var previous_path = previous_row ? previous_row[0].getPathFromRoot() : new Array();
+			var current_path = self.rows[i][0].getPathFromRoot();
+			
+			for (var j = 0 ; j != current_path.length ; j++) {
+				if (j >= previous_path.length || previous_path[j] != current_path[j]) {
+					var $aggregation_row = $("<tr/>");
+					var $value = $("<td/>");
+					$value.text(current_path[j].display());
+					$aggregation_row.append($value);
+					for (var k = 1 ; k < self.rows[i].length ; k++) {
+						$aggregation_row.append($("<td/>"));
+					}
+					$tbody.append($aggregation_row);
+				}
+			}
+
 			var $row = $("<tr/>");
 			for (var j = 0 ; j != self.rows[i].length ; j++) {
 				var $value = $("<td/>");
@@ -139,6 +165,7 @@ function HierarchyTable($table, titles, rows) {
 				$row.append($value);
 			}
 			$tbody.append($row);
+			previous_row = self.rows[i];
 		}
 		self.$table.append($tbody);
 	};
