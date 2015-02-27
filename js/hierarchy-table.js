@@ -131,6 +131,15 @@ function HierarchyNode(data, _parent) {
 HierarchyNode.prototype = new HierarchyItem;
 
 function HierarchyRow(data, _parent, aggregatedRow) {
+	{
+		if (HierarchyRow.last === undefined) {
+			HierarchyRow.last = 0;
+		} else {
+			HierarchyRow.last++;
+		}
+	}
+	this.id = HierarchyRow.last;
+
 	// data is a list of HierarchyItem
 	// data has as many items as the number of columns of its corresponding HierarchyTable
 	this.data = data;
@@ -141,6 +150,9 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 	// List of children automatically filled
 	this.children = new Array();
 
+	// Is the node collapsed?
+	this.collapsed = true;
+	
 	// Append a child to the HierarchyRow
 	// Children are of type HierarchyRow
 	this.append = function(child) {
@@ -173,8 +185,22 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 		return 1 + this._parent.computeNumParents();
 	};
 
+	this.lookfor = function(id) {
+		if (this.id == id) {
+			return this;
+		}
+		
+		for (var i = 0 ; i != this.children.length ; i++) {
+			var found = this.children[i].lookfor(id);
+			if (found !== undefined) {
+				return found;
+			}
+		}
+		return undefined;
+	};
+
 	// Add rows into a tbody element
-	this.display = function($tbody, numNodes) {
+	this.display = function($tbody, numNodes, hierarchytable) {
 		var $row = $("<tr/>");
 		if (this.isAggregatedRow()) {
 			var color = 255 - Math.floor(64 / this.computeNumParents());
@@ -189,9 +215,20 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 			var $value = $("<td/>");
 			$value.attr("colspan", numNodes);
 			$value.css("padding-left", String(20*this.computeNumParents()) + "px");
-			if (last_filled !== undefined) {
-				$value.text(last_filled.display());
+			var $icon = $("<span/>");
+			if (this.collapsed) {
+				$icon.addClass("glyphicon glyphicon-plus expand-button");
+			} else {
+				$icon.addClass("glyphicon glyphicon-minus expand-button");
 			}
+			$icon.attr("data-row-id", this.id);
+			$icon.click(hierarchytable.onCollapseExpand);
+			var $title = $("<span/>");
+			if (last_filled !== undefined) {
+				$title.text(last_filled.display());
+			}
+			$value.append($icon);
+			$value.append($title);
 			$row.append($value);
 			for (var i = numNodes ; i < this.data.length ; i++) {
 				var $value = $("<td/>");
@@ -202,10 +239,12 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 				$row.append($value);
 			}
 			$tbody.append($row);
-
-			// Recursively display children
-			for (var i = 0 ; i != this.children.length ; i++) {
-				this.children[i].display($tbody, numNodes);
+			
+			if (! this.collapsed) {
+				// Recursively display children
+				for (var i = 0 ; i != this.children.length ; i++) {
+					this.children[i].display($tbody, numNodes, hierarchytable);
+				}
 			}
 		} else {
 			for (var i = 0 ; i < this.data.length ; i++) {
@@ -336,9 +375,25 @@ function HierarchyTable($table, titles, rows) {
 		var $tbody = $("<tbody/>");
 		var mainRows = self.mainHierarchyRow.getChildren();
 		for (var i = 0 ; i != mainRows.length ; i++) {
-			mainRows[i].display($tbody, self.numNodes);
+			mainRows[i].display($tbody, self.numNodes, self);
 		}
 		self.$table.append($tbody);
+	};
+
+	self.onCollapseExpand = function() {
+		var rowId = $(this).attr("data-row-id");
+		if (rowId !== undefined) {
+			var rowIdInt = parseInt(rowId);
+			var hRow = undefined;
+			var mainRows = self.mainHierarchyRow.getChildren();
+			for (var i = 0 ; i != mainRows.length && hRow === undefined ; i++) {
+				hRow = mainRows[i].lookfor(rowIdInt);
+			}
+			if (hRow !== undefined) {
+				hRow.collapsed = ! hRow.collapsed;
+				self.display();
+			}
+		}
 	};
 
 	{

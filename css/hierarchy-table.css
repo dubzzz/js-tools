@@ -65,3 +65,11 @@ table.hierarchy-table thead a[data-sortedtable-order='desc']:after
     content:"\e114";
 }
 
+table.hierarchy-table tbody tr td span.expand-button
+{
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 0.7em;
+    cursor: pointer;
+}
+
