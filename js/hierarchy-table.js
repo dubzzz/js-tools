@@ -177,6 +177,8 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 	this.display = function($tbody, numNodes) {
 		var $row = $("<tr/>");
 		if (this.isAggregatedRow()) {
+			var color = 255 - Math.floor(64 / this.computeNumParents());
+			$row.css("background-color", "rgb("+color+","+color+",255)");
 			var last_filled = undefined;
 			for (var i = numNodes -1 ; i >= 0 ; i--) {
 				if (this.data[i] !== undefined) {
@@ -194,6 +196,7 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 			for (var i = numNodes ; i < this.data.length ; i++) {
 				var $value = $("<td/>");
 				if (this.data[i] !== undefined) {
+					$value.addClass("aggregated");
 					$value.text(this.data[i].display());
 				}
 				$row.append($value);

@@ -9,12 +9,17 @@ table.hierarchy-table tbody tr
     background-color: #ffffff;
 }
 
-table.hierarchy-table tbody tr:nth-child(2n+1)
+table.hierarchy-table tbody tr td.aggregated
 {
-    background-color: #f9f9f9;
+    font-weight: bold;
 }
 
-table.hierarchy-table tbody tr td,
+table.hierarchy-table tbody tr td
+{
+    padding: 0 8px 0 8px;
+    line-height: 1.42857;
+}
+
 table.hierarchy-table thead tr th
 {
     padding: 8px;
