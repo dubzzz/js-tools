@@ -29,7 +29,6 @@ Array.prototype.clone = function() {
 
 function HierarchyItem(data) {
 	this.data = data;
-	this.hierarchyRow = undefined;
 	
 	// -1 means this < other
 	//  1 means this > other
@@ -37,6 +36,14 @@ function HierarchyItem(data) {
 	// Other cases are not supported
 	this.compare = function(other) {
 		return this.data < other.data ? -1 : (this.data > other.data ? 1 : 0);
+	};
+	
+	// Should be able to treat calls with undefined values
+	this.equals = function(other) {
+		if (other == undefined) {
+			return false;
+		}
+		return this.compare(other) == 0;
 	};
 	
 	// Return the string to diplay to represent this element
@@ -199,6 +206,24 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 		return undefined;
 	};
 
+	this.lookforImmediate = function(items) {
+		for (var i = 0 ; i != this.children.length ; i++) {
+			var equal = true;
+			for (var j = 0 ; j != items.length && equal ; j++) {
+				var cdata = this.children[i].data[j];
+				if (cdata === undefined) {
+					equal = items[j] === undefined;
+				} else {
+					equal = cdata.equals(items[j]);
+				}
+			}
+			if (equal) {
+				return this.children[i];
+			}
+		}
+		return undefined;
+	};
+
 	// Add rows into a tbody element
 	this.display = function($tbody, numNodes, hierarchytable) {
 		var $row = $("<tr/>");
@@ -336,11 +361,12 @@ function HierarchyTable($table, titles, rows) {
 				var path_from_root = self.rows[i][j].getPathFromRoot();
 				for (var k = 0 ; k != path_from_root.length ; k++) {
 					var node = path_from_root[k];
-					if (node.hierarchyRow === undefined) {
-						items[j] = node;
-						node.hierarchyRow = new HierarchyRow(items.clone(), parentRow);
+					items[j] = node;
+					var found = parentRow.lookforImmediate(items);
+					if (found === undefined) {
+						found = new HierarchyRow(items.clone(), parentRow);
 					}
-					parentRow = node.hierarchyRow;
+					parentRow = found;
 				}
 			}
 			
