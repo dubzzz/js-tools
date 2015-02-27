@@ -30,12 +30,26 @@ Array.prototype.clone = function() {
 function HierarchyItem(data) {
 	this.data = data;
 	this.hierarchyRow = undefined;
+	
+	// -1 means this < other
+	//  1 means this > other
+	//  0 means this = other
+	// Other cases are not supported
 	this.compare = function(other) {
 		return this.data < other.data ? -1 : (this.data > other.data ? 1 : 0);
 	};
+	
+	// Return the string to diplay to represent this element
 	this.display = function() {
 		return String(this.data);
 	};
+	
+	// Return the aggregated node result (HierarchyItem or derived)
+	// of the combination of this and node
+	// Keep in mind that you should have:
+	//  a.aggregate(b) = b.aggregate(a) [symetric]
+	//  a.aggregate(b.aggregate(c)) = a.aggregate(b).aggregate(c) [associative]
+	this.aggregate = undefined; // function(other)
 }
 
 function HierarchyNode(data, _parent) {
@@ -178,7 +192,11 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 			}
 			$row.append($value);
 			for (var i = numNodes ; i < this.data.length ; i++) {
-				$row.append($("<td/>"));
+				var $value = $("<td/>");
+				if (this.data[i] !== undefined) {
+					$value.text(this.data[i].display());
+				}
+				$row.append($value);
 			}
 			$tbody.append($row);
 
@@ -196,6 +214,34 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 			}
 			$tbody.append($row);
 		}
+	};
+	
+	// Compute aggregated value
+	this.compute = function(numNodes) {
+		if (! this.isAggregatedRow()) {
+			return;
+		}
+
+		for (var i = 0 ; i != this.children.length ; i++) {
+			this.children[i].compute(numNodes);
+		}
+		for (var i = numNodes ; i < this.data.length ; i++) {
+			var aggregated = undefined;
+			for (var j = 0 ; j != this.children.length ; j++) {
+				if (this.children[j] === undefined || this.children[j].data[i] === undefined) {
+					aggregated = undefined;
+					break;
+				} else if (j == 0) {
+					aggregated = this.children[j].data[i].aggregate ? this.children[j].data[i] : undefined;
+				} else { // we know that .aggregate is defined
+					aggregated = this.children[j].data[i].aggregate(aggregated);
+				}
+				if (aggregated === undefined) {
+					break;
+				}
+			}
+			this.data[i] = aggregated;
+		}		
 	};
 
 	this.getChildren = function() {
@@ -243,7 +289,7 @@ function HierarchyTable($table, titles, rows) {
 			// Create parent rows if necessary
 			var parentRow = self.mainHierarchyRow;
 			var items = new Array();
-			items[self.rows[i].length -1] = undefined;
+			items[self.rows[0].length -1] = undefined;
 			for (var j = 0 ; j != self.numNodes ; j++) {
 				var path_from_root = self.rows[i][j].getPathFromRoot();
 				for (var k = 0 ; k != path_from_root.length ; k++) {
@@ -263,7 +309,11 @@ function HierarchyTable($table, titles, rows) {
 			var itemRow = new HierarchyRow(items.clone(), parentRow);
 		}
 
-		// TODO Compute aggregated values
+		// Compute aggregated values
+		var mainRows = self.mainHierarchyRow.getChildren();
+		for (var i = 0 ; i != mainRows.length ; i++) {
+			mainRows[i].compute(self.numNodes);
+		}
 	};
 
 	self.display = function() {
