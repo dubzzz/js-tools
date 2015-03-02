@@ -4,6 +4,11 @@ Array.prototype.hierarchyTableSort = function(criteria) {
 	this.sort(function(a, b) {
 		for (var i = 0 ; i != criteria.length ; i++) {
 			var column = criteria[i];
+			var asc_mode = true;
+			if (column < 0) {
+				asc_mode = false;
+				column = -column -1;
+			}
 			var aElt = a.at(column);
 			var bElt = b.at(column);
 			var comparison = 0;
@@ -17,7 +22,7 @@ Array.prototype.hierarchyTableSort = function(criteria) {
 				comparison = aElt.compare(bElt);
 			}
 			if (comparison != 0) {
-				return comparison;
+				return asc_mode ? comparison : -comparison;
 			}
 		}
 		return 0;
@@ -225,7 +230,7 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 	};
 
 	// Add rows into a tbody element
-	this.display = function($tbody, numNodes, hierarchytable) {
+	this.display = function($tbody, numNodes, hierarchytable) {		
 		var $row = $("<tr/>");
 		if (this.isAggregatedRow()) {
 			var color = 255 - Math.floor(64 / this.computeNumParents());
@@ -392,8 +397,17 @@ function HierarchyTable($table, titles, rows) {
 		var $titles = $("<tr/>");
 		for (var i = 0 ; i != self.titles.length ; i++) {
 			var $title = $("<th/>");
-			$title.html(self.titles[i]);
+			var $title_link = $("<a/>");
+			$title_link.text(self.titles[i]);
+			$title.append($title_link);
 			$titles.append($title);
+		}
+		for (var i = 0 ; i != self.sortCriteria.length ; i++) {
+			if (self.sortCriteria[i] >= 0) {
+				$($titles.first().children()[self.sortCriteria[i]]).children().addClass("hierarchy-asc");
+			} else {
+				$($titles.first().children()[-self.sortCriteria[i]-1]).children().addClass("hierarchy-desc");
+			}
 		}
 		$thead.append($titles);
 		self.$table.append($thead);

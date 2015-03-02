@@ -55,12 +55,12 @@ table.hierarchy-table thead a:after
     content: ' ';
 }
 
-table.hierarchy-table thead a[data-sortedtable-order='asc']:after
+table.hierarchy-table thead a.hierarchy-asc:after
 {
     content: "\e113";
 }
 
-table.hierarchy-table thead a[data-sortedtable-order='desc']:after
+table.hierarchy-table thead a.hierarchy-desc:after
 {
     content:"\e114";
 }
