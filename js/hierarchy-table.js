@@ -398,15 +398,26 @@ function HierarchyTable($table, titles, rows) {
 		for (var i = 0 ; i != self.titles.length ; i++) {
 			var $title = $("<th/>");
 			var $title_link = $("<a/>");
+			$title_link.attr("href", "javascript:void(0)");
+			$title_link.click(self.onClickReorder);
 			$title_link.text(self.titles[i]);
 			$title.append($title_link);
 			$titles.append($title);
 		}
 		for (var i = 0 ; i != self.sortCriteria.length ; i++) {
+			var $title_link = undefined;
 			if (self.sortCriteria[i] >= 0) {
-				$($titles.first().children()[self.sortCriteria[i]]).children().addClass("hierarchy-asc");
+				$title_link = $($titles.first().children()[self.sortCriteria[i]]).children();
+				$title_link.addClass("hierarchy-asc");
 			} else {
-				$($titles.first().children()[-self.sortCriteria[i]-1]).children().addClass("hierarchy-desc");
+				$title_link = $($titles.first().children()[-self.sortCriteria[i]-1]).children();
+				$title_link.addClass("hierarchy-desc");
+			}
+			if (self.sortCriteria.length > 1) {
+				var $title_order = $("<div/>");
+				$title_order.addClass("hierarchy-order");
+				$title_order.text(i+1);
+				$title_link.parent().append($title_order);
 			}
 		}
 		$thead.append($titles);
@@ -450,6 +461,39 @@ function HierarchyTable($table, titles, rows) {
 		
 		self.build();
 		self.display();
-	}
+	};
+	
+	self.changeReorder = function(key) {
+		// Check if we already order on this key
+		var sortKey = -1;
+		for (var i = 0 ; i != self.sortCriteria.length ; i++) {
+			if (key == self.sortCriteria[i] || key == -self.sortCriteria[i] -1) {
+				sortKey = i;
+				break;
+			}
+		}
+
+		if (sortKey == -1) {
+			sortKey = self.sortCriteria.length;
+			self.sortCriteria.push(key);
+		} else {
+			if (key == self.sortCriteria[sortKey]) {
+				self.sortCriteria[sortKey] = -key -1;
+			} else {
+				self.sortCriteria.splice(sortKey, 1);
+			}
+		}
+		self.display();
+	};
+
+	self.onClickReorder = function() {
+		th = $(this).parent()[0];	
+		$ths = self.$table.find("> thead > tr > th");
+		for (var i = 0 ; i != $ths.length ; i++) {
+			if (th == $ths[i]) {
+				return self.changeReorder(i);
+			}
+		}
+	};
 }
 

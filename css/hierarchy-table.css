@@ -65,6 +65,20 @@ table.hierarchy-table thead a.hierarchy-desc:after
     content:"\e114";
 }
 
+table.hierarchy-table thead tr th
+{
+    position: relative;
+}
+
+table.hierarchy-table thead tr th .hierarchy-order
+{
+    display: inline-block;
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    font-size: 0.6em;
+}
+
 table.hierarchy-table tbody tr td span.expand-button
 {
     display: inline-block;
