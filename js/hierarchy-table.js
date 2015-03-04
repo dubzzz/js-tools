@@ -62,6 +62,12 @@ function HierarchyItem(data) {
 	//  a.aggregate(b) = b.aggregate(a) [symetric]
 	//  a.aggregate(b.aggregate(c)) = a.aggregate(b).aggregate(c) [associative]
 	this.aggregate = undefined; // function(other)
+
+	// Return  the list of HierarchyItem between the current node and its root
+	// (from root to node)
+	this.getPathFromRoot = function() {
+		return new Array(this);
+	};
 }
 
 function HierarchyNode(data, _parent) {
