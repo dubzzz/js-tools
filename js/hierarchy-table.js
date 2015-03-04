@@ -446,22 +446,6 @@ function HierarchyTable($table, titles, rows) {
 			}
 		}
 	};
-
-	{
-		self.numNodes = 0;
-		if (self.rows.length > 0) {
-			for (var i = 0 ; i != self.rows[0].length ; i++) {
-				if (self.rows[0][i] instanceof HierarchyNode) {
-					self.numNodes++;
-				} else {
-					break;
-				}
-			}
-		}
-		
-		self.build();
-		self.display();
-	};
 	
 	self.changeReorder = function(key) {
 		// Check if we already order on this key
@@ -495,5 +479,21 @@ function HierarchyTable($table, titles, rows) {
 			}
 		}
 	};
+
+	{
+		self.numNodes = 0;
+		if (self.rows.length > 0) {
+			for (var i = 0 ; i != self.rows[0].length ; i++) {
+				if (self.rows[0][i] instanceof HierarchyNode) {
+					self.numNodes++;
+				} else {
+					break;
+				}
+			}
+		}
+		
+		self.build();
+		self.display();
+	}
 }
 
