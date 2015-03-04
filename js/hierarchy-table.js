@@ -28,6 +28,16 @@ Array.prototype.hierarchyTableSort = function(criteria) {
 		return 0;
 	});
 };
+Array.prototype.rclone = function() {
+	if (this.length > 0 && this[0] instanceof Array) {
+		var newArray = new Array();
+		for (var i = 0 ; i != this.length ; i++) {
+			newArray.push(this[i].rclone());
+		}
+		return newArray;
+	}
+	return this.slice(0);
+};
 Array.prototype.clone = function() {
 	return this.slice(0);
 };
@@ -147,6 +157,31 @@ function HierarchyNode(data, _parent) {
 	};
 }
 HierarchyNode.prototype = new HierarchyItem;
+
+function HierarchyList(children) {
+	this.children = children;
+	
+	this.compare = function(other) {
+		return 0;
+	};
+	
+	this.equals = function(other) {
+		return false;
+	};
+	
+	this.display = function() {
+		var aggregated_node = undefined;
+		for (var i = 0 ; i != this.children.length ; i++) {
+			if (i == 0) {
+				aggregated_node = this.children[i].aggregate ? this.children[i] : undefined;
+			} else {
+				aggregated_node = aggregated_node.aggregate ? aggregated_node.aggregate(this.children[i]) : undefined;
+			}
+		}
+		return aggregated_node ? aggregated_node.display() : "";
+	};
+}
+HierarchyList.prototype = new HierarchyItem;
 
 function HierarchyRow(data, _parent, aggregatedRow) {
 	{
@@ -358,33 +393,73 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 	// HierarchyRow
 	self.mainHierarchyRow = new HierarchyRow(undefined, undefined);
 	
+	// @private
+	// Build one hierarchy column
+	// - item: HierarchyItem
+	// - items
+	// - parentRows: list of HierarchyRow
+	// Add item to the parentRows
+	// Return updated parentRows
+	self.buildOneColumn = function(item, column_id, items, parentRows) {
+		var path_from_root = item.getPathFromRoot();
+		for (var i = 0 ; i != path_from_root.length ; i++) {
+			var node = path_from_root[i];
+			for (var j = 0 ; j != items.length ; j++) {
+				items[j][column_id] = node;
+				var found = parentRows[j].lookforImmediate(items[j]);
+				if (found === undefined) {
+					found = new HierarchyRow(items[j].clone(), parentRows[j]);
+				}
+				parentRows[j] = found;
+			}
+		}
+	};
+
+	// @private
+	// Build hierarchy columns (if necessary) for a given row
+	self.buildColumns = function(row) {
+		// Create parent rows if necessary
+		var parentRows = new Array(self.mainHierarchyRow);
+		var items = new Array(new Array());
+		items[0][row.length -1] = undefined;
+		for (var j = 0 ; j != self.numNodes ; j++) {
+			if (row[j] instanceof HierarchyList) {
+				var nextParentRows = new Array();
+				var nextItems = new Array();
+				for (var k = 0 ; k != row[j].children.length ; k++) {
+					var clonedParentRows = parentRows.clone();
+					var clonedItems = items.rclone();
+					self.buildOneColumn(row[j].children[k], j, clonedItems, clonedParentRows);
+					for (var l = 0 ; l != clonedItems.length ; l++) {
+						nextParentRows.push(clonedParentRows[l]);
+						nextItems.push(clonedItems[l].clone());
+					}
+				}
+				parentRows = nextParentRows;
+				items = nextItems;
+			} else {
+				self.buildOneColumn(row[j], j, items, parentRows);
+			}
+		}
+		return parentRows;
+	};
+		
 	// Should only be called once (by the constructor)
 	// It builds the HierarchyRow necessary for the display and sort
 	self.build = function() {
 		// Build the hierarchy based on self.rows
 		for (var i = 0 ; i != self.rows.length ; i++) {
-			// Create parent rows if necessary
-			var parentRow = self.mainHierarchyRow;
+			var parentRows = self.buildColumns(self.rows[i]);
+
+			// Create the row associated to our element
 			var items = new Array();
 			items[self.rows[0].length -1] = undefined;
-			for (var j = 0 ; j != self.numNodes ; j++) {
-				var path_from_root = self.rows[i][j].getPathFromRoot();
-				for (var k = 0 ; k != path_from_root.length ; k++) {
-					var node = path_from_root[k];
-					items[j] = node;
-					var found = parentRow.lookforImmediate(items);
-					if (found === undefined) {
-						found = new HierarchyRow(items.clone(), parentRow);
-					}
-					parentRow = found;
+			for (var k = 0 ; k != parentRows.length ; k++) {
+				for (var j = 0 ; j < self.rows[i].length ; j++) {
+					items[j] = self.rows[i][j];
 				}
+				var itemRow = new HierarchyRow(items.clone(), parentRows[k]);
 			}
-			
-			// Create the row associated to our element
-			for (var j = 0 ; j < self.rows[i].length ; j++) {
-				items[j] = self.rows[i][j];
-			}
-			var itemRow = new HierarchyRow(items.clone(), parentRow);
 		}
 
 		// Compute aggregated values
