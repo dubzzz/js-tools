@@ -177,6 +177,9 @@ function HierarchyList(children) {
 			} else {
 				aggregated_node = aggregated_node.aggregate ? aggregated_node.aggregate(this.children[i]) : undefined;
 			}
+			if (aggregated_node === undefined) {
+				break;
+			}
 		}
 		return aggregated_node ? aggregated_node.display() : "";
 	};
