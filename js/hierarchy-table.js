@@ -327,7 +327,7 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 	}
 }
 
-function HierarchyTable($table, titles, rows) {
+function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 	var self = this;
 	
 	// jQuery element corresponding to a HTML <table/>
@@ -346,9 +346,8 @@ function HierarchyTable($table, titles, rows) {
 	// by default: order on first column
 	self.sortCriteria = [0];
 	
-	// Number of HierarchyNode
-	// Should be placed at the beginning of self.rows[x] to be taken into account
-	self.numNodes = 0;
+	// Number of columns that will consider to aggregate data
+	self.numNodes = numHierarchyColumns;
 
 	// HierarchyRow
 	self.mainHierarchyRow = new HierarchyRow(undefined, undefined);
@@ -481,17 +480,6 @@ function HierarchyTable($table, titles, rows) {
 	};
 
 	{
-		self.numNodes = 0;
-		if (self.rows.length > 0) {
-			for (var i = 0 ; i != self.rows[0].length ; i++) {
-				if (self.rows[0][i] instanceof HierarchyNode) {
-					self.numNodes++;
-				} else {
-					break;
-				}
-			}
-		}
-		
 		self.build();
 		self.display();
 	}
