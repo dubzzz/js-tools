@@ -186,7 +186,7 @@ function HierarchyList(children) {
 }
 HierarchyList.prototype = new HierarchyItem;
 
-function HierarchyRow(data, _parent, aggregatedRow) {
+function HierarchyRow(data, _parent, level) {
 	{
 		if (HierarchyRow.last === undefined) {
 			HierarchyRow.last = 0;
@@ -198,7 +198,7 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 
 	// data is a list of HierarchyItem
 	// data has as many items as the number of columns of its corresponding HierarchyTable
-	this.data = data;
+	this.data = data instanceof Array ? data : new Array();
 
 	// _parent can be undefined or another HierarchyRow
 	this._parent = _parent;
@@ -208,6 +208,52 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 
 	// Is the node collapsed?
 	this.collapsed = true;
+
+	// Level in the node hierarchy
+	this.level = level !== undefined ? level : -1;
+	
+	this.removeHierarchyColumn = function(column_id) {
+		if (this.level > column_id) {
+			// hierarchy column has been treated
+			// need to remove the data related to this column
+			return this.removeColumn(column_id);
+		}
+		
+		// if children have level column_id
+		if (this.children.length > 0 && this.children[0].level == column_id) {
+			var sub_children = new Array();
+			for (var i = 0 ; i != this.children.length ; i++) {
+				if (this.children[i].children !== undefined) {
+					sub_children = sub_children.concat(this.children[i].children);
+				}
+			}
+			this.children = sub_children;
+			// call the same row again
+			// we can have several rows with the same level
+			return this.removeHierarchyColumn(column_id);
+		}
+
+		this.data.splice(column_id, 1);
+		for (var i = 0 ; i != this.children.length ; i++) {
+			this.children[i].removeHierarchyColumn(column_id);
+		}
+	};
+
+	this.removeColumn = function(column_id) {
+		this.data.splice(column_id, 1);
+		for (var i = 0 ; i != this.children.length ; i++) {
+			this.children[i].removeColumn(column_id);
+		}
+	};
+
+	this.addColumn = function(item, column_id) {
+		// Append the column to the current element
+		this.data.splice(column_id, 0, item);
+		// and to its parent if it has never been done before
+		if (this._parent !== undefined && this._parent.data.length != this.data.length) {
+			this._parent.addColumn(undefined, column_id);
+		}
+	};
 	
 	// Append a child to the HierarchyRow
 	// Children are of type HierarchyRow
@@ -333,15 +379,18 @@ function HierarchyRow(data, _parent, aggregatedRow) {
 	};
 	
 	// Compute aggregated value
-	this.compute = function(numNodes) {
+	this.compute = function(numNodes, specific_column) {
 		if (! this.isAggregatedRow()) {
 			return;
 		}
 
 		for (var i = 0 ; i != this.children.length ; i++) {
-			this.children[i].compute(numNodes);
+			this.children[i].compute(numNodes, specific_column);
 		}
 		for (var i = numNodes ; i < this.data.length ; i++) {
+			if (specific_column !== undefined && i != specific_column) {
+				continue; // only compute the column specific_column
+			}
 			var aggregated = undefined;
 			for (var j = 0 ; j != this.children.length ; j++) {
 				if (this.children[j] === undefined || this.children[j].data[i] === undefined) {
@@ -385,6 +434,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 	// self.rows[x][y]: value itself (instanceof HierarchyItem)
 	// The order of this array can change from time to time due to reorderings
 	self.rows = rows;
+	self.internalRows = new Array();
 	
 	// List of sort criteria
 	// by default: order on first column
@@ -411,7 +461,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 				items[j][column_id] = node;
 				var found = parentRows[j].lookforImmediate(items[j]);
 				if (found === undefined) {
-					found = new HierarchyRow(items[j].clone(), parentRows[j]);
+					found = new HierarchyRow(items[j].clone(), parentRows[j], column_id);
 				}
 				parentRows[j] = found;
 			}
@@ -451,7 +501,10 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 	// It builds the HierarchyRow necessary for the display and sort
 	self.build = function() {
 		// Build the hierarchy based on self.rows
+		self.mainHierarchyRow = new HierarchyRow(undefined, undefined);
+		self.internalRows = new Array();
 		for (var i = 0 ; i != self.rows.length ; i++) {
+			var relatedRows = new Array();
 			var parentRows = self.buildColumns(self.rows[i]);
 
 			// Create the row associated to our element
@@ -462,7 +515,9 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 					items[j] = self.rows[i][j];
 				}
 				var itemRow = new HierarchyRow(items.clone(), parentRows[k]);
+				relatedRows.push(itemRow);
 			}
+			self.internalRows.push(relatedRows);
 		}
 
 		// Compute aggregated values
@@ -512,6 +567,63 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 			mainRows[i].display($tbody, self.numNodes, self);
 		}
 		self.$table.append($tbody);
+	};
+	
+	// Remove a column from the table given its position
+	// Both "hierarchy columns" and "normal columns" can be removed with this method
+	self.removeColumn = function(column_id) {
+		if (column_id < self.numNodes) {
+			self.numNodes--;
+			self.mainHierarchyRow.removeHierarchyColumn(column_id);
+		} else {
+			self.mainHierarchyRow.removeColumn(column_id);
+		}
+		self.titles.splice(column_id, 1);
+	};
+	
+	// Append a normal column to the table
+	// the full table need to be passed in new_rows parameter
+	self.addColumn = function(column_id, new_rows, new_titles) {
+		// Check if tables are the same (except the extra row)
+		var identical = self.rows.length == new_rows.length
+				&& self.rows[0].length == new_rows[0].length +1;
+		for (var i = 0 ; i != self.rows.length && identical ; i++) {
+			for (var j = 0 ; j != new_rows[i].length && identical ; j++) {
+				if (j < column_id) {
+					identical &= self.rows[i][j] == new_rows[i][j];
+				} else if (j > column_id) {
+					identical &= self.rows[i][j-1] == new_rows[i][j];
+				}
+			}
+		}
+		if (! identical) {
+			console.error("Invalid call to HierarchyTable::addColumn");
+		}
+
+		// Add the column
+		self.rows = new_rows;
+		self.titles = new_titles;
+		for (var i = 0 ; i != self.rows.length ; i++) {
+			for (var j = 0 ; j != self.internalRows[i].length ; j++) {
+				self.internalRows[i][j].addColumn(self.rows[i][column_id], column_id);
+			}
+		}
+		
+		// Compute new aggregated values
+		var mainRows = self.mainHierarchyRow.getChildren();
+		for (var i = 0 ; i != mainRows.length ; i++) {
+			mainRows[i].compute(self.numNodes, column_id);
+		}
+	};
+
+	self.addHierarchyColumn = function(column_id, new_rows, new_titles) {
+		if (column_id > self.numNodes) {
+			console.error("Invalid call to HierarchyTable::addHierarchyColumn");
+		}
+		self.numNodes++;
+		self.rows = new_rows;
+		self.titles = new_titles;
+		self.build();
 	};
 
 	self.onCollapseExpand = function() {
