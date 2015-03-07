@@ -196,6 +196,10 @@ function HierarchyRow(data, _parent, level) {
 	}
 	this.id = HierarchyRow.last;
 
+	// Optionnal elt
+	// Specify the corresponding reference in HierarchyTable's rows
+	this.ref = undefined;
+
 	// data is a list of HierarchyItem
 	// data has as many items as the number of columns of its corresponding HierarchyTable
 	this.data = data instanceof Array ? data : new Array();
@@ -212,6 +216,20 @@ function HierarchyRow(data, _parent, level) {
 	// Level in the node hierarchy
 	this.level = level !== undefined ? level : -1;
 	
+	// Thsi flag is set to true if two distinct sons imply the same HierarchyItem
+	// for the computation of their aggregated value
+	this.children_double_contribution = false;
+	
+	this.setReference = function(reference)
+	{
+		this.ref = reference;
+	};
+
+	this.setDoubleContribution = function(double_contribution)
+	{
+		this.children_double_contribution = double_contribution;
+	};
+
 	this.removeHierarchyColumn = function(column_id) {
 		while (this.children.length > 0 && this.children[0].level == column_id) {
 			var sub_children = new Array();
@@ -378,19 +396,23 @@ function HierarchyRow(data, _parent, level) {
 		for (var i = 0 ; i != this.children.length ; i++) {
 			this.children[i].compute(numNodes, specific_column);
 		}
+		// If the children implies double-contribution
+		//   take the leaves has elementaryu contributions
+		// Otherwise immediate children are ok
+		var base_elts = this.children_double_contribution ? this.retrieveLeaves() : this.children;
 		for (var i = numNodes ; i < this.data.length ; i++) {
 			if (specific_column !== undefined && i != specific_column) {
 				continue; // only compute the column specific_column
 			}
 			var aggregated = undefined;
-			for (var j = 0 ; j != this.children.length ; j++) {
-				if (this.children[j] === undefined || this.children[j].data[i] === undefined) {
+			for (var j = 0 ; j != base_elts.length ; j++) {
+				if (base_elts[j] === undefined || base_elts[j].data[i] === undefined) {
 					aggregated = undefined;
 					break;
 				} else if (j == 0) {
-					aggregated = this.children[j].data[i].aggregate ? this.children[j].data[i] : undefined;
+					aggregated = base_elts[j].data[i].aggregate ? base_elts[j].data[i] : undefined;
 				} else { // we know that .aggregate is defined
-					aggregated = this.children[j].data[i].aggregate(aggregated);
+					aggregated = base_elts[j].data[i].aggregate(aggregated);
 				}
 				if (aggregated === undefined) {
 					break;
@@ -402,6 +424,41 @@ function HierarchyRow(data, _parent, level) {
 
 	this.getChildren = function() {
 		return this.children;
+	};
+	
+	// Compute the list of leaves that contribute to the row
+	// each row is unique
+	this.retrieveLeaves = function() {
+		if (this.children.length == 0)
+		{
+			return new Array(this);
+		}
+
+		var references = new Array();
+		var leaves = new Array();
+		for (var i = 0 ; i != this.children.length ; i++)
+		{
+			var subleaves = this.children[i].retrieveLeaves();
+			for (var j = 0 ; j != subleaves.length ; j++) {
+				if (subleaves[j].ref === undefined || $.inArray(subleaves[j].ref, references) == -1)
+				{
+					references.push(subleaves[j].ref);
+					leaves.push(subleaves[j]);
+				}
+			}
+		}
+		return leaves;
+	};
+
+	this.getPathFromRoot = function()
+	{
+		if (this._parent === undefined)
+		{
+			return new Array(this);
+		}
+		var path = this._parent.getPathFromRoot();
+		path.push(this);
+		return path;
 	};
 
 	{
@@ -497,6 +554,26 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 		for (var i = 0 ; i != self.rows.length ; i++) {
 			var relatedRows = new Array();
 			var parentRows = self.buildColumns(self.rows[i]);
+			
+			// Treat the case of double-contributions
+			for (var j = 0 ; j < parentRows.length ; j++)
+			{
+				for (var k = j+1 ; k < parentRows.length ; k++)
+				{
+					var path1 = parentRows[j].getPathFromRoot();
+					var path2 = parentRows[k].getPathFromRoot();
+					var length = Math.min(path1.length, path2.length);
+					var last_common_not_included = 0;
+					while (last_common_not_included < length && path1[last_common_not_included] == path2[last_common_not_included])
+					{
+						last_common_not_included++;
+					}
+					if (last_common_not_included > 1) // >1 because of self.mainHierarchyRow
+					{
+						path1[last_common_not_included -1].setDoubleContribution(true);
+					}
+				}
+			}
 
 			// Create the row associated to our element
 			var items = new Array();
@@ -506,6 +583,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 					items[j] = self.rows[i][j];
 				}
 				var itemRow = new HierarchyRow(items.clone(), parentRows[k]);
+				itemRow.setReference(i);
 				relatedRows.push(itemRow);
 			}
 			self.internalRows.push(relatedRows);
