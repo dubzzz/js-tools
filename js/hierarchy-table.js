@@ -213,14 +213,7 @@ function HierarchyRow(data, _parent, level) {
 	this.level = level !== undefined ? level : -1;
 	
 	this.removeHierarchyColumn = function(column_id) {
-		if (this.level > column_id) {
-			// hierarchy column has been treated
-			// need to remove the data related to this column
-			return this.removeColumn(column_id);
-		}
-		
-		// if children have level column_id
-		if (this.children.length > 0 && this.children[0].level == column_id) {
+		while (this.children.length > 0 && this.children[0].level == column_id) {
 			var sub_children = new Array();
 			for (var i = 0 ; i != this.children.length ; i++) {
 				if (this.children[i].children !== undefined) {
@@ -228,13 +221,11 @@ function HierarchyRow(data, _parent, level) {
 				}
 			}
 			this.children = sub_children;
-			// call the same row again
-			// we can have several rows with the same level
-			return this.removeHierarchyColumn(column_id);
 		}
 
 		this.data.splice(column_id, 1);
 		for (var i = 0 ; i != this.children.length ; i++) {
+			this.children[i]._parent = this;
 			this.children[i].removeHierarchyColumn(column_id);
 		}
 	};
@@ -584,24 +575,8 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 	// Append a normal column to the table
 	// the full table need to be passed in new_rows parameter
 	self.addColumn = function(column_id, new_rows, new_titles) {
-		// Check if tables are the same (except the extra row)
-		var identical = self.rows.length == new_rows.length
-				&& self.rows[0].length == new_rows[0].length +1;
-		for (var i = 0 ; i != self.rows.length && identical ; i++) {
-			for (var j = 0 ; j != new_rows[i].length && identical ; j++) {
-				if (j < column_id) {
-					identical &= self.rows[i][j] == new_rows[i][j];
-				} else if (j > column_id) {
-					identical &= self.rows[i][j-1] == new_rows[i][j];
-				}
-			}
-		}
-		if (! identical) {
-			console.error("Invalid call to HierarchyTable::addColumn");
-		}
-
 		// Add the column
-		self.rows = new_rows;
+		self.rows = new_rows; // self.rows is a copy by pointer /!\
 		self.titles = new_titles;
 		for (var i = 0 ; i != self.rows.length ; i++) {
 			for (var j = 0 ; j != self.internalRows[i].length ; j++) {
@@ -618,7 +593,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 
 	self.addHierarchyColumn = function(column_id, new_rows, new_titles) {
 		if (column_id > self.numNodes) {
-			console.error("Invalid call to HierarchyTable::addHierarchyColumn");
+			console.warning("Invalid call to HierarchyTable::addHierarchyColumn");
 		}
 		self.numNodes++;
 		self.rows = new_rows;
