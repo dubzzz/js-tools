@@ -14,6 +14,10 @@ Array.prototype.sortOnColumn = function(column, reversed) {
 	});
 }
 
+Array.prototype.clone = function() {
+	return this.slice(0);
+};
+
 function numberToString(number, num_decimals) {
 	var power = Math.pow(10, num_decimals);
 	var number_bis = Math.round(number * power);
@@ -202,7 +206,7 @@ function SortedTable(table, rawdata_details, rawdata) {
 	this.rawdata_details = rawdata_details;
 
 	// The data that should be put in the table 
-	this.rawdata = rawdata;
+	this.rawdata = rawdata.clone();
 
 	// Column classes
 	this.column_classes = new Array();
@@ -306,5 +310,10 @@ function SortedTable(table, rawdata_details, rawdata) {
 			}
 			tbody.append(tr);
 		}
+	};
+
+	this.refreshData = function(rawdata)
+	{
+		this.rawdata = rawdata.clone();
 	};
 }
