@@ -42,6 +42,21 @@ Array.prototype.clone = function() {
 	return this.slice(0);
 };
 
+Array.prototype.findAtLevel = function(row, level)
+{
+	var item = row.data[level];
+	for (var i = 0 ; i != this.length ; i++)
+	{
+		var atLevel = this[i].data[level];
+		if (this[i].level == level &&
+				(atLevel == item || (atLevel.equals && atLevel.equals(item))))
+		{
+			return this[i];
+		}
+	}
+	return undefined;
+};
+
 function HierarchyItem(data) {
 	this.data = data;
 	
@@ -251,7 +266,19 @@ function HierarchyRow(data, _parent, level) {
 						this.children[i].children[j].level--;
 					}
 					this.children[i].children[j]._parent = this;
-					children_after_removal.push(this.children[i].children[j]);
+
+					// Aggregate lines together when it is possible
+					var found = this.children[i].children[j].level >= 0
+							? children_after_removal.findAtLevel(this.children[i].children[j], this.children[i].children[j].level)
+							: undefined;
+					if (found === undefined)
+					{
+						children_after_removal.push(this.children[i].children[j]);
+					}
+					else
+					{
+						found.children.concat(this.children[i].children[j].children);
+					}
 				}
 			}
 			else
