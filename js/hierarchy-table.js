@@ -229,23 +229,41 @@ function HierarchyRow(data, _parent, level) {
 	{
 		this.children_double_contribution = double_contribution;
 	};
-
+	
+	// This method remove the data corresponding to the column column_id
+	// It also removes children rows which are instances of column_id
 	this.removeHierarchyColumn = function(column_id) {
-		while (this.children.length > 0 && this.children[0].level == column_id) {
-			var sub_children = new Array();
-			for (var i = 0 ; i != this.children.length ; i++) {
-				if (this.children[i].children !== undefined) {
-					sub_children = sub_children.concat(this.children[i].children);
+		// Remove column column_id from data
+		this.data.splice(column_id, 1);
+
+		// Remove children instances of column_id
+		// /!\ this.children can be of different levels
+		var children_after_removal = new Array();
+		for (var i = 0 ; i != this.children.length ; i++)
+		{
+			this.children[i].removeHierarchyColumn(column_id);
+			if (this.children[i].level == column_id)
+			{
+				for (var j = 0 ; j != this.children[i].children.length ; j++)
+				{
+					if (this.children[i].children[j].level > column_id)
+					{
+						this.children[i].children[j].level--;
+					}
+					this.children[i].children[j]._parent = this;
+					children_after_removal.push(this.children[i].children[j]);
 				}
 			}
-			this.children = sub_children;
+			else
+			{
+				if (this.children[i].level > column_id)
+				{
+					this.children[i].level--;
+				}
+				children_after_removal.push(this.children[i]);
+			}
 		}
-
-		this.data.splice(column_id, 1);
-		for (var i = 0 ; i != this.children.length ; i++) {
-			this.children[i]._parent = this;
-			this.children[i].removeHierarchyColumn(column_id);
-		}
+		this.children = children_after_removal;
 	};
 
 	this.removeColumn = function(column_id) {
