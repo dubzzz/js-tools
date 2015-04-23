@@ -4,7 +4,6 @@ sudo: required
 
 before_script:
   - sudo $(which npm) install -g grunt
-  - sudo $(which npm) install -g grunt-cli
 
 script: grunt test --verbose --force
 
