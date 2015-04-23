@@ -118,6 +118,15 @@ QUnit.test("Order on score", function(assert) {
 			"Correct order"); // This test does not test the resulting score but the order knowing it
 });
 
+QUnit.test("Order on score (2)", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Red", "Orange"]);
+	var choices = autocomp.computeChoices("re");
+	assert.equal(choices.length, 2, "Exactly two choices");
+	assert.ok(
+			choices[0]["autocomplete_score"] < choices[1]["autocomplete_score"],
+			"Correct order"); // This test does not test the resulting score but the order knowing it
+});
+
 QUnit.test("Order on text", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Orange", "Red"]);
 	var choices = autocomp.computeChoices("r");
@@ -127,6 +136,38 @@ QUnit.test("Order on text", function(assert) {
 			"Same score");
 	assert.ok(
 			choices[0]["autocomplete_rawdata_on"] < choices[1]["autocomplete_rawdata_on"],
+			"Correct order");
+});
+
+QUnit.test("Order on text (2)", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Red", "Orange"]);
+	var choices = autocomp.computeChoices("r");
+	assert.equal(choices.length, 2, "Exactly two choices");
+	assert.ok(
+			choices[0]["autocomplete_score"] == choices[1]["autocomplete_score"],
+			"Same score");
+	assert.ok(
+			choices[0]["autocomplete_rawdata_on"] < choices[1]["autocomplete_rawdata_on"],
+			"Correct order");
+});
+
+QUnit.test("Equality on both score and data", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Purple", "Orange", "Red", "Purple"]);
+	var choices = autocomp.computeChoices("r");
+	assert.equal(choices.length, 4, "Exactly four choices");
+	assert.ok(
+			choices[0]["autocomplete_score"] == choices[1]["autocomplete_score"]
+			&& choices[0]["autocomplete_score"] == choices[2]["autocomplete_score"]
+			&& choices[0]["autocomplete_score"] == choices[3]["autocomplete_score"],
+			"Same score for everyone");
+	assert.ok(
+			choices[0]["autocomplete_rawdata_on"] < choices[1]["autocomplete_rawdata_on"],
+			"Correct order");
+	assert.ok(
+			choices[1]["autocomplete_rawdata_on"] == choices[2]["autocomplete_rawdata_on"],
+			"Correct order");
+	assert.ok(
+			choices[2]["autocomplete_rawdata_on"] < choices[3]["autocomplete_rawdata_on"],
 			"Correct order");
 });
 
