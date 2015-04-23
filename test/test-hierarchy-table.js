@@ -1,3 +1,5 @@
+QUnit.start();
+
 QUnit.module("HierarchyNode::str()");
 
 QUnit.test("Root node", function(assert) {

@@ -9,6 +9,8 @@ function buildAutocompleteFromArray(choices) {
 	return new AutocompleteItem($("input#autocomplete"), autocomplete_choices);
 }
 
+QUnit.start();
+
 QUnit.module("AutocompleteItem::computePriority(str:query, int:index)");
 
 QUnit.test("Empty choice", function(assert) {
