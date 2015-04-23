@@ -296,10 +296,25 @@ QUnit.test("Toggle menu with random key", function(assert) {
 	event.key = 'e';
 	event.keyCode = 69;
 	event.which = 69;
-	$("input#autocomplete").val("e");
 	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+	$("input#autocomplete").val("e");
 	$("input#autocomplete").trigger(event);
 	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+});
+
+QUnit.test("Toggle menu with random key and hide when no match", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice"]);
+	var event = $.Event("keyup");
+	event.key = 'e';
+	event.keyCode = 69;
+	event.which = 69;
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+	$("input#autocomplete").val("e");
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	$("input#autocomplete").val("ee");
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
 });
 
 QUnit.test("Keep selected item focused when typing", function(assert) {
