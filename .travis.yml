@@ -9,8 +9,5 @@ before_script:
 script:
   - grunt --verbose --force
 
-after_script:
-  - grunt coveralls
-
 after_success:
-  - coveralls
+  - grunt coveralls
