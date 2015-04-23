@@ -8,3 +8,5 @@ before_script:
 
 script: grunt test --verbose --force
 
+after_success:
+  - coveralls
