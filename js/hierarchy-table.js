@@ -399,7 +399,11 @@ function HierarchyRow(data, _parent, level) {
 			$icon.click(hierarchytable.onCollapseExpand);
 			var $title = $("<span/>");
 			if (last_filled !== undefined) {
-				$title.text(last_filled.display());
+				if (last_filled.displaySafe !== undefined) {
+					$title.html(last_filled.displaySafe());
+				} else {
+					$title.text(last_filled.display());
+				}
 			}
 			$value.append($icon);
 			$value.append($title);
@@ -408,7 +412,11 @@ function HierarchyRow(data, _parent, level) {
 				var $value = $("<td/>");
 				if (this.data[i] !== undefined) {
 					$value.addClass("aggregated");
-					$value.text(this.data[i].display());
+					if (this.data[i].displaySafe !== undefined) {
+						$value.html(this.data[i].displaySafe());
+					} else {
+						$value.text(this.data[i].display());
+					}
 				}
 				$row.append($value);
 			}
@@ -424,7 +432,11 @@ function HierarchyRow(data, _parent, level) {
 			for (var i = 0 ; i < this.data.length ; i++) {
 				var $value = $("<td/>");
 				if (i >= numNodes && this.data[i] !== undefined) {
-					$value.text(this.data[i].display());
+					if (this.data[i].displaySafe !== undefined) {
+						$value.html(this.data[i].displaySafe());
+					} else {
+						$value.text(this.data[i].display());
+					}
 				}
 				$row.append($value);
 			}
