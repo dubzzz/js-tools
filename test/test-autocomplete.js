@@ -528,6 +528,80 @@ QUnit.test("Limit the number of results", function(assert) {
 			"1", "Second item visible only");
 });
 
+QUnit.test("Very large dictionary set", function(assert) {
+	var autocomp = buildAutocompleteFromArray(dictionary);
+	autocomp.setNumMaxResults(10);
+	
+	$("input#autocomplete").val("w");
+	var event = $.Event("keyup");
+	event.key = 'w';
+	event.keyCode = 119;
+	event.which = 119;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	
+	$("input#autocomplete").val("we");
+	var event = $.Event("keyup");
+	event.key = 'e';
+	event.keyCode = 101;
+	event.which = 101;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	
+	$("input#autocomplete").val("web");
+	var event = $.Event("keyup");
+	event.key = 'b';
+	event.keyCode = 98;
+	event.which = 98;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	
+	$("input#autocomplete").val("weba");
+	var event = $.Event("keyup");
+	event.key = 'a';
+	event.keyCode = 97;
+	event.which = 97;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	
+	var quit_event = $.Event("keyup");
+	quit_event.keyCode = 27;    
+	$("input#autocomplete").trigger(quit_event);
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+	
+	$("input#autocomplete").val("w");
+	var event = $.Event("keyup");
+	event.key = 'w';
+	event.keyCode = 119;
+	event.which = 119;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	
+	$("input#autocomplete").val("we");
+	var event = $.Event("keyup");
+	event.key = 'e';
+	event.keyCode = 101;
+	event.which = 101;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	
+	$("input#autocomplete").val("web");
+	var event = $.Event("keyup");
+	event.key = 'b';
+	event.keyCode = 98;
+	event.which = 98;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	
+	$("input#autocomplete").val("weba");
+	var event = $.Event("keyup");
+	event.key = 'a';
+	event.keyCode = 97;
+	event.which = 97;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+});
+
 QUnit.module("AutocompleteItem::mouseover");
 
 QUnit.test("Highlight the item on onmouseover", function(assert) {
