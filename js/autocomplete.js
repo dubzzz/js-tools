@@ -62,6 +62,12 @@ function AutocompleteItem($input, available_elts) {
 		self.automaticallyEraseValue = automaticallyEraseValue;
 	};
 
+	// THe maximum number of results expected
+	self.numMaxResults = -1;
+	self.setNumMaxResults = function(numMaxResults) {
+		self.numMaxResults = numMaxResults;
+	};
+
 	// Behaviour on 'key up' event
 	// Update autocomplete list
 	self.reactKeyUp = function(event) {
@@ -175,7 +181,7 @@ function AutocompleteItem($input, available_elts) {
 			}
 		}
 		elts_to_display.sortOnBestScore();
-		return elts_to_display;
+		return self.numMaxResults > 0 ? elts_to_display.slice(0, self.numMaxResults) : elts_to_display;
 	};
 	
 	// Compute the score for element i

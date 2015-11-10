@@ -494,6 +494,40 @@ QUnit.test("No item selected when showing the list", function(assert) {
 			0, "No item is selected");
 });
 
+QUnit.test("Limit the number of results", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+	autocomp.setNumMaxResults(1);
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+
+	$("input#autocomplete").val("e");
+	var event = $.Event("keyup");
+	event.key = 'e';
+	event.keyCode = 69;
+	event.which = 69;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	assert.equal(
+			$(".autocomplete-list").children().length,
+			1, "Exactly one choice available due to limit");
+	assert.strictEqual(
+			$(".autocomplete-list li").attr('data-autocomplete-id'),
+			"0", "First item visible only");
+
+	$("input#autocomplete").val("e2");
+	var event = $.Event("keyup");
+	event.key = '2';
+	event.keyCode = 98;
+	event.which = 98;
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	assert.equal(
+			$(".autocomplete-list").children().length,
+			1, "Exactly one choice available due to limit");
+	assert.strictEqual(
+			$(".autocomplete-list li").attr('data-autocomplete-id'),
+			"1", "Second item visible only");
+});
+
 QUnit.module("AutocompleteItem::mouseover");
 
 QUnit.test("Highlight the item on onmouseover", function(assert) {
