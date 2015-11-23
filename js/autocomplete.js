@@ -1,16 +1,60 @@
+function compareForSortOnBestScore(a, b) {
+	if(a['autocomplete_score'] < b['autocomplete_score']){
+		return -1;
+	} else if(a['autocomplete_score'] > b['autocomplete_score']) {
+		return 1;
+	} else if (a['autocomplete_rawdata_on'] < b['autocomplete_rawdata_on']) {
+		return -1;
+	} else if (a['autocomplete_rawdata_on'] > b['autocomplete_rawdata_on']) {
+		return 1;
+	}
+	return 0;
+}
+
 Array.prototype.sortOnBestScore = function() {
-	this.sort(function(a, b){
-		if(a['autocomplete_score'] < b['autocomplete_score']){
-			return -1;
-		} else if(a['autocomplete_score'] > b['autocomplete_score']) {
-			return 1;
-		} else if (a['autocomplete_rawdata_on'] < b['autocomplete_rawdata_on']) {
-			return -1;
-		} else if (a['autocomplete_rawdata_on'] > b['autocomplete_rawdata_on']) {
-			return 1;
+	this.sort(compareForSortOnBestScore);
+}
+
+Array.prototype.shuffle = function() {
+	var i = this.length, j, temp;
+	if (i == 0) return this;
+	while (--i) {
+		j = Math.floor(Math.random() * (i + 1));
+		temp = this[i];
+		this[i] = this[j];
+		this[j] = temp;
+	}
+	return this;
+}
+
+function partialSortHelper(tab, num_elts, start, end) {
+	if (start >= end) {
+		return;
+	}
+
+	var pivot_pos = start;
+	var pivot_value = tab[end -1];
+	for (var pos = start ; pos < end -1 ; ++pos) {
+		var at_pos = tab[pos];
+		if (compareForSortOnBestScore(at_pos, pivot_value) == -1) {
+			tab[pos] = tab[pivot_pos];
+			tab[pivot_pos] = at_pos;
+			++pivot_pos;
 		}
-		return 0;
-	});
+	}
+	tab[end -1] = tab[pivot_pos];
+	tab[pivot_pos] = pivot_value;
+
+	partialSortHelper(tab, num_elts, start, pivot_pos);
+	if (num_elts <= pivot_pos) {
+		partialSortHelper(tab, num_elts, pivot_pos +1, end);
+	}
+}
+
+function partialSort(tab, num_elts) {
+	tab.shuffle();
+	partialSortHelper(tab, num_elts, 0, tab.length);
+	return tab.slice(0, num_elts);
 }
 
 function toSafeHtml(text) {
@@ -180,8 +224,12 @@ function AutocompleteItem($input, available_elts) {
 				elts_to_display.push(new_elt);
 			}
 		}
+
+		if (self.numMaxResults > 0) {
+			return partialSort(elts_to_display, self.numMaxResults);
+		}
 		elts_to_display.sortOnBestScore();
-		return self.numMaxResults > 0 ? elts_to_display.slice(0, self.numMaxResults) : elts_to_display;
+		return elts_to_display;
 	};
 	
 	// Compute the score for element i
