@@ -46,12 +46,15 @@ function partialSortHelper(tab, num_elts, start, end) {
 	tab[pivot_pos] = pivot_value;
 
 	partialSortHelper(tab, num_elts, start, pivot_pos);
-	if (num_elts <= pivot_pos) {
+	if (pivot_pos +1 < num_elts) {
 		partialSortHelper(tab, num_elts, pivot_pos +1, end);
 	}
 }
 
 function partialSort(tab, num_elts) {
+	/** /!\ tab is modified,                                  *
+	 *      elements might disappear(size might be different) *
+	 *      ordering of elements might be changed too         */
 	tab.shuffle();
 	partialSortHelper(tab, num_elts, 0, tab.length);
 	return tab.slice(0, num_elts);

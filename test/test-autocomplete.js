@@ -690,3 +690,47 @@ QUnit.test("Keep consistent with key up", function(assert) {
 			false, "Second item not selected");
 });
 
+QUnit.module("::partialSort(tab, num_results)");
+
+QUnit.test("Sort on score", function(assert) {
+	var tab = [
+		{"autocomplete_score": 4, "autocomplete_rawdata_on": "testB"},
+		{"autocomplete_score": 2, "autocomplete_rawdata_on": "testA"},
+		{"autocomplete_score": 3, "autocomplete_rawdata_on": "testC"},
+		{"autocomplete_score": 1, "autocomplete_rawdata_on": "testD"},
+	];
+	var cloned_tab = tab.slice();
+	var sorted_tab = partialSort(tab, 4);
+	assert.equal(sorted_tab[0], cloned_tab[3], "Item 0");
+	assert.equal(sorted_tab[1], cloned_tab[1], "Item 1");
+	assert.equal(sorted_tab[2], cloned_tab[2], "Item 2");
+	assert.equal(sorted_tab[3], cloned_tab[0], "Item 3");
+});
+QUnit.test("Sort on raw data", function(assert) {
+	var tab = [
+		{"autocomplete_score": 1, "autocomplete_rawdata_on": "testB"},
+		{"autocomplete_score": 1, "autocomplete_rawdata_on": "testA"},
+		{"autocomplete_score": 1, "autocomplete_rawdata_on": "testC"},
+		{"autocomplete_score": 1, "autocomplete_rawdata_on": "testD"},
+	];
+	var cloned_tab = tab.slice();
+	var sorted_tab = partialSort(tab, 4);
+	assert.equal(sorted_tab[0], cloned_tab[1], "Item 0");
+	assert.equal(sorted_tab[1], cloned_tab[0], "Item 1");
+	assert.equal(sorted_tab[2], cloned_tab[2], "Item 2");
+	assert.equal(sorted_tab[3], cloned_tab[3], "Item 3");
+});
+QUnit.test("Only return the sorted values", function(assert) {
+	var tab = [
+		{"autocomplete_score": 1, "autocomplete_rawdata_on": "testB"},
+		{"autocomplete_score": 2, "autocomplete_rawdata_on": "testA"},
+		{"autocomplete_score": 1, "autocomplete_rawdata_on": "testC"},
+		{"autocomplete_score": 2, "autocomplete_rawdata_on": "testD"},
+	];
+	var cloned_tab = tab.slice();
+	var sorted_tab = partialSort(tab, 3);
+	assert.equal(sorted_tab.length, 3, "Only sorted values are returned");
+	assert.equal(sorted_tab[0], cloned_tab[0], "Item 0");
+	assert.equal(sorted_tab[1], cloned_tab[2], "Item 1");
+	assert.equal(sorted_tab[2], cloned_tab[1], "Item 2");
+});
