@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Example for autocomplete.js</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="../css/autocomplete.css" />
+    <script src="../js/autocomplete.js"></script>
+  </head>
+  <body>
+    <div id="webpage-content" class="container">
+      <form>
+        <div class="form-group">
+          <label for="autocomplete1">Example #1</label>
+          <input type="text" class="form-control" id="autocomplete1" />
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+      <script type="text/javascript">
+      <!--
+        var choices = [
+            {autocomplete_id: 1, autocomplete_rawdata_on: "Blackberry"},
+            {autocomplete_id: 2, autocomplete_rawdata_on: "Kiwi"},
+            {autocomplete_id: 3, autocomplete_rawdata_on: "Raspberry"},
+            {autocomplete_id: 4, autocomplete_rawdata_on: "Strawberry"},
+            {autocomplete_id: 5, autocomplete_rawdata_on: "Apple"},
+            {autocomplete_id: 6, autocomplete_rawdata_on: "Apricot"},
+            {autocomplete_id: 7, autocomplete_rawdata_on: "Banana"},
+            {autocomplete_id: 8, autocomplete_rawdata_on: "Bilberry"},
+            {autocomplete_id: 9, autocomplete_rawdata_on: "Cherry"},
+            {autocomplete_id:10, autocomplete_rawdata_on: "Fig"},
+            {autocomplete_id:11, autocomplete_rawdata_on: "Grape"},
+            {autocomplete_id:12, autocomplete_rawdata_on: "Grapefruit"},
+            {autocomplete_id:13, autocomplete_rawdata_on: "Lemon"},
+            {autocomplete_id:14, autocomplete_rawdata_on: "Melon"},
+            {autocomplete_id:15, autocomplete_rawdata_on: "Orange"},
+            {autocomplete_id:16, autocomplete_rawdata_on: "Peach"},
+            {autocomplete_id:17, autocomplete_rawdata_on: "Watermelon"},
+            {autocomplete_id:18, autocomplete_rawdata_on: "Pear"},
+            {autocomplete_id:19, autocomplete_rawdata_on: "Pineapple"},
+            {autocomplete_id:20, autocomplete_rawdata_on: "Plum"},
+            {autocomplete_id:21, autocomplete_rawdata_on: "Tangerine"}];
+        
+        var auto1 = new AutocompleteItem($("#autocomplete1"), choices);
+        auto1.setAutomaticallyEraseValue(false);
+        auto1.setOnSelectCallback(function($input, choice) { $input.val(choice["autocomplete_rawdata_on"]); });
+      -->
+      </script>
+    </div>
+  </body>
+</html>
