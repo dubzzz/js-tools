@@ -137,7 +137,7 @@ function AutocompleteItem($input, available_elts) {
 
 		// Show the autocomplete list at the right place
 		var position_left = $(this).position()['left'];
-		var position_top = $(this).position()['top'] + $(this).height();
+		var position_top = $(this).position()['top'] + $(this).outerHeight();
 		$autocomplete_list.css('left', position_left + 'px');
 		$autocomplete_list.css('top', position_top + 'px');
 		
