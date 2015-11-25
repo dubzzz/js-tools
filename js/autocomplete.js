@@ -349,6 +349,7 @@ function AutocompleteItem($input, available_elts) {
 	// Add autocompletion trigger to the input field
 	{
 		self.$input.keyup(self.reactKeyUp);
+		self.$input.on('keypress', function(e) { return e.which !== 13; });
 		self.$input.parent().css('position', 'relative');
 		$(document).click(self.clickSomewhere);
 	}
