@@ -151,6 +151,19 @@ QUnit.test("Order on text (2)", function(assert) {
 			"Correct order");
 });
 
+QUnit.test("Order on text (reversed)", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Red", "Orange"]);
+	autocomp.enableReversedOrder(true);
+	var choices = autocomp.computeChoices("r");
+	assert.equal(choices.length, 2, "Exactly two choices");
+	assert.ok(
+			choices[0]["autocomplete_score"] == choices[1]["autocomplete_score"],
+			"Same score");
+	assert.ok(
+			choices[0]["autocomplete_rawdata_on"] > choices[1]["autocomplete_rawdata_on"],
+			"Correct order");
+});
+
 QUnit.test("Equality on both score and data", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Purple", "Orange", "Red", "Purple"]);
 	var choices = autocomp.computeChoices("r");
