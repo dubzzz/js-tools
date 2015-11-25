@@ -115,6 +115,11 @@ function AutocompleteItem($input, available_elts) {
 		self.numMaxResults = numMaxResults;
 	};
 
+	self.showForTooMany = 0;
+	self.setShowForTooMany = function(showForTooMany) {
+		self.showForTooMany = showForTooMany;
+	};
+
 	// Behaviour on 'key up' event
 	// Update autocomplete list
 	self.reactKeyUp = function(event) {
@@ -225,12 +230,16 @@ function AutocompleteItem($input, available_elts) {
 			var new_elt = self.computePriority(query, i);
 			if (new_elt) {
 				elts_to_display.push(new_elt);
+				if (self.showForTooMany > 0 && elts_to_display.length > self.showForTooMany) {
+					return [];
+				}
 			}
 		}
 
 		if (self.numMaxResults > 0) {
 			return partialSort(elts_to_display, self.numMaxResults);
 		}
+
 		elts_to_display.sortOnBestScore();
 		return elts_to_display;
 	};
