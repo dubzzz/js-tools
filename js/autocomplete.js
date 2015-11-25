@@ -1,18 +1,20 @@
-function compareForSortOnBestScore(a, b) {
+function compareForSortOnBestScore(a, b, reversedOrder) {
 	if(a['autocomplete_score'] < b['autocomplete_score']){
 		return -1;
 	} else if(a['autocomplete_score'] > b['autocomplete_score']) {
-		return 1;
+		return reversedOrder ? -1 : 1;
 	} else if (a['autocomplete_rawdata_on'] < b['autocomplete_rawdata_on']) {
-		return -1;
+		return reversedOrder ? 1 : -1;
 	} else if (a['autocomplete_rawdata_on'] > b['autocomplete_rawdata_on']) {
-		return 1;
+		return reversedOrder ? -1 : 1;
 	}
 	return 0;
 }
 
-Array.prototype.sortOnBestScore = function() {
-	this.sort(compareForSortOnBestScore);
+Array.prototype.sortOnBestScore = function(reversedOrder) {
+	this.sort(function(a, b) {
+			return compareForSortOnBestScore(a, b, reversedOrder);
+	});
 }
 
 Array.prototype.shuffle = function() {
@@ -27,7 +29,7 @@ Array.prototype.shuffle = function() {
 	return this;
 }
 
-function partialSortHelper(tab, num_elts, start, end) {
+function partialSortHelper(tab, num_elts, start, end, reversedOrder) {
 	if (start >= end) {
 		return;
 	}
@@ -36,7 +38,7 @@ function partialSortHelper(tab, num_elts, start, end) {
 	var pivot_value = tab[end -1];
 	for (var pos = start ; pos < end -1 ; ++pos) {
 		var at_pos = tab[pos];
-		if (compareForSortOnBestScore(at_pos, pivot_value) == -1) {
+		if (compareForSortOnBestScore(at_pos, pivot_value, reversedOrder) == -1) {
 			tab[pos] = tab[pivot_pos];
 			tab[pivot_pos] = at_pos;
 			++pivot_pos;
@@ -51,12 +53,12 @@ function partialSortHelper(tab, num_elts, start, end) {
 	}
 }
 
-function partialSort(tab, num_elts) {
+function partialSort(tab, num_elts, reversedOrder) {
 	/** /!\ tab is modified,                                  *
 	 *      elements might disappear(size might be different) *
 	 *      ordering of elements might be changed too         */
 	tab.shuffle();
-	partialSortHelper(tab, num_elts, 0, tab.length);
+	partialSortHelper(tab, num_elts, 0, tab.length, reversedOrder);
 	return tab.slice(0, num_elts);
 }
 
@@ -109,15 +111,24 @@ function AutocompleteItem($input, available_elts) {
 		self.automaticallyEraseValue = automaticallyEraseValue;
 	};
 
-	// THe maximum number of results expected
+	// The maximum number of results expected
 	self.numMaxResults = -1;
 	self.setNumMaxResults = function(numMaxResults) {
 		self.numMaxResults = numMaxResults;
 	};
 
-	self.showForTooMany = 0;
+	// The maximum number of results accepted
+	// all the results might not be displayed depending on the value of numMaxResults
+	self.showForTooMany = -1;
 	self.setShowForTooMany = function(showForTooMany) {
 		self.showForTooMany = showForTooMany;
+	};
+
+	// Order reversed means that
+	// for each i, j such as i < j, item[i]["autocomplete_rawdata_on"] > item[j]["autocomplete_rawdata_on"]
+	self.reversedOrder = false;
+	self.enableReversedOrder = function(reversedOrder) {
+		self.reversedOrder = reversedOrder;
 	};
 
 	// Behaviour on 'key up' event
@@ -237,10 +248,10 @@ function AutocompleteItem($input, available_elts) {
 		}
 
 		if (self.numMaxResults > 0) {
-			return partialSort(elts_to_display, self.numMaxResults);
+			return partialSort(elts_to_display, self.numMaxResults, self.reversedOrder);
 		}
 
-		elts_to_display.sortOnBestScore();
+		elts_to_display.sortOnBestScore(self.reversedOrder);
 		return elts_to_display;
 	};
 	
