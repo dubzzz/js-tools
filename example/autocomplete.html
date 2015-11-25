@@ -19,6 +19,13 @@
           <label for="autocomplete1">Example #1</label>
           <input type="text" class="form-control" id="autocomplete1" />
         </div>
+        <div class="form-group">
+          <label for="autocomplete2">Example #2</label>
+          <!-- autocomplete input input must be the first one if multiple inputs are define in its parent node -->
+          <input type="text" class="form-control" id="autocomplete2_visible" />
+          <input type="text" class="form-control" id="autocomplete2" style="display:none;visibility:hidden;" />
+          <ul id="autocomplete2_display"></ul>
+        </div>
         <button type="submit" class="btn btn-default">Submit</button>
       </form>
       <script type="text/javascript">
@@ -45,10 +52,38 @@
             {autocomplete_id:19, autocomplete_rawdata_on: "Pineapple"},
             {autocomplete_id:20, autocomplete_rawdata_on: "Plum"},
             {autocomplete_id:21, autocomplete_rawdata_on: "Tangerine"}];
-        
+
         var auto1 = new AutocompleteItem($("#autocomplete1"), choices);
         auto1.setAutomaticallyEraseValue(false);
         auto1.setOnSelectCallback(function($input, choice) { $input.val(choice["autocomplete_rawdata_on"]); });
+
+        var auto2 = new AutocompleteItem($("#autocomplete2_visible"), choices);
+        auto2.setOnSelectCallback(function($input, choice) {
+            var $field = $("#autocomplete2");
+            var $display = $("#autocomplete2_display");
+            var current = choice["autocomplete_rawdata_on"];
+            var known_values = $field.val().split(";");
+            if (known_values.indexOf(current) == -1) {
+              known_values.push(current);
+            }
+            
+            $field.val(known_values.join(";"));
+            $display.html("");
+
+            for (var i = 0 ; i < known_values.length ; ++i) {
+              if (known_values[i].length > 0) {
+                var $list_item = $("<li/>");
+                $list_item.text(known_values[i]);
+                $display.append($list_item);
+              }
+            }
+        });
+        auto2.setOnFilterChoicesCallback(function($input, choice) {
+            var $field = $("#autocomplete2");
+            var current = choice["autocomplete_rawdata_on"];
+            var known_values = $field.val().split(";");
+            return known_values.indexOf(current) != -1;
+        });
       -->
       </script>
     </div>

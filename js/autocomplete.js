@@ -199,7 +199,7 @@ function AutocompleteItem($input, available_elts) {
 			$autocomplete_elt.click(function() {
 				self.confirmChoice($(this).attr("data-autocomplete-id"));
 				if (self.automaticallyEraseValue) {
-					$(this).parent().parent().find("input").val("");
+					$(this).parent().parent().find("input").first().val("");
 				}
 				$(this).parent().remove(); //remove list
 			});
