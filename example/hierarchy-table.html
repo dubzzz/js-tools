@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Example for hierarchy-table.js</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="../css/hierarchy-table.css" />
+    <script src="../js/hierarchy-table.js"></script>
+  </head>
+  <body>
+    <div id="webpage-content" class="container">
+		<table id="display-tree-expenses-table" class="hierarchy-table">
+			<thead>
+				<tr><th></th></tr>
+			</thead>
+			<tbody>
+				<tr><td><span class="glyphicon glyphicon-info-sign"></span> Please enable JavaScript to be able to see expenses</td></tr>
+			</tbody>
+		</table>
+		<script type="text/javascript">
+		<!--
+			var $table = $("#display-tree-expenses-table");
+			var rawdata = [
+				{absolute_path: "/etc/passwd", date: 2014, size: 50},
+				{absolute_path: "/home/uname/.bashrc", date: 2015, size: 105},
+				{absolute_path: "/home/uname/.bash_history", date: 2015, size: 102469},
+				{absolute_path: "/home/uname/.vim/colors", date: 2013, size: 10},
+				{absolute_path: "/home/admin/.bashrc", date: 2015, size: 12450},
+			];
+
+			function HierarchyFilenameItem(data) {
+				var self = this;
+				self.data = undefined;
+
+				self.display = function() {
+					return self.data;
+				};
+
+				{
+					var split = data.split("/");
+					self.data = split[split.length -1];
+				}
+			}
+			HierarchyFilenameItem.prototype = new HierarchyItem;
+
+			function HierarchyDateItem(data) {
+				var self = this;
+				self.data = data;
+
+				self.display = function() {
+					return String(self.data);
+				};
+				self.aggregate = function(other) {
+					if (self.data === other.data) {
+						return new HierarchyDateItem(self.data);
+					}
+					return undefined;
+				};
+			}
+			HierarchyDateItem.prototype = new HierarchyItem;
+
+			function HierarchySizeItem(data) {
+				var self = this;
+				self.data = data;
+
+				self.display = function() {
+					if (self.data > 1024*1024*512)
+						return String((self.data /1024/1024/1024).toFixed(2)) + " go";
+					else if (self.data > 1024*512)
+						return String((self.data /1024/1024).toFixed(2)) + " mo";
+					else if (self.data > 512)
+						return String((self.data /1024).toFixed(2)) + " ko";
+					return String(self.data) + " o";
+				};
+				self.aggregate = function(other) {
+					return new HierarchySizeItem(self.data + other.data);
+				};
+			}
+			HierarchySizeItem.prototype = new HierarchyItem;
+
+			function buildHierarchyItem(label, d, known_paths) {
+				if (label == "path") {
+					var split = d["absolute_path"].split("/");
+					var directories = split.splice(0, split.length -1);
+
+					var previous_node = undefined;
+					for (var i = 0 ; i < directories.length ; ++i) {
+						var associated_name = directories.slice(0, i+1).join("/");
+						if (associated_name.length === 0) {
+							associated_name = "/";
+						}
+						var associated_node = known_paths[associated_name];
+						if (associated_node === undefined) {
+							associated_node = new HierarchyNode("/" + directories[i], previous_node);
+							known_paths[associated_name] = associated_node;
+						}
+						previous_node = associated_node;
+					}
+					return previous_node;
+				} else if (label == "filename") {
+					return new HierarchyFilenameItem(d["absolute_path"]);
+				} else if (label == "date") {
+					return new HierarchyDateItem(d["date"]);
+				} else if (label == "size") {
+					return new HierarchySizeItem(d["size"]);
+				}
+				console.warn("Unexpected label");
+				return undefined;
+			}
+			function buildHierarchyTable(rawdata, $table) {
+				var known_paths = {};
+				var items_labels = ["path", "filename", "date", "size"];
+				var data = new Array();
+				for (var i = 0 ; i != rawdata.length ; ++i) {
+					var d = rawdata[i];
+					var items = new Array();
+					for (var j = 0 ; j != items_labels.length ; ++j) {
+						items.push(buildHierarchyItem(items_labels[j], d, known_paths));
+					}
+					data.push(items);
+				}
+				var num_hierarchy_columns = 1;
+				hierarchyTable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns);
+				return hierarchyTable;
+			}
+
+			buildHierarchyTable(rawdata, $table);
+		-->
+		</script>
+    </div>
+  </body>
+</html>
