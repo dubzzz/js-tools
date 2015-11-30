@@ -201,7 +201,7 @@ function HierarchyList(children) {
 }
 HierarchyList.prototype = new HierarchyItem;
 
-function HierarchyRow(data, _parent, level) {
+function HierarchyRow(data, _parent, level, onRightClickCallback) {
 	{
 		if (HierarchyRow.last === undefined) {
 			HierarchyRow.last = 0;
@@ -209,31 +209,35 @@ function HierarchyRow(data, _parent, level) {
 			HierarchyRow.last++;
 		}
 	}
-	this.id = HierarchyRow.last;
+	var self = this;
+
+	self.id = HierarchyRow.last;
 
 	// Optionnal elt
 	// Specify the corresponding reference in HierarchyTable's rows
-	this.ref = undefined;
+	self.ref = undefined;
 
 	// data is a list of HierarchyItem
 	// data has as many items as the number of columns of its corresponding HierarchyTable
-	this.data = data instanceof Array ? data : new Array();
+	self.data = data instanceof Array ? data : new Array();
 
 	// _parent can be undefined or another HierarchyRow
-	this._parent = _parent;
+	self._parent = _parent;
 	
 	// List of children automatically filled
-	this.children = new Array();
+	self.children = new Array();
 
 	// Is the node collapsed?
-	this.collapsed = true;
+	self.collapsed = true;
 
 	// Level in the node hierarchy
-	this.level = level !== undefined ? level : -1;
+	self.level = level !== undefined ? level : -1;
 	
 	// Thsi flag is set to true if two distinct sons imply the same HierarchyItem
 	// for the computation of their aggregated value
-	this.children_double_contribution = false;
+	self.children_double_contribution = false;
+	
+	self.onRightClickCallback = onRightClickCallback;
 	
 	this.setReference = function(reference)
 	{
@@ -373,6 +377,17 @@ function HierarchyRow(data, _parent, level) {
 		return undefined;
 	};
 
+	this.append_data = function(children_data) {
+		if (self.isAggregatedRow()) {
+			for (var i = 0 ; i < self.children.length ; ++i) {
+				self.children[i].append_data(children_data);
+			}
+		}
+		else {
+			children_data.push(self.data.slice());
+		}
+	};
+
 	// Add rows into a tbody element
 	this.display = function($tbody, numNodes, hierarchytable) {		
 		var $row = $("<tr/>");
@@ -420,6 +435,19 @@ function HierarchyRow(data, _parent, level) {
 				}
 				$row.append($value);
 			}
+			var children_data = new Array();
+			for (var i = 0 ; i != this.children.length ; i++) {
+				this.children[i].append_data(children_data);
+			}
+			$row.on("mousedown", function(e) {
+				if (e.which == 3 && self.onRightClickCallback !== undefined) {
+					self.onRightClickCallback(children_data);
+					e.preventDefault();
+				}
+			});
+			$row.on("contextmenu", function() {
+				return false;
+			});
 			$tbody.append($row);
 			
 			if (! this.collapsed) {
@@ -440,6 +468,16 @@ function HierarchyRow(data, _parent, level) {
 				}
 				$row.append($value);
 			}
+			var children_data = [this.data.slice()];
+			$row.on("mousedown", function(e) {
+				if (e.which == 3 && self.onRightClickCallback !== undefined) {
+					self.onRightClickCallback(children_data);
+					e.preventDefault();
+				}
+			});
+			$row.on("contextmenu", function() {
+				return false;
+			});
 			$tbody.append($row);
 		}
 	};
@@ -525,7 +563,7 @@ function HierarchyRow(data, _parent, level) {
 	}
 }
 
-function HierarchyTable($table, titles, rows, numHierarchyColumns) {
+function HierarchyTable($table, titles, rows, numHierarchyColumns, onRightClickCallback) {
 	var self = this;
 	
 	// jQuery element corresponding to a HTML <table/>
@@ -548,8 +586,10 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 	// Number of columns that will consider to aggregate data
 	self.numNodes = numHierarchyColumns;
 
+	self.onRightClickCallback = onRightClickCallback;
+
 	// HierarchyRow
-	self.mainHierarchyRow = new HierarchyRow(undefined, undefined);
+	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.onRightClickCallback);
 	
 	// @private
 	// Build one hierarchy column
@@ -566,7 +606,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 				items[j][column_id] = node;
 				var found = parentRows[j].lookforImmediate(items[j]);
 				if (found === undefined) {
-					found = new HierarchyRow(items[j].clone(), parentRows[j], column_id);
+					found = new HierarchyRow(items[j].clone(), parentRows[j], column_id, self.onRightClickCallback);
 				}
 				parentRows[j] = found;
 			}
@@ -606,7 +646,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 	// It builds the HierarchyRow necessary for the display and sort
 	self.build = function() {
 		// Build the hierarchy based on self.rows
-		self.mainHierarchyRow = new HierarchyRow(undefined, undefined);
+		self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.onRightClickCallback);
 		self.internalRows = new Array();
 		for (var i = 0 ; i != self.rows.length ; i++) {
 			var relatedRows = new Array();
@@ -639,7 +679,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns) {
 				for (var j = 0 ; j < self.rows[i].length ; j++) {
 					items[j] = self.rows[i][j];
 				}
-				var itemRow = new HierarchyRow(items.clone(), parentRows[k]);
+				var itemRow = new HierarchyRow(items.clone(), parentRows[k], undefined, self.onRightClickCallback);
 				itemRow.setReference(i);
 				relatedRows.push(itemRow);
 			}
