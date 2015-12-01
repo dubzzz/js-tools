@@ -407,7 +407,12 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 					var callbacks = self.contextMenuCallbacks;
 					for (var i = 0 ; i < self.contextMenuCallbacks.length ; ++i) {
 						var $menuitem = $("<li/>")
-						$menuitem.text(self.contextMenuCallbacks[i]['label']);
+						if (self.contextMenuCallbacks[i]['safeLabel'] !== undefined) {
+							$menuitem.html(self.contextMenuCallbacks[i]['safeLabel']);
+						}
+						else {
+							$menuitem.text(self.contextMenuCallbacks[i]['label']);
+						}
 						$menuitem.attr("data-item-id", i);
 						$menuitem.click(function() {
 								callbacks[$(this).attr("data-item-id")]["callback"](children_data);
