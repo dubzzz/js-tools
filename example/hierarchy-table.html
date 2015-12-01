@@ -140,6 +140,21 @@
 				}
 				alert(JSON.stringify(json_items));
 			}
+			function FilenameToJSON(array) {
+				var json_items = new Array();
+				for (var i = 0 ; i != array.length ; ++i) {
+					var line = array[i];
+					var filename_value = undefined;
+					for (var j = 0 ; j != line.length ; ++j) {
+						var item = line[j];
+						if (item instanceof HierarchyFilenameItem) {
+							filename_value = item.data;
+						}
+					}
+					json_items.push(filename_value);
+				}
+				alert(JSON.stringify(json_items));
+			}
 			function buildHierarchyTable(rawdata, $table) {
 				var known_paths = {};
 				var items_labels = ["path", "filename", "date", "size"];
@@ -153,7 +168,9 @@
 					data.push(items);
 				}
 				var num_hierarchy_columns = 1;
-				hierarchyTable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, toJSON);
+				hierarchyTable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, [
+						{label: "Absolute path to JSON", callback: toJSON}
+						, {label: "Filename to JSON", callback: FilenameToJSON}]);
 				return hierarchyTable;
 			}
 
