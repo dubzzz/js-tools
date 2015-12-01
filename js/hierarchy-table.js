@@ -201,7 +201,7 @@ function HierarchyList(children) {
 }
 HierarchyList.prototype = new HierarchyItem;
 
-function HierarchyRow(data, _parent, level, onRightClickCallback) {
+function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 	{
 		if (HierarchyRow.last === undefined) {
 			HierarchyRow.last = 0;
@@ -237,7 +237,7 @@ function HierarchyRow(data, _parent, level, onRightClickCallback) {
 	// for the computation of their aggregated value
 	self.children_double_contribution = false;
 	
-	self.onRightClickCallback = onRightClickCallback;
+	self.contextMenuCallbacks = contextMenuCallbacks !== undefined ? (contextMenuCallbacks instanceof Array ? contextMenuCallbacks : [{'callback': contextMenuCallbacks, 'label': 'N.A'}]) : undefined;
 	
 	this.setReference = function(reference)
 	{
@@ -439,13 +439,35 @@ function HierarchyRow(data, _parent, level, onRightClickCallback) {
 			for (var i = 0 ; i != this.children.length ; i++) {
 				this.children[i].append_data(children_data);
 			}
-			$row.on("mousedown", function(e) {
-				if (e.which == 3 && self.onRightClickCallback !== undefined) {
-					self.onRightClickCallback(children_data);
-					e.preventDefault();
+			$row.on("contextmenu", function(event) {
+				event.preventDefault();
+				if (self.contextMenuCallbacks !== undefined) {
+					var $contextmenu = $("ul.hierarchytable-contextmenu");
+					if ($contextmenu.length == 0) {
+						$contextmenu = $("<ul/>");
+						$contextmenu.addClass("hierarchytable-contextmenu");
+					}
+					else {
+						$contextmenu.html("");
+					}
+					for (var i = 0 ; i < self.contextMenuCallbacks.length ; ++i) {
+						var callback = self.contextMenuCallbacks[i]['callback'];
+						var $menuitem = $("<li/>")
+						$menuitem.text(self.contextMenuCallbacks[i]['label']);
+						$menuitem.click(function() {
+								callback(children_data);
+								$contextmenu.hide(100);
+						});
+						$contextmenu.append($menuitem);
+					}
+					$("body").append($contextmenu);
+					$contextmenu.finish()
+							.toggle(100)
+							.css({
+								top: event.pageY + "px"
+								, left: event.pageX + "px"
+							});
 				}
-			});
-			$row.on("contextmenu", function() {
 				return false;
 			});
 			$tbody.append($row);
@@ -469,13 +491,34 @@ function HierarchyRow(data, _parent, level, onRightClickCallback) {
 				$row.append($value);
 			}
 			var children_data = [this.data.slice()];
-			$row.on("mousedown", function(e) {
-				if (e.which == 3 && self.onRightClickCallback !== undefined) {
-					self.onRightClickCallback(children_data);
-					e.preventDefault();
+			$row.on("contextmenu", function(event) {
+				event.preventDefault();
+				if (self.contextMenuCallbacks !== undefined) {
+					var $contextmenu = $("ul.hierarchytable-contextmenu");
+					if ($contextmenu.length == 0) {
+						$contextmenu = $("<ul/>");
+						$contextmenu.addClass("hierarchytable-contextmenu");
+					}
+					else {
+						$contextmenu.html("");
+					}
+					for (var i = 0 ; i < self.contextMenuCallbacks.length ; ++i) {
+						var callback = self.contextMenuCallbacks[i]['callback'];
+						var $menuitem = $("<li/>")
+						$menuitem.click(function() {
+								callback(children_data);
+								$contextmenu.hide(100);
+						});
+						$contextmenu.append($menuitem);
+					}
+					$("body").append($contextmenu);
+					$contextmenu.finish()
+							.toggle(100)
+							.css({
+								top: event.pageY + "px"
+								, left: event.pageX + "px"
+							});
 				}
-			});
-			$row.on("contextmenu", function() {
 				return false;
 			});
 			$tbody.append($row);
@@ -563,7 +606,15 @@ function HierarchyRow(data, _parent, level, onRightClickCallback) {
 	}
 }
 
-function HierarchyTable($table, titles, rows, numHierarchyColumns, onRightClickCallback) {
+// Hide contextmenu on click elsewhere in the screen
+$(document).bind("mousedown", function (e) {
+// Not in the menu
+	if (!$(e.target).parents("ul.hierarchytable-contextmenu").length > 0) {
+		$("ul.hierarchytable-contextmenu").hide(100);
+	}
+});
+
+function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCallbacks) {
 	var self = this;
 	
 	// jQuery element corresponding to a HTML <table/>
@@ -586,10 +637,10 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, onRightClickC
 	// Number of columns that will consider to aggregate data
 	self.numNodes = numHierarchyColumns;
 
-	self.onRightClickCallback = onRightClickCallback;
+	self.contextMenuCallbacks = contextMenuCallbacks;
 
 	// HierarchyRow
-	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.onRightClickCallback);
+	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
 	
 	// @private
 	// Build one hierarchy column
@@ -606,7 +657,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, onRightClickC
 				items[j][column_id] = node;
 				var found = parentRows[j].lookforImmediate(items[j]);
 				if (found === undefined) {
-					found = new HierarchyRow(items[j].clone(), parentRows[j], column_id, self.onRightClickCallback);
+					found = new HierarchyRow(items[j].clone(), parentRows[j], column_id, self.contextMenuCallbacks);
 				}
 				parentRows[j] = found;
 			}
@@ -646,7 +697,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, onRightClickC
 	// It builds the HierarchyRow necessary for the display and sort
 	self.build = function() {
 		// Build the hierarchy based on self.rows
-		self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.onRightClickCallback);
+		self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
 		self.internalRows = new Array();
 		for (var i = 0 ; i != self.rows.length ; i++) {
 			var relatedRows = new Array();
@@ -679,7 +730,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, onRightClickC
 				for (var j = 0 ; j < self.rows[i].length ; j++) {
 					items[j] = self.rows[i][j];
 				}
-				var itemRow = new HierarchyRow(items.clone(), parentRows[k], undefined, self.onRightClickCallback);
+				var itemRow = new HierarchyRow(items.clone(), parentRows[k], undefined, self.contextMenuCallbacks);
 				itemRow.setReference(i);
 				relatedRows.push(itemRow);
 			}
