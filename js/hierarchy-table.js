@@ -388,6 +388,43 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		}
 	};
 
+	var addTriggerContextMenu = function($row) {
+		var children_data = new Array();
+		self.append_data(children_data);
+		
+		$row.on("contextmenu", function(event) {
+				event.preventDefault();
+				if (self.contextMenuCallbacks !== undefined) {
+					var $contextmenu = $("ul.hierarchytable-contextmenu");
+					if ($contextmenu.length == 0) {
+						$contextmenu = $("<ul/>");
+						$contextmenu.addClass("hierarchytable-contextmenu");
+					}
+					else {
+						$contextmenu.html("");
+					}
+					for (var i = 0 ; i < self.contextMenuCallbacks.length ; ++i) {
+						var callback = self.contextMenuCallbacks[i]['callback'];
+						var $menuitem = $("<li/>")
+						$menuitem.text(self.contextMenuCallbacks[i]['label']);
+						$menuitem.click(function() {
+								callback(children_data);
+								$contextmenu.hide(100);
+						});
+						$contextmenu.append($menuitem);
+					}
+					$("body").append($contextmenu);
+					$contextmenu.finish()
+							.toggle(100)
+							.css({
+								top: event.pageY + "px"
+								, left: event.pageX + "px"
+							});
+				}
+				return false;
+		});
+	};
+
 	// Add rows into a tbody element
 	this.display = function($tbody, numNodes, hierarchytable) {		
 		var $row = $("<tr/>");
@@ -435,41 +472,7 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 				}
 				$row.append($value);
 			}
-			var children_data = new Array();
-			for (var i = 0 ; i != this.children.length ; i++) {
-				this.children[i].append_data(children_data);
-			}
-			$row.on("contextmenu", function(event) {
-				event.preventDefault();
-				if (self.contextMenuCallbacks !== undefined) {
-					var $contextmenu = $("ul.hierarchytable-contextmenu");
-					if ($contextmenu.length == 0) {
-						$contextmenu = $("<ul/>");
-						$contextmenu.addClass("hierarchytable-contextmenu");
-					}
-					else {
-						$contextmenu.html("");
-					}
-					for (var i = 0 ; i < self.contextMenuCallbacks.length ; ++i) {
-						var callback = self.contextMenuCallbacks[i]['callback'];
-						var $menuitem = $("<li/>")
-						$menuitem.text(self.contextMenuCallbacks[i]['label']);
-						$menuitem.click(function() {
-								callback(children_data);
-								$contextmenu.hide(100);
-						});
-						$contextmenu.append($menuitem);
-					}
-					$("body").append($contextmenu);
-					$contextmenu.finish()
-							.toggle(100)
-							.css({
-								top: event.pageY + "px"
-								, left: event.pageX + "px"
-							});
-				}
-				return false;
-			});
+			addTriggerContextMenu($row);
 			$tbody.append($row);
 			
 			if (! this.collapsed) {
@@ -490,37 +493,7 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 				}
 				$row.append($value);
 			}
-			var children_data = [this.data.slice()];
-			$row.on("contextmenu", function(event) {
-				event.preventDefault();
-				if (self.contextMenuCallbacks !== undefined) {
-					var $contextmenu = $("ul.hierarchytable-contextmenu");
-					if ($contextmenu.length == 0) {
-						$contextmenu = $("<ul/>");
-						$contextmenu.addClass("hierarchytable-contextmenu");
-					}
-					else {
-						$contextmenu.html("");
-					}
-					for (var i = 0 ; i < self.contextMenuCallbacks.length ; ++i) {
-						var callback = self.contextMenuCallbacks[i]['callback'];
-						var $menuitem = $("<li/>")
-						$menuitem.click(function() {
-								callback(children_data);
-								$contextmenu.hide(100);
-						});
-						$contextmenu.append($menuitem);
-					}
-					$("body").append($contextmenu);
-					$contextmenu.finish()
-							.toggle(100)
-							.css({
-								top: event.pageY + "px"
-								, left: event.pageX + "px"
-							});
-				}
-				return false;
-			});
+			addTriggerContextMenu($row);
 			$tbody.append($row);
 		}
 	};
