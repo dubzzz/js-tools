@@ -188,3 +188,277 @@ QUnit.test("Ordering on multiple columns", function(assert) {
 	assert.deepEqual(rows, [row5, row4, row1, row3, row2], "(first, -second) column: equality between two first columns");
 });
 
+function retrieveHierarchyTableContent($table_lines) {
+	var real_content = new Array();
+	for (var i = 0 ; i != $table_lines.length ; ++i) {
+		var line = new Array();
+		var $line_tds = $($table_lines[i]).find("td");
+		for (var j = 0 ; j != $line_tds.length ; ++j) {
+			var $td = $($line_tds[j]);
+			if ($td.find(".expand-button").length > 0) { // aggreagated
+				line.push($($td.find("span")[1]).text());
+				if ($td.attr("colspan")) { //== num of hierachy columns
+					var cols = parseInt($td.attr("colspan"));
+					for (var k = 1 ; k < cols ; ++k) {
+						line.push("");
+					}
+				}
+			}
+			else {
+				line.push($td.text());
+			}
+		}
+		real_content.push(line);
+	}
+	return real_content;
+}
+
+function checkContent(assert, real_content, expected_content) {
+	for (var i = 0 ; i != expected_content.length ; ++i) {
+		for (var j = 0 ; j != expected_content[0].length ; ++j) {
+			assert.strictEqual(
+					real_content[i][j]
+					, expected_content[i][j]
+					, "Check item line: " + String(i) + ", column: " + String(j));
+		}
+	}
+}
+
+QUnit.module("HierarchyTable::display");
+
+QUnit.test("Basic HierarchyItem: No aggregation", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10)],
+		[new HierarchyItem(50),  new HierarchyItem(0)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	var $table_headers = $table.find("thead > tr > th > a");
+	assert.strictEqual($table_headers.length, 2, "Two-column table");
+	assert.strictEqual($($table_headers[0]).text(), "Data 1", "First column is: Data 1");
+	assert.strictEqual($($table_headers[1]).text(), "Data 2", "Second column is: Data 2");
+	assert.strictEqual($($table_headers[0]).hasClass("hierarchy-asc"), true, "Ascending ordering on first column");
+	assert.strictEqual($($table_headers[0]).hasClass("hierarchy-desc"), false, "No descending ordering on first column");
+	assert.strictEqual($($table_headers[1]).hasClass("hierarchy-asc")
+			|| $($table_headers[1]).hasClass("hierarchy-desc"), false, "No ordering on second column");
+
+	var $table_lines = $table.find("tbody > tr");
+	var $line_expands = $table_lines.find(".expand-button");
+	assert.strictEqual($table_lines.length, 2, "Only two lines should be visible");
+	assert.strictEqual($line_expands.length, 2, "Only two expand buttons should be visible");
+
+	var real_content = retrieveHierarchyTableContent($table_lines);
+	var expected_content = [
+			["10", ""],
+			["50", ""]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: With aggregation", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10)],
+		[new HierarchyItem(10),  new HierarchyItem(0)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	var $table_lines = $table.find("tbody > tr");
+	var $line_expands = $table_lines.find(".expand-button");
+	assert.strictEqual($table_lines.length, 1, "Only one line should be visible");
+	assert.strictEqual($line_expands.length, 1, "Only one expand button should be visible");
+
+	var real_content = retrieveHierarchyTableContent($table_lines);
+	var expected_content = [["10",   ""]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: Click to expand lines", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10)],
+		[new HierarchyItem(10),  new HierarchyItem(0)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	$table.find("tbody > tr .expand-button").first().click();
+	var $table_lines = $table.find("tbody > tr");
+	assert.strictEqual($table_lines.length, 3, "Three lines should be visible after expand");
+
+	var real_content = retrieveHierarchyTableContent($table_lines);
+	var expected_content = [
+			["10",   ""],
+			[  "", "10"],
+			[  "",  "0"]];
+	assert.strictEqual(real_content[1][1], "10", "Default ordering only on first column, remaining keeps it original order");
+	assert.strictEqual(real_content[2][1],  "0", "Default ordering only on first column, remaining keeps it original order");
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: Click to collapse lines", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10)],
+		[new HierarchyItem(10),  new HierarchyItem(0)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	$table.find("tbody > tr .expand-button").first().click();
+	$table.find("tbody > tr .expand-button").first().click();
+	var $table_lines = $table.find("tbody > tr");
+	assert.strictEqual($table_lines.length, 1, "One line should be visible after collapse");
+
+	var real_content = retrieveHierarchyTableContent($table_lines);
+	var expected_content = [["10",   ""]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: Multi-level collapse/expand lines", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10),  new HierarchyItem(1)],
+		[new HierarchyItem(20),  new HierarchyItem(0),  new HierarchyItem(2)],
+		[new HierarchyItem(20), new HierarchyItem(10),  new HierarchyItem(3)],
+		[new HierarchyItem(20), new HierarchyItem(10),  new HierarchyItem(4)],
+		[new HierarchyItem(10), new HierarchyItem(10),  new HierarchyItem(5)],
+		[new HierarchyItem(10),  new HierarchyItem(0),  new HierarchyItem(6)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 2;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "", ""],
+			["20", "", ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Expand 10>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10"      , "",""],
+			[      "10", "",""],
+			[       "0", "",""],
+			["20"      , "",""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Expand 10>0>");
+	$($table.find("tbody > tr .expand-button")[2]).click();
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10"      , "",  ""],
+			[      "10", "",  ""],
+			[       "0", "",  ""],
+			[        "", "", "6"],
+			["20"      , "",  ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Expand 20>");
+	$($table.find("tbody > tr .expand-button")[3]).click();
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10"      , "",  ""],
+			[      "10", "",  ""],
+			[       "0", "",  ""],
+			[        "", "", "6"],
+			["20"      , "",  ""],
+			[       "0", "",  ""],
+			[      "10", "",  ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Collapse 10>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10"      , "", ""],
+			["20"      , "", ""],
+			[       "0", "", ""],
+			[      "10", "", ""]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables", function(assert) {
+	var data1 = [
+		[new HierarchyItem(10), new HierarchyItem(10)],
+		[new HierarchyItem(10),  new HierarchyItem(0)]];
+	var data2 = [
+		[new HierarchyItem(30), new HierarchyItem(10)],
+		[new HierarchyItem(10), new HierarchyItem(20)]];
+
+	var $table1 = $($('#qunit-fixture > table')[0]);
+	var $table2 = $($('#qunit-fixture > table')[1]);
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable1 = new HierarchyTable($table1, items_labels, data1, num_hierarchy_columns, undefined);
+	var htable2 = new HierarchyTable($table2, items_labels, data2, num_hierarchy_columns, undefined);
+
+	assert.ok(true, "Content of table 1");
+	var real_content = retrieveHierarchyTableContent($table1.find("tbody > tr"));
+	var expected_content = [["10", ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Content of table 2");
+	real_content = retrieveHierarchyTableContent($table2.find("tbody > tr"));
+	expected_content = [
+			["10", ""],
+			["30", ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Expand on table 2");
+	$($table2.find("tbody > tr .expand-button")[0]).click();
+
+	assert.ok(true, "Content of table 1");
+	real_content = retrieveHierarchyTableContent($table1.find("tbody > tr"));
+	expected_content = [["10", ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Content of table 2");
+	real_content = retrieveHierarchyTableContent($table2.find("tbody > tr"));
+	expected_content = [
+			["10",   ""],
+			[  "", "20"],
+			["30",   ""]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables with same data", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10)],
+		[new HierarchyItem(10),  new HierarchyItem(0)]];
+
+	var $table1 = $($('#qunit-fixture > table')[0]);
+	var $table2 = $($('#qunit-fixture > table')[1]);
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable1 = new HierarchyTable($table1, items_labels, data, num_hierarchy_columns, undefined);
+	var htable2 = new HierarchyTable($table2, items_labels, data, num_hierarchy_columns, undefined);
+
+	assert.ok(true, "Content of table 1");
+	var real_content = retrieveHierarchyTableContent($table1.find("tbody > tr"));
+	var expected_content = [["10", ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Content of table 2");
+	real_content = retrieveHierarchyTableContent($table2.find("tbody > tr"));
+	expected_content = [["10", ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Expand on table 2");
+	$($table2.find("tbody > tr .expand-button")[0]).click();
+
+	assert.ok(true, "Content of table 1");
+	real_content = retrieveHierarchyTableContent($table1.find("tbody > tr"));
+	expected_content = [["10", ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Content of table 2");
+	real_content = retrieveHierarchyTableContent($table2.find("tbody > tr"));
+	expected_content = [
+			["10",   ""],
+			[  "", "10"],
+			[  "",  "0"]];
+	checkContent(assert, real_content, expected_content);
+});
