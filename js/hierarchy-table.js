@@ -394,7 +394,8 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		
 		$row.on("contextmenu", function(event) {
 				event.preventDefault();
-				if (self.contextMenuCallbacks !== undefined) {
+				var callbacks = self.contextMenuCallbacks;
+				if (callbacks !== undefined) {
 					var $contextmenu = $("ul.hierarchytable-contextmenu");
 					if ($contextmenu.length == 0) {
 						$contextmenu = $("<ul/>");
@@ -404,20 +405,21 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 						$contextmenu.html("");
 					}
 
-					var callbacks = self.contextMenuCallbacks;
-					for (var i = 0 ; i < self.contextMenuCallbacks.length ; ++i) {
+					for (var i = 0 ; i < callbacks.length ; ++i) {
 						var $menuitem = $("<li/>")
-						if (self.contextMenuCallbacks[i]['safeLabel'] !== undefined) {
-							$menuitem.html(self.contextMenuCallbacks[i]['safeLabel']);
+						if (callbacks[i]['safeLabel'] !== undefined) {
+							$menuitem.html(callbacks[i]['safeLabel']);
 						}
 						else {
-							$menuitem.text(self.contextMenuCallbacks[i]['label']);
+							$menuitem.text(callbacks[i]['label']);
 						}
-						$menuitem.attr("data-item-id", i);
-						$menuitem.click(function() {
-								callbacks[$(this).attr("data-item-id")]["callback"](children_data);
-								$contextmenu.hide(100);
-						});
+						$menuitem.click(
+								(function(callback, data) {
+									return function() {
+										callback(data);
+										$contextmenu.hide(100);
+									};
+								})(callbacks[i]['callback'], children_data));
 						$contextmenu.append($menuitem);
 					}
 					$("body").append($contextmenu);
