@@ -239,119 +239,119 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 	
 	self.contextMenuCallbacks = contextMenuCallbacks !== undefined ? (contextMenuCallbacks instanceof Array ? contextMenuCallbacks : [{'callback': contextMenuCallbacks, 'label': 'N.A'}]) : undefined;
 	
-	this.setReference = function(reference)
+	self.setReference = function(reference)
 	{
-		this.ref = reference;
+		self.ref = reference;
 	};
 
-	this.setDoubleContribution = function(double_contribution)
+	self.setDoubleContribution = function(double_contribution)
 	{
-		this.children_double_contribution = double_contribution;
+		self.children_double_contribution = double_contribution;
 	};
 	
 	// This method remove the data corresponding to the column column_id
 	// It also removes children rows which are instances of column_id
-	this.removeHierarchyColumn = function(column_id) {
+	self.removeHierarchyColumn = function(column_id) {
 		// Remove column column_id from data
-		this.data.splice(column_id, 1);
+		self.data.splice(column_id, 1);
 
 		// Remove children instances of column_id
 		// /!\ this.children can be of different levels
 		var children_after_removal = new Array();
-		for (var i = 0 ; i != this.children.length ; i++)
+		for (var i = 0 ; i != self.children.length ; i++)
 		{
-			this.children[i].removeHierarchyColumn(column_id);
-			if (this.children[i].level == column_id)
+			self.children[i].removeHierarchyColumn(column_id);
+			if (self.children[i].level == column_id)
 			{
-				for (var j = 0 ; j != this.children[i].children.length ; j++)
+				for (var j = 0 ; j != self.children[i].children.length ; j++)
 				{
-					if (this.children[i].children[j].level > column_id)
+					if (self.children[i].children[j].level > column_id)
 					{
-						this.children[i].children[j].level--;
+						self.children[i].children[j].level--;
 					}
-					this.children[i].children[j]._parent = this;
+					self.children[i].children[j]._parent = self;
 
 					// Aggregate lines together when it is possible
-					var found = this.children[i].children[j].level >= 0
-							? children_after_removal.findAtLevel(this.children[i].children[j], this.children[i].children[j].level)
+					var found = self.children[i].children[j].level >= 0
+							? children_after_removal.findAtLevel(self.children[i].children[j], self.children[i].children[j].level)
 							: undefined;
 					if (found === undefined)
 					{
-						children_after_removal.push(this.children[i].children[j]);
+						children_after_removal.push(self.children[i].children[j]);
 					}
 					else
 					{
-						found.children.concat(this.children[i].children[j].children);
+						found.children.concat(self.children[i].children[j].children);
 					}
 				}
 			}
 			else
 			{
-				if (this.children[i].level > column_id)
+				if (self.children[i].level > column_id)
 				{
-					this.children[i].level--;
+					self.children[i].level--;
 				}
-				children_after_removal.push(this.children[i]);
+				children_after_removal.push(self.children[i]);
 			}
 		}
-		this.children = children_after_removal;
+		self.children = children_after_removal;
 	};
 
-	this.removeColumn = function(column_id) {
-		this.data.splice(column_id, 1);
-		for (var i = 0 ; i != this.children.length ; i++) {
-			this.children[i].removeColumn(column_id);
+	self.removeColumn = function(column_id) {
+		self.data.splice(column_id, 1);
+		for (var i = 0 ; i != self.children.length ; i++) {
+			self.children[i].removeColumn(column_id);
 		}
 	};
 
-	this.addColumn = function(item, column_id) {
+	self.addColumn = function(item, column_id) {
 		// Append the column to the current element
-		this.data.splice(column_id, 0, item);
+		self.data.splice(column_id, 0, item);
 		// and to its parent if it has never been done before
-		if (this._parent !== undefined && this._parent.data.length != this.data.length) {
-			this._parent.addColumn(undefined, column_id);
+		if (self._parent !== undefined && self._parent.data.length != self.data.length) {
+			self._parent.addColumn(undefined, column_id);
 		}
 	};
 	
 	// Append a child to the HierarchyRow
 	// Children are of type HierarchyRow
-	this.append = function(child) {
-		this.children.push(child);
+	self.append = function(child) {
+		self.children.push(child);
 	};
 
-	this.at = function(index) {
-		return this.data[index];
+	self.at = function(index) {
+		return self.data[index];
 	};
 	
 	// Sort children nodes
-	this.sort = function(criteria) {
+	self.sort = function(criteria) {
 		// Sort immediate children
-		this.children.hierarchyTableSort(criteria);
+		self.children.hierarchyTableSort(criteria);
 
 		// Recursively sort others
-		for (var i = 0 ; i != this.children.length ; i++) {
-			this.children[i].sort(criteria);
+		for (var i = 0 ; i != self.children.length ; i++) {
+			self.children[i].sort(criteria);
 		}
 	};
 	
-	this.isAggregatedRow = function() {
-		return this.children.length != 0;
+	self.isAggregatedRow = function() {
+		return self.children.length != 0;
 	};
 
-	this.computeNumParents = function() {
-		if (this._parent === undefined) {
+	self.computeNumParents = function() {
+		if (self._parent === undefined) {
 			return 0;
 		}
-		return 1 + this._parent.computeNumParents();
+		return 1 + self._parent.computeNumParents();
 	};
 
-	this.lookfor = function(id) {
-		if (this.id == id) {
-			return this;
+	self.lookfor = function(id) {
+		if (self.id === id) {
+			return self;
 		}
 		
-		for (var i = 0 ; i != this.children.length ; i++) {
-			var found = this.children[i].lookfor(id);
+		for (var i = 0 ; i != self.children.length ; i++) {
+			var found = self.children[i].lookfor(id);
 			if (found !== undefined) {
 				return found;
 			}
@@ -359,11 +359,11 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		return undefined;
 	};
 
-	this.lookforImmediate = function(items) {
-		for (var i = 0 ; i != this.children.length ; i++) {
+	self.lookforImmediate = function(items) {
+		for (var i = 0 ; i != self.children.length ; i++) {
 			var equal = true;
 			for (var j = 0 ; j != items.length && equal ; j++) {
-				var cdata = this.children[i].data[j];
+				var cdata = self.children[i].data[j];
 				if (cdata === undefined) {
 					equal = items[j] === undefined;
 				} else {
@@ -371,16 +371,16 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 				}
 			}
 			if (equal) {
-				return this.children[i];
+				return self.children[i];
 			}
 		}
 		return undefined;
 	};
 
-	this.append_data = function(children_data) {
+	self.appendData = function(children_data) {
 		if (self.isAggregatedRow()) {
 			for (var i = 0 ; i < self.children.length ; ++i) {
-				self.children[i].append_data(children_data);
+				self.children[i].appendData(children_data);
 			}
 		}
 		else {
@@ -390,7 +390,7 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 
 	var addTriggerContextMenu = function($row) {
 		var children_data = new Array();
-		self.append_data(children_data);
+		self.appendData(children_data);
 		
 		$row.on("contextmenu", function(event) {
 				event.preventDefault();
@@ -435,23 +435,23 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 	};
 
 	// Add rows into a tbody element
-	this.display = function($tbody, numNodes, hierarchytable) {		
+	self.display = function($tbody, numNodes, hierarchytable) {		
 		var $row = $("<tr/>");
-		if (this.isAggregatedRow()) {
-			var color = 255 - Math.floor(64 / this.computeNumParents());
+		if (self.isAggregatedRow()) {
+			var color = 255 - Math.floor(64 / self.computeNumParents());
 			$row.css("background-color", "rgb("+color+","+color+",255)");
 			var last_filled = undefined;
 			for (var i = numNodes -1 ; i >= 0 ; i--) {
-				if (this.data[i] !== undefined) {
-					last_filled = this.data[i];
+				if (self.data[i] !== undefined) {
+					last_filled = self.data[i];
 					break;
 				}
 			}
 			var $value = $("<td/>");
 			$value.attr("colspan", numNodes);
-			$value.css("padding-left", String(20*this.computeNumParents()) + "px");
+			$value.css("padding-left", String(20*self.computeNumParents()) + "px");
 			var $icon = $("<span/>");
-			if (this.collapsed) {
+			if (self.collapsed) {
 				$icon.addClass("glyphicon glyphicon-plus expand-button");
 			} else {
 				$icon.addClass("glyphicon glyphicon-minus expand-button");
@@ -459,7 +459,7 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 			$icon.click(
 					(function(id) {
 						return function() { hierarchytable.onCollapseExpand(id); };
-					})(this.id));
+					})(self.id));
 			var $title = $("<span/>");
 			if (last_filled !== undefined) {
 				if (last_filled.displaySafe !== undefined) {
@@ -471,14 +471,14 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 			$value.append($icon);
 			$value.append($title);
 			$row.append($value);
-			for (var i = numNodes ; i < this.data.length ; i++) {
+			for (var i = numNodes ; i < self.data.length ; i++) {
 				var $value = $("<td/>");
-				if (this.data[i] !== undefined) {
+				if (self.data[i] !== undefined) {
 					$value.addClass("aggregated");
-					if (this.data[i].displaySafe !== undefined) {
-						$value.html(this.data[i].displaySafe());
+					if (self.data[i].displaySafe !== undefined) {
+						$value.html(self.data[i].displaySafe());
 					} else {
-						$value.text(this.data[i].display());
+						$value.text(self.data[i].display());
 					}
 				}
 				$row.append($value);
@@ -486,20 +486,20 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 			addTriggerContextMenu($row);
 			$tbody.append($row);
 			
-			if (! this.collapsed) {
+			if (! self.collapsed) {
 				// Recursively display children
-				for (var i = 0 ; i != this.children.length ; i++) {
-					this.children[i].display($tbody, numNodes, hierarchytable);
+				for (var i = 0 ; i != self.children.length ; i++) {
+					self.children[i].display($tbody, numNodes, hierarchytable);
 				}
 			}
 		} else {
-			for (var i = 0 ; i < this.data.length ; i++) {
+			for (var i = 0 ; i < self.data.length ; i++) {
 				var $value = $("<td/>");
-				if (i >= numNodes && this.data[i] !== undefined) {
-					if (this.data[i].displaySafe !== undefined) {
-						$value.html(this.data[i].displaySafe());
+				if (i >= numNodes && self.data[i] !== undefined) {
+					if (self.data[i].displaySafe !== undefined) {
+						$value.html(self.data[i].displaySafe());
 					} else {
-						$value.text(this.data[i].display());
+						$value.text(self.data[i].display());
 					}
 				}
 				$row.append($value);
@@ -510,19 +510,19 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 	};
 	
 	// Compute aggregated value
-	this.compute = function(numNodes, specific_column) {
-		if (! this.isAggregatedRow()) {
+	self.compute = function(numNodes, specific_column) {
+		if (! self.isAggregatedRow()) {
 			return;
 		}
 
-		for (var i = 0 ; i != this.children.length ; i++) {
-			this.children[i].compute(numNodes, specific_column);
+		for (var i = 0 ; i != self.children.length ; i++) {
+			self.children[i].compute(numNodes, specific_column);
 		}
 		// If the children implies double-contribution
 		//   take the leaves has elementaryu contributions
 		// Otherwise immediate children are ok
-		var base_elts = this.children_double_contribution ? this.retrieveLeaves() : this.children;
-		for (var i = numNodes ; i < this.data.length ; i++) {
+		var base_elts = self.children_double_contribution ? self.retrieveLeaves() : self.children;
+		for (var i = numNodes ; i < self.data.length ; i++) {
 			if (specific_column !== undefined && i != specific_column) {
 				continue; // only compute the column specific_column
 			}
@@ -540,27 +540,27 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 					break;
 				}
 			}
-			this.data[i] = aggregated;
+			self.data[i] = aggregated;
 		}		
 	};
 
-	this.getChildren = function() {
-		return this.children;
+	self.getChildren = function() {
+		return self.children;
 	};
 	
 	// Compute the list of leaves that contribute to the row
 	// each row is unique
-	this.retrieveLeaves = function() {
-		if (this.children.length == 0)
+	self.retrieveLeaves = function() {
+		if (self.children.length == 0)
 		{
-			return new Array(this);
+			return new Array(self);
 		}
 
 		var references = new Array();
 		var leaves = new Array();
-		for (var i = 0 ; i != this.children.length ; i++)
+		for (var i = 0 ; i != self.children.length ; i++)
 		{
-			var subleaves = this.children[i].retrieveLeaves();
+			var subleaves = self.children[i].retrieveLeaves();
 			for (var j = 0 ; j != subleaves.length ; j++) {
 				if (subleaves[j].ref === undefined || $.inArray(subleaves[j].ref, references) == -1)
 				{
@@ -572,20 +572,20 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		return leaves;
 	};
 
-	this.getPathFromRoot = function()
+	self.getPathFromRoot = function()
 	{
-		if (this._parent === undefined)
+		if (self._parent === undefined)
 		{
-			return new Array(this);
+			return new Array(self);
 		}
-		var path = this._parent.getPathFromRoot();
-		path.push(this);
+		var path = self._parent.getPathFromRoot();
+		path.push(self);
 		return path;
 	};
 
 	{
-		if (this._parent !== undefined) {
-			this._parent.append(this);
+		if (self._parent !== undefined) {
+			self._parent.append(self);
 		}
 	}
 }
