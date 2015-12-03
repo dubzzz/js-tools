@@ -240,6 +240,19 @@ function HierarchyAggregateItem(data) {
 }
 HierarchyAggregateItem.prototype = new HierarchyItem;
 
+function HierarchySumItem(data) {
+	var self = this;
+	self.data = data;
+
+	self.display = function() {
+		return String(self.data);
+	};
+	self.aggregate = function(other) {
+		return new HierarchySumItem(self.data + other.data);
+	};
+}
+HierarchySumItem.prototype = new HierarchyItem;
+
 QUnit.module("HierarchyTable::display");
 
 QUnit.test("Basic HierarchyItem: No aggregation", function(assert) {
@@ -476,6 +489,180 @@ QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables with 
 			["10",   ""],
 			[  "", "10"],
 			[  "",  "0"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: Reverse sort", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10)],
+		[new HierarchyItem(20), new HierarchyItem(50)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", ""],
+			["20", ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Reverse sort on column 1");
+	$($table.find("thead > tr > th > a")[0]).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["20", ""],
+			["10", ""]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: Expand after reverse sort", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10)],
+		[new HierarchyItem(20), new HierarchyItem(50)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	assert.ok(true, "Reverse sort on column 1");
+	$($table.find("thead > tr > th > a")[0]).click();
+
+	assert.ok(true, "Expand 20>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["20",   ""],
+			[  "", "50"],
+			["10",   ""]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: Sorting on other column", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchySumItem(10)],
+		[new HierarchyItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20), new HierarchySumItem(20)],
+		[new HierarchyItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem( 0)],
+		[new HierarchyItem(10),  new HierarchySumItem(0)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "60"],
+			["20", "30"]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Reverse sort on column 1");
+	$($table.find("thead > tr > th > a")[0]).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["20", "30"],
+			["10", "60"]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Cancel sort on column 1");
+	$($table.find("thead > tr > th > a")[0]).click();
+
+	assert.ok(true, "Sort on column 2");
+	$($table.find("thead > tr > th > a")[1]).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["20", "30"],
+			["10", "60"]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Reverse sort on column 2");
+	$($table.find("thead > tr > th > a")[1]).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10", "60"],
+			["20", "30"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Basic HierarchyItem: Sorting on multiple columns", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchySumItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchySumItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchySumItem(0), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	assert.ok(true, "Expand 20>");
+	$($table.find("tbody > tr .expand-button")[1]).click();
+	assert.ok(true, "Expand 10>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "60", "35"],
+			[  "", "10", "20"],
+			[  "", "50",  "5"],
+			[  "",  "0", "10"],
+			["20", "30", "60"],
+			[  "", "20", "10"],
+			[  "", "10", "50"],
+			[  "",  "0",  "0"]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Add sort on column 3");
+	$($table.find("thead > tr > th > a")[2]).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10", "60", "35"],
+			[  "", "50",  "5"],
+			[  "",  "0", "10"],
+			[  "", "10", "20"],
+			["20", "30", "60"],
+			[  "",  "0",  "0"],
+			[  "", "20", "10"],
+			[  "", "10", "50"]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Reverse sort on column 1");
+	$($table.find("thead > tr > th > a")[0]).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["20", "30", "60"],
+			[  "",  "0",  "0"],
+			[  "", "20", "10"],
+			[  "", "10", "50"],
+			["10", "60", "35"],
+			[  "", "50",  "5"],
+			[  "",  "0", "10"],
+			[  "", "10", "20"]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "No more sort on column 1");
+	$($table.find("thead > tr > th > a")[0]).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10", "60", "35"],
+			[  "", "50",  "5"],
+			[  "",  "0", "10"],
+			[  "", "10", "20"],
+			["20", "30", "60"],
+			[  "",  "0",  "0"],
+			[  "", "20", "10"],
+			[  "", "10", "50"]];
 	checkContent(assert, real_content, expected_content);
 });
 QUnit.test("HierarchyItem with aggregation", function(assert) {
