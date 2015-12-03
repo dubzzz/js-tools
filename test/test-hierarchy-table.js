@@ -224,6 +224,22 @@ function checkContent(assert, real_content, expected_content) {
 	}
 }
 
+function HierarchyAggregateItem(data) {
+	var self = this;
+	self.data = data;
+
+	self.display = function() {
+		return String(self.data);
+	};
+	self.aggregate = function(other) {
+		if (self.data === other.data) {
+			return new HierarchyAggregateItem(self.data);
+		}
+		return undefined;
+	};
+}
+HierarchyAggregateItem.prototype = new HierarchyItem;
+
 QUnit.module("HierarchyTable::display");
 
 QUnit.test("Basic HierarchyItem: No aggregation", function(assert) {
@@ -460,5 +476,23 @@ QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables with 
 			["10",   ""],
 			[  "", "10"],
 			[  "",  "0"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("HierarchyItem with aggregation", function(assert) {
+	var data = [
+		[new HierarchyAggregateItem(10), new HierarchyAggregateItem(0), new HierarchyAggregateItem(1)],
+		[new HierarchyAggregateItem(20), new HierarchyAggregateItem(0), new HierarchyAggregateItem(0)],
+		[new HierarchyAggregateItem(20), new HierarchyAggregateItem(1), new HierarchyAggregateItem(0)],
+		[new HierarchyAggregateItem(10), new HierarchyAggregateItem(0), new HierarchyAggregateItem(0)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "0",  ""],
+			["20",  "", "0"]];
 	checkContent(assert, real_content, expected_content);
 });
