@@ -456,8 +456,10 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 			} else {
 				$icon.addClass("glyphicon glyphicon-minus expand-button");
 			}
-			$icon.attr("data-row-id", this.id);
-			$icon.click(hierarchytable.onCollapseExpand);
+			$icon.click(
+					(function(id) {
+						return function() { hierarchytable.onCollapseExpand(id); };
+					})(this.id));
 			var $title = $("<span/>");
 			if (last_filled !== undefined) {
 				if (last_filled.displaySafe !== undefined) {
@@ -809,19 +811,15 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 		self.build();
 	};
 
-	self.onCollapseExpand = function() {
-		var rowId = $(this).attr("data-row-id");
-		if (rowId !== undefined) {
-			var rowIdInt = parseInt(rowId);
-			var hRow = undefined;
-			var mainRows = self.mainHierarchyRow.getChildren();
-			for (var i = 0 ; i != mainRows.length && hRow === undefined ; i++) {
-				hRow = mainRows[i].lookfor(rowIdInt);
-			}
-			if (hRow !== undefined) {
-				hRow.collapsed = ! hRow.collapsed;
-				self.display();
-			}
+	self.onCollapseExpand = function(rowIdInt) {
+		var hRow = undefined;
+		var mainRows = self.mainHierarchyRow.getChildren();
+		for (var i = 0 ; i != mainRows.length && hRow === undefined ; i++) {
+			hRow = mainRows[i].lookfor(rowIdInt);
+		}
+		if (hRow !== undefined) {
+			hRow.collapsed = ! hRow.collapsed;
+			self.display();
 		}
 	};
 	
