@@ -2,7 +2,7 @@ function compareForSortOnBestScore(a, b, reversedOrder) {
 	if(a['autocomplete_score'] < b['autocomplete_score']){
 		return -1;
 	} else if(a['autocomplete_score'] > b['autocomplete_score']) {
-		return reversedOrder ? -1 : 1;
+		return 1;
 	} else if (a['autocomplete_rawdata_on'] < b['autocomplete_rawdata_on']) {
 		return reversedOrder ? 1 : -1;
 	} else if (a['autocomplete_rawdata_on'] > b['autocomplete_rawdata_on']) {
