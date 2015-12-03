@@ -87,6 +87,16 @@ function AutocompleteItem($input, available_elts) {
 		self.onSelectCallback = callback;
 	};
 
+	// Callback called when adding an element which is not part of the choices
+	// If undefined, the user will not be able to add its own values
+	// Paramaters are: function($input, text)
+	// - $input: the input linked to this object ie. self.$input
+	// - text: text entered by the user
+	self.onAddCallback = undefined;
+	self.setOnAddCallback = function(callback) {
+		self.onAddCallback = callback;
+	};
+
 	// Callback called during the creation of the autocomplete-list
 	// Parameters are: function($input, elt)
 	// - $input: the input linked to this object ie. self.$input
@@ -152,8 +162,12 @@ function AutocompleteItem($input, available_elts) {
 		if ($selected_elt.length == 1) {
 			selected_elt_id = parseInt($selected_elt.attr('data-autocomplete-id'));
 		}
-		if (selected_elt_id != -1 && event.keyCode == 13) { // Enter
-			self.confirmChoice(selected_elt_id);
+		if ((selected_elt_id != -1 || self.onAddCallback !== undefined) && event.keyCode == 13) { // Enter
+			if (selected_elt_id != -1) {
+				self.confirmChoice(selected_elt_id);
+			} else {
+				self.onAddCallback(self.$input, $(this).val());
+			}
 			if (self.automaticallyEraseValue) {
 				$(this).val("");
 			}

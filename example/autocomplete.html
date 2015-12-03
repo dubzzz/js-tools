@@ -115,6 +115,15 @@
             }
             refreshAuto2($field, known_values);
         });
+        auto2.setOnAddCallback(function($input, text) {
+            var $field = $("#autocomplete2");
+            var $display = $("#autocomplete2_display");
+            var known_values = $field.val().split(";");
+            if (known_values.indexOf(text) == -1) {
+              known_values.push(text);
+            }
+            refreshAuto2($field, known_values);
+        });
         auto2.setOnFilterChoicesCallback(function($input, choice) {
             var $field = $("#autocomplete2");
             var current = choice["autocomplete_rawdata_on"];
