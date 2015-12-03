@@ -11,22 +11,16 @@ function compareForSortOnBestScore(a, b, reversedOrder) {
 	return 0;
 }
 
-Array.prototype.sortOnBestScore = function(reversedOrder) {
-	this.sort(function(a, b) {
-			return compareForSortOnBestScore(a, b, reversedOrder);
-	});
-}
-
-Array.prototype.shuffle = function() {
-	var i = this.length, j, temp;
-	if (i == 0) return this;
+function shuffle(array) {
+	var i = array.length, j, temp;
+	if (i == 0) return array;
 	while (--i) {
 		j = Math.floor(Math.random() * (i + 1));
-		temp = this[i];
-		this[i] = this[j];
-		this[j] = temp;
+		temp = array[i];
+		array[i] = array[j];
+		array[j] = temp;
 	}
-	return this;
+	return array;
 }
 
 function partialSortHelper(tab, num_elts, start, end, reversedOrder) {
@@ -57,7 +51,7 @@ function partialSort(tab, num_elts, reversedOrder) {
 	/** /!\ tab is modified,                                  *
 	 *      elements might disappear(size might be different) *
 	 *      ordering of elements might be changed too         */
-	tab.shuffle();
+	shuffle(tab);
 	partialSortHelper(tab, num_elts, 0, tab.length, reversedOrder);
 	return tab.slice(0, num_elts);
 }
@@ -251,7 +245,9 @@ function AutocompleteItem($input, available_elts) {
 			return partialSort(elts_to_display, self.numMaxResults, self.reversedOrder);
 		}
 
-		elts_to_display.sortOnBestScore(self.reversedOrder);
+		elts_to_display.sort(
+				function(a, b) {
+					return compareForSortOnBestScore(a, b, self.reversedOrder);});
 		return elts_to_display;
 	};
 	
