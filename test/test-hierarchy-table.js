@@ -882,3 +882,74 @@ QUnit.test("Remove a hierarchy column then expand", function(assert) {
 			[  "",  "0"]];
 	checkContent(assert, real_content, expected_content);
 });
+
+QUnit.module("HierarchyTable::addColumn"); // addHierarchyColumn should be used to add a hierarchy column
+
+QUnit.test("Add a column", function(assert) {
+	var data_old = [
+		[new HierarchyItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0)],
+		[new HierarchyItem(10), new HierarchySumItem(10)]];
+	var data_new = [
+		[new HierarchyItem(10), new HierarchySumItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchySumItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchySumItem(0), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels_old = ["Data 1", "Data 3"];
+	var items_labels_new = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels_old, data_old, num_hierarchy_columns, undefined);
+
+	htable.addColumn(1, data_new, items_labels_new);
+	htable.display();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "60", "35"],
+			["20", "30", "60"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Add a column on expanded and keep it expanded", function(assert) {
+	var data_old = [
+		[new HierarchyItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0)],
+		[new HierarchyItem(10), new HierarchySumItem(10)]];
+	var data_new = [
+		[new HierarchyItem(10), new HierarchySumItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchySumItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchySumItem(0), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels_old = ["Data 1", "Data 3"];
+	var items_labels_new = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels_old, data_old, num_hierarchy_columns, undefined);
+
+	assert.ok(true, "Expand 10>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+
+	htable.addColumn(1, data_new, items_labels_new);
+	htable.display();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "60", "35"],
+			[  "", "10", "20"],
+			[  "", "50",  "5"],
+			[  "",  "0", "10"],
+			["20", "30", "60"]];
+	checkContent(assert, real_content, expected_content);
+});

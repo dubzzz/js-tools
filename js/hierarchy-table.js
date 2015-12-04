@@ -800,7 +800,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 			mainRows[i].compute(self.numNodes, column_id);
 		}
 	};
-
+	
 	self.addHierarchyColumn = function(column_id, new_rows, new_titles) {
 		if (column_id > self.numNodes) {
 			console.warning("Invalid call to HierarchyTable::addHierarchyColumn");
