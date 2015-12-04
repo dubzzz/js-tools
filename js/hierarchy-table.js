@@ -847,8 +847,8 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 	};
 
 	self.onClickReorder = function() {
-		th = $(this).parent()[0];	
-		$ths = self.$table.find("> thead > tr > th");
+		var th = $(this).parent()[0];	
+		var $ths = self.$table.find("> thead > tr > th");
 		for (var i = 0 ; i != $ths.length ; i++) {
 			if (th == $ths[i]) {
 				return self.changeReorder(i);
