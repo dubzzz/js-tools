@@ -683,3 +683,202 @@ QUnit.test("HierarchyItem with aggregation", function(assert) {
 			["20",  "", "0"]];
 	checkContent(assert, real_content, expected_content);
 });
+
+QUnit.module("HierarchyTable::removeColumn");
+
+QUnit.test("Remove a column", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchySumItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchySumItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchySumItem(0), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	htable.removeColumn(1);
+	htable.display();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "35"],
+			["20", "60"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Remove a column does not collapse anything", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchySumItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchySumItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchySumItem(0), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	assert.ok(true, "Expand 20>");
+	$($table.find("tbody > tr .expand-button")[1]).click();
+	assert.ok(true, "Expand 10>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+
+	htable.removeColumn(1);
+	htable.display();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "35"],
+			[  "", "20"],
+			[  "",  "5"],
+			[  "", "10"],
+			["20", "60"],
+			[  "", "10"],
+			[  "", "50"],
+			[  "",  "0"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Remove a column then expand", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchySumItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchySumItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchySumItem(0), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	htable.removeColumn(1);
+	htable.display();
+
+	assert.ok(true, "Expand 20>");
+	$($table.find("tbody > tr .expand-button")[1]).click();
+	assert.ok(true, "Expand 10>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "35"],
+			[  "", "20"],
+			[  "",  "5"],
+			[  "", "10"],
+			["20", "60"],
+			[  "", "10"],
+			[  "", "50"],
+			[  "",  "0"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Remove a hierarchy column", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchySumItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchySumItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchySumItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchySumItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchySumItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchySumItem(0), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 2;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	htable.removeColumn(1);
+	htable.display();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "35"],
+			["20", "60"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Remove a hierarchy column does not collapse expanded nodes", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10), new HierarchyItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchyItem(10), new HierarchyItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchyItem(20), new HierarchyItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchyItem(10), new HierarchyItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchyItem(0),  new HierarchyItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchyItem(0),  new HierarchyItem(1), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 3;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+	
+	assert.ok(true, "Expand 10>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+	assert.ok(true, "Expand 10>10>");
+	$($table.find("tbody > tr .expand-button")[1]).click();
+	assert.ok(true, "Expand 10>10>10>");
+	$($table.find("tbody > tr .expand-button")[2]).click();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	console.log(real_content);
+	var expected_content = [
+			["10",             "", "", "35"],
+			[      "10",       "", "", "25"],
+			[            "10", "", "", "20"],
+			[              "", "", "", "20"],
+			[            "50", "", "",  "5"],
+			[       "0",       "", "", "10"],
+			["20",             "", "", "60"]];
+	checkContent(assert, real_content, expected_content);
+
+	htable.removeColumn(1);
+	htable.display();
+
+	assert.ok(true, "Remove the 2nd column");
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10",       "", "35"],
+			[      "10", "", "20"],
+			[        "", "", "20"],
+			[      "50", "",  "5"],
+			[       "1", "", "10"],
+			["20",       "", "60"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Remove a hierarchy column then expand", function(assert) {
+	var data = [
+		[new HierarchyItem(10), new HierarchyItem(10), new HierarchySumItem(20)],
+		[new HierarchyItem(10), new HierarchyItem(50),  new HierarchySumItem(5)],
+		[new HierarchyItem(20), new HierarchyItem(20), new HierarchySumItem(10)],
+		[new HierarchyItem(20), new HierarchyItem(10), new HierarchySumItem(50)],
+		[new HierarchyItem(20),  new HierarchyItem(0),  new HierarchySumItem(0)],
+		[new HierarchyItem(10),  new HierarchyItem(0), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels = ["Data 1", "Data 2", "Data 3"];
+	var num_hierarchy_columns = 2;
+	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
+
+	htable.removeColumn(1);
+	htable.display();
+
+	assert.ok(true, "Expand 20>");
+	$($table.find("tbody > tr .expand-button")[1]).click();
+	assert.ok(true, "Expand 10>");
+	$($table.find("tbody > tr .expand-button")[0]).click();
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "35"],
+			[  "", "20"],
+			[  "",  "5"],
+			[  "", "10"],
+			["20", "60"],
+			[  "", "10"],
+			[  "", "50"],
+			[  "",  "0"]];
+	checkContent(assert, real_content, expected_content);
+});
