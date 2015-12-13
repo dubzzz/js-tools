@@ -615,6 +615,30 @@ QUnit.test("Very large dictionary set", function(assert) {
 	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
 });
 
+QUnit.test("Partial sort", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice#5", "Choice#2", "Choice#6", "Choice#1", "Choice#3", "Choice#4"]);
+	autocomp.setNumMaxResults(3);
+
+	var event = $.Event("keyup");
+	event.keyCode = 40;
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+
+	$("input#autocomplete").val("e");
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	assert.equal($(".autocomplete-list li").length, 3, "Autocompletelist contains 3 items");
+
+	assert.strictEqual(
+			$($(".autocomplete-list li")[0]).attr('data-autocomplete-id'),
+			"3", "Choice#1");
+	assert.strictEqual(
+			$($(".autocomplete-list li")[1]).attr('data-autocomplete-id'),
+			"1", "Choice#2");
+	assert.strictEqual(
+			$($(".autocomplete-list li")[2]).attr('data-autocomplete-id'),
+			"4", "Choice#3");
+});
+
 QUnit.module("AutocompleteItem::mouseover");
 
 QUnit.test("Highlight the item on onmouseover", function(assert) {
