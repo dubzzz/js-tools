@@ -195,13 +195,11 @@ function retrieveHierarchyTableContent($table_lines) {
 		var $line_tds = $($table_lines[i]).find("td");
 		for (var j = 0 ; j != $line_tds.length ; ++j) {
 			var $td = $($line_tds[j]);
-			if ($td.find(".expand-button").length > 0) { // aggreagated
+			if ($td.attr("colspan")) {
 				line.push($($td.find("span")[1]).text());
-				if ($td.attr("colspan")) { //== num of hierachy columns
-					var cols = parseInt($td.attr("colspan"));
-					for (var k = 1 ; k < cols ; ++k) {
-						line.push("");
-					}
+				var cols = parseInt($td.attr("colspan"));
+				for (var k = 1 ; k < cols ; ++k) {
+					line.push("");
 				}
 			}
 			else {

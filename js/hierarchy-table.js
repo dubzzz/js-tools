@@ -447,9 +447,9 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 			}
 			var $value = $("<td/>");
 			$value.attr("colspan", numNodes);
-			$value.addClass("hcols");
 			$value.css("padding-left", String(20*self.computeNumParents()) + "px");
 			var $icon = $("<span/>");
+			$icon.addClass("expand-button");
 			$icon.addClass(self.collapsed ? "collapsed" : "expanded");
 			$icon.click(
 					(function(id) {
@@ -488,11 +488,12 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 				}
 			}
 		} else {
-			var $value = $("<td/>");
-			$value.attr("colspan", numNodes);
-			$value.addClass("hcols");
-			$row.append($value);
-			
+			if (numNodes > 0) {
+				var $value = $("<td/>");
+				$value.attr("colspan", numNodes);
+				$row.append($value);
+			}
+
 			for (var i = numNodes ; i < self.data.length ; i++) {
 				var $value = $("<td/>");
 				if (self.data[i] !== undefined) {
