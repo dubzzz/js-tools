@@ -437,80 +437,72 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 	// Add rows into a tbody element
 	self.display = function($tbody, numNodes, hierarchytable) {		
 		var $row = $("<tr/>");
-		if (self.isAggregatedRow()) {
-			var last_filled = undefined;
-			for (var i = numNodes -1 ; i >= 0 ; i--) {
-				if (self.data[i] !== undefined) {
-					last_filled = self.data[i];
-					break;
-				}
-			}
+		var is_aggregated = self.isAggregatedRow();
+
+		// If the table defines an hierarchy column (ie. numNodes > 0)
+		// Then it has to add a <td/> for this column
+		if (numNodes > 0) {
 			var $value = $("<td/>");
 			$value.css("padding-left", String(20*self.computeNumParents()) + "px");
+
 			var $icon = $("<span/>");
-			$icon.addClass("expand-button");
-			$icon.addClass(self.collapsed ? "collapsed" : "expanded");
-			$icon.click(
-					(function(id) {
-						return function() { hierarchytable.onCollapseExpand(id); };
-					})(self.id));
 			var $title = $("<span/>");
-			if (last_filled !== undefined) {
-				if (last_filled.displaySafe !== undefined) {
-					$title.html(last_filled.displaySafe());
-				} else {
-					$title.text(last_filled.display());
+
+			// The row being displayed has multiple children (at least one, so part of the hierarchy and not a basic output)
+			if (is_aggregated) {
+				var last_filled = undefined;
+				for (var i = numNodes -1 ; i >= 0 ; i--) {
+					if (self.data[i] !== undefined) {
+						last_filled = self.data[i];
+						break;
+					}
 				}
+
+				$icon.addClass("expand-button");
+				$icon.addClass(self.collapsed ? "collapsed" : "expanded");
+				$icon.click(
+						(function(id) {
+							return function() { hierarchytable.onCollapseExpand(id); };
+						})(self.id));
+
+				if (last_filled !== undefined) {
+					if (last_filled.displaySafe !== undefined) {
+						$title.html(last_filled.displaySafe());
+					} else {
+						$title.text(last_filled.display());
+					}
+				}
+			}
+			else {
+				$icon.addClass("expanded");
 			}
 			$value.append($icon);
 			$value.append($title);
 			$row.append($value);
-			for (var i = numNodes ; i < self.data.length ; i++) {
-				var $value = $("<td/>");
-				if (self.data[i] !== undefined) {
+		}
+		
+		for (var i = numNodes ; i < self.data.length ; i++) {
+			var $value = $("<td/>");
+			if (self.data[i] !== undefined) {
+				if (is_aggregated) {
 					$value.addClass("aggregated");
-					if (self.data[i].displaySafe !== undefined) {
-						$value.html(self.data[i].displaySafe());
-					} else {
-						$value.text(self.data[i].display());
-					}
 				}
-				$row.append($value);
-			}
-			addTriggerContextMenu($row);
-			$tbody.append($row);
-			
-			if (! self.collapsed) {
-				// Recursively display children
-				for (var i = 0 ; i != self.children.length ; i++) {
-					self.children[i].display($tbody, numNodes, hierarchytable);
+				if (self.data[i].displaySafe !== undefined) {
+					$value.html(self.data[i].displaySafe());
+				} else {
+					$value.text(self.data[i].display());
 				}
 			}
-		} else {
-			if (numNodes > 0) {
-				var $value = $("<td/>");
-				$value.css("padding-left", String(20*self.computeNumParents()) + "px");
-				var $icon = $("<span/>");
-				$icon.addClass("expanded");
-				var $title = $("<span/>");
-				$value.append($icon);
-				$value.append($title);
-				$row.append($value);
-			}
+			$row.append($value);
+		}
+		addTriggerContextMenu($row);
+		$tbody.append($row);
 
-			for (var i = numNodes ; i < self.data.length ; i++) {
-				var $value = $("<td/>");
-				if (self.data[i] !== undefined) {
-					if (self.data[i].displaySafe !== undefined) {
-						$value.html(self.data[i].displaySafe());
-					} else {
-						$value.text(self.data[i].display());
-					}
-				}
-				$row.append($value);
+		if (! self.collapsed) {
+			// Recursively display children
+			for (var i = 0 ; i != self.children.length ; i++) {
+				self.children[i].display($tbody, numNodes, hierarchytable);
 			}
-			addTriggerContextMenu($row);
-			$tbody.append($row);
 		}
 	};
 	
