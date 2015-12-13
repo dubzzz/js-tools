@@ -1,30 +1,15 @@
+/**
+ * Table configuration
+ */
+
 table.hierarchy-table
 {
     margin-bottom: 10px;
 }
 
-table.hierarchy-table tbody tr
-{
-    border-top: 1px solid #dddddd;
-    background-color: #ffffff;
-}
-
-table.hierarchy-table tbody tr td.aggregated
-{
-    font-weight: bold;
-}
-
-table.hierarchy-table tbody tr td
-{
-    padding: 0 8px 0 8px;
-    line-height: 1.42857;
-}
-
-table.hierarchy-table thead tr th
-{
-    padding: 8px;
-    line-height: 1.42857;
-}
+/**
+ * Header configuration
+ */
 
 table.hierarchy-table thead tr
 {
@@ -34,6 +19,13 @@ table.hierarchy-table thead tr
     font-weight: bold;
 }
 
+table.hierarchy-table thead tr th
+{
+    position: relative;
+    padding: 8px;
+    line-height: 1.42857;
+}
+
 table.hierarchy-table thead a
 {
     position: relative;
@@ -41,6 +33,7 @@ table.hierarchy-table thead a
     padding-right: 25px;
 }
 
+/* glyphicon for ordering */
 table.hierarchy-table thead a:after
 {
     position: absolute;
@@ -54,22 +47,18 @@ table.hierarchy-table thead a:after
     width: 20px;
     content: ' ';
 }
-
+/* glyphicon for ascending ordering */
 table.hierarchy-table thead a.hierarchy-asc:after
 {
     content: "\e113";
 }
-
+/* glyphicon for descending ordering */
 table.hierarchy-table thead a.hierarchy-desc:after
 {
     content:"\e114";
 }
 
-table.hierarchy-table thead tr th
-{
-    position: relative;
-}
-
+/* figures at the bottom of ordering simple (ordering of orderings) */
 table.hierarchy-table thead tr th .hierarchy-order
 {
     display: inline-block;
@@ -79,6 +68,44 @@ table.hierarchy-table thead tr th .hierarchy-order
     font-size: 0.6em;
 }
 
+/**
+ * Content configuration
+ */
+
+table.hierarchy-table tbody tr
+{
+    background-color: #ffffff;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+table.hierarchy-table tbody tr:hover
+{
+    background-color: #f0f0f0;
+}
+
+table.hierarchy-table tbody tr td
+{
+    padding: 0 8px 0 8px;
+    line-height: 1.42857;
+}
+
+table.hierarchy-table tbody tr td.aggregated
+{
+    font-weight: bold;
+}
+
+table.hierarchy-table tbody tr td:first-child
+{
+    border-right: 2px solid #f0f0f0;
+}
+
+table.hierarchy-table tbody tr td:not(:first-child)
+{
+    border-left: 1px dotted #f0f0f0;
+}
+
+/* expand/collapse icon */
 table.hierarchy-table tbody tr td span.collapsed,
 table.hierarchy-table tbody tr td span.expanded
 {
@@ -88,26 +115,14 @@ table.hierarchy-table tbody tr td span.expanded
     margin-right: 5px;
     cursor: pointer;
 }
+table.hierarchy-table tbody tr td span.collapsed { background-image: url('../img/collapsed-off.png'); }
+table.hierarchy-table tbody tr td span.collapsed:hover { background-image: url('../img/collapsed-on.png'); }
+table.hierarchy-table tbody tr td span.expanded { background-image: url('../img/expanded-off.png'); }
+table.hierarchy-table tbody tr td span.expanded:hover { background-image: url('../img/expanded-on.png'); }
 
-table.hierarchy-table tbody tr td span.collapsed
-{
-    background-image: url('../img/collapsed-off.png');
-}
-
-table.hierarchy-table tbody tr td span.collapsed:hover
-{
-    background-image: url('../img/collapsed-on.png');
-}
-
-table.hierarchy-table tbody tr td span.expanded
-{
-    background-image: url('../img/expanded-off.png');
-}
-
-table.hierarchy-table tbody tr td span.expanded:hover
-{
-    background-image: url('../img/expanded-on.png');
-}
+/**
+ * Contextual menu
+ */
 
 ul.hierarchytable-contextmenu {
     display: none;

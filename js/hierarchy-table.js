@@ -438,8 +438,6 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 	self.display = function($tbody, numNodes, hierarchytable) {		
 		var $row = $("<tr/>");
 		if (self.isAggregatedRow()) {
-			var color = 255 - Math.floor(64 / self.computeNumParents());
-			$row.css("background-color", "rgb("+color+","+color+",255)");
 			var last_filled = undefined;
 			for (var i = numNodes -1 ; i >= 0 ; i--) {
 				if (self.data[i] !== undefined) {
@@ -449,6 +447,7 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 			}
 			var $value = $("<td/>");
 			$value.attr("colspan", numNodes);
+			$value.addClass("hcols");
 			$value.css("padding-left", String(20*self.computeNumParents()) + "px");
 			var $icon = $("<span/>");
 			$icon.addClass(self.collapsed ? "collapsed" : "expanded");
@@ -489,9 +488,14 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 				}
 			}
 		} else {
-			for (var i = 0 ; i < self.data.length ; i++) {
+			var $value = $("<td/>");
+			$value.attr("colspan", numNodes);
+			$value.addClass("hcols");
+			$row.append($value);
+			
+			for (var i = numNodes ; i < self.data.length ; i++) {
 				var $value = $("<td/>");
-				if (i >= numNodes && self.data[i] !== undefined) {
+				if (self.data[i] !== undefined) {
 					if (self.data[i].displaySafe !== undefined) {
 						$value.html(self.data[i].displaySafe());
 					} else {
