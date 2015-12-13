@@ -15,15 +15,24 @@ table.hierarchy-table thead tr
 {
     border-top: 0px none;
     border-bottom: 2px solid #dddddd;
-    background-color: #ffffff;
+    background-color: #f0f0f0;
     font-weight: bold;
 }
 
 table.hierarchy-table thead tr th
 {
     position: relative;
-    padding: 8px;
-    line-height: 1.42857;
+    padding: 8px 8px 0px 8px;
+}
+
+table.hierarchy-table thead tr th:hover
+{
+    background-color: #dddddd;
+}
+
+table.hierarchy-table thead tr th:not(:first-child)
+{
+    border-left: 1px solid #dddddd;
 }
 
 table.hierarchy-table thead a
@@ -31,7 +40,9 @@ table.hierarchy-table thead a
     position: relative;
     display: inline-block;
     padding-right: 25px;
+    color: black;
 }
+table.hierarchy-table thead a:hover { text-decoration: none; }
 
 /* glyphicon for ordering */
 table.hierarchy-table thead a:after
