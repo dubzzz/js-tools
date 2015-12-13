@@ -195,12 +195,8 @@ function retrieveHierarchyTableContent($table_lines) {
 		var $line_tds = $($table_lines[i]).find("td");
 		for (var j = 0 ; j != $line_tds.length ; ++j) {
 			var $td = $($line_tds[j]);
-			if ($td.attr("colspan")) {
+			if ($td.find(".expand-button").length > 0) { // aggreagated
 				line.push($($td.find("span")[1]).text());
-				var cols = parseInt($td.attr("colspan"));
-				for (var k = 1 ; k < cols ; ++k) {
-					line.push("");
-				}
 			}
 			else {
 				line.push($td.text());
@@ -360,52 +356,52 @@ QUnit.test("Basic HierarchyItem: Multi-level collapse/expand lines", function(as
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
-			["10", "", ""],
-			["20", "", ""]];
+			["10", ""],
+			["20", ""]];
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Expand 10>");
 	$($table.find("tbody > tr .expand-button")[0]).click();
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
-			["10"      , "",""],
-			[      "10", "",""],
-			[       "0", "",""],
-			["20"      , "",""]];
+			["10"      , ""],
+			[      "10", ""],
+			[       "0", ""],
+			["20"      , ""]];
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Expand 10>0>");
 	$($table.find("tbody > tr .expand-button")[2]).click();
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
-			["10"      , "",  ""],
-			[      "10", "",  ""],
-			[       "0", "",  ""],
-			[        "", "", "6"],
-			["20"      , "",  ""]];
+			["10"      ,  ""],
+			[      "10",  ""],
+			[       "0",  ""],
+			[        "", "6"],
+			["20"      ,  ""]];
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Expand 20>");
 	$($table.find("tbody > tr .expand-button")[3]).click();
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
-			["10"      , "",  ""],
-			[      "10", "",  ""],
-			[       "0", "",  ""],
-			[        "", "", "6"],
-			["20"      , "",  ""],
-			[       "0", "",  ""],
-			[      "10", "",  ""]];
+			["10"      ,  ""],
+			[      "10",  ""],
+			[       "0",  ""],
+			[        "", "6"],
+			["20"      ,  ""],
+			[       "0",  ""],
+			[      "10",  ""]];
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Collapse 10>");
 	$($table.find("tbody > tr .expand-button")[0]).click();
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
-			["10"      , "", ""],
-			["20"      , "", ""],
-			[       "0", "", ""],
-			[      "10", "", ""]];
+			["10"      , ""],
+			["20"      , ""],
+			[       "0", ""],
+			[      "10", ""]];
 	checkContent(assert, real_content, expected_content);
 });
 QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables", function(assert) {
@@ -822,13 +818,13 @@ QUnit.test("Remove a hierarchy column does not collapse expanded nodes", functio
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	console.log(real_content);
 	var expected_content = [
-			["10",             "", "", "35"],
-			[      "10",       "", "", "25"],
-			[            "10", "", "", "20"],
-			[              "", "", "", "20"],
-			[            "50", "", "",  "5"],
-			[       "0",       "", "", "10"],
-			["20",             "", "", "60"]];
+			["10",             "35"],
+			[      "10",       "25"],
+			[            "10", "20"],
+			[              "", "20"],
+			[            "50",  "5"],
+			[       "0",       "10"],
+			["20",             "60"]];
 	checkContent(assert, real_content, expected_content);
 
 	htable.removeColumn(1);
@@ -838,12 +834,12 @@ QUnit.test("Remove a hierarchy column does not collapse expanded nodes", functio
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
-			["10",       "", "35"],
-			[      "10", "", "20"],
-			[        "", "", "20"],
-			[      "50", "",  "5"],
-			[       "1", "", "10"],
-			["20",       "", "60"]];
+			["10",       "35"],
+			[      "10", "20"],
+			[        "", "20"],
+			[      "50",  "5"],
+			[       "1", "10"],
+			["20",       "60"]];
 	checkContent(assert, real_content, expected_content);
 });
 QUnit.test("Remove a hierarchy column then expand", function(assert) {
