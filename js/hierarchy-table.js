@@ -451,11 +451,7 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 			$value.attr("colspan", numNodes);
 			$value.css("padding-left", String(20*self.computeNumParents()) + "px");
 			var $icon = $("<span/>");
-			if (self.collapsed) {
-				$icon.addClass("glyphicon glyphicon-plus expand-button");
-			} else {
-				$icon.addClass("glyphicon glyphicon-minus expand-button");
-			}
+			$icon.addClass(self.collapsed ? "collapsed" : "expanded");
 			$icon.click(
 					(function(id) {
 						return function() { hierarchytable.onCollapseExpand(id); };

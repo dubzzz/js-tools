@@ -79,12 +79,34 @@ table.hierarchy-table thead tr th .hierarchy-order
     font-size: 0.6em;
 }
 
-table.hierarchy-table tbody tr td span.expand-button
+table.hierarchy-table tbody tr td span.collapsed,
+table.hierarchy-table tbody tr td span.expanded
 {
     display: inline-block;
+    height: 16px;
+    width: 16px;
     margin-right: 5px;
-    font-size: 0.7em;
     cursor: pointer;
+}
+
+table.hierarchy-table tbody tr td span.collapsed
+{
+    background-image: url('../img/collapsed-off.png');
+}
+
+table.hierarchy-table tbody tr td span.collapsed:hover
+{
+    background-image: url('../img/collapsed-on.png');
+}
+
+table.hierarchy-table tbody tr td span.expanded
+{
+    background-image: url('../img/expanded-off.png');
+}
+
+table.hierarchy-table tbody tr td span.expanded:hover
+{
+    background-image: url('../img/expanded-on.png');
 }
 
 ul.hierarchytable-contextmenu {
