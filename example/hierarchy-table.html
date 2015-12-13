@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" href="../css/hierarchy-table.css" />
     <script src="../js/hierarchy-table.js"></script>
+    <script src="hierarchy-table-data.js"></script>
   </head>
   <body>
     <div id="webpage-content" class="container">
@@ -25,13 +26,14 @@
 		<script type="text/javascript">
 		<!--
 			var $table = $("#display-tree-expenses-table");
-			var rawdata = [
+			var rawdata = python_in_nux;
+			/*[
 				{absolute_path: "/etc/passwd", date: 2014, size: 50},
 				{absolute_path: "/home/uname/.bashrc", date: 2015, size: 105},
 				{absolute_path: "/home/uname/.bash_history", date: 2015, size: 102469},
 				{absolute_path: "/home/uname/.vim/colors", date: 2013, size: 10},
 				{absolute_path: "/home/admin/.bashrc", date: 2015, size: 12450},
-			];
+			];*/
 
 			function HierarchyFilenameItem(data) {
 				var self = this;
@@ -50,16 +52,20 @@
 
 			function HierarchyDateItem(data) {
 				var self = this;
-				self.data = data;
+				self.raw = data;
+				self.data = new Date(1000 * data).toDateString();
 
 				self.display = function() {
 					return String(self.data);
 				};
 				self.aggregate = function(other) {
 					if (self.data === other.data) {
-						return new HierarchyDateItem(self.data);
+						return new HierarchyDateItem(self.raw);
 					}
 					return undefined;
+				};
+				self.compare = function(other) {
+					return self.raw < other.raw ? -1 : (self.raw == other.raw ? 0 : 1);
 				};
 			}
 			HierarchyDateItem.prototype = new HierarchyItem;
