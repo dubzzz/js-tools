@@ -489,6 +489,12 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		} else {
 			if (numNodes > 0) {
 				var $value = $("<td/>");
+				$value.css("padding-left", String(20*self.computeNumParents()) + "px");
+				var $icon = $("<span/>");
+				$icon.addClass("expanded");
+				var $title = $("<span/>");
+				$value.append($icon);
+				$value.append($title);
 				$row.append($value);
 			}
 

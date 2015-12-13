@@ -124,6 +124,9 @@ table.hierarchy-table tbody tr td span.expanded
     height: 16px;
     width: 16px;
     margin-right: 5px;
+}
+table.hierarchy-table tbody tr td span.expand-button
+{
     cursor: pointer;
 }
 table.hierarchy-table tbody tr td span.collapsed { background-image: url('../img/collapsed-off.png'); }
