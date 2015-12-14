@@ -443,6 +443,7 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		// Then it has to add a <td/> for this column
 		if (numNodes > 0) {
 			var $value = $("<td/>");
+			$value.attr("colspan", numNodes);
 			$value.css("padding-left", String(20*self.computeNumParents()) + "px");
 
 			var $icon = $("<span/>");
