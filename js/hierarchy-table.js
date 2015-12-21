@@ -734,27 +734,26 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 		var $titles = $("<tr/>");
 		for (var i = 0 ; i != self.titles.length ; i++) {
 			var $title = $("<th/>");
-			var $title_link = $("<a/>");
-			$title_link.attr("href", "javascript:void(0)");
-			$title_link.click(self.onClickReorder);
-			$title_link.text(self.titles[i]);
-			$title.append($title_link);
+			$title.click(self.onClickReorder);
+			var $title_text = $("<span/>");
+			$title_text.text(self.titles[i]);
+			$title.append($title_text);
 			$titles.append($title);
 		}
 		for (var i = 0 ; i != self.sortCriteria.length ; i++) {
-			var $title_link = undefined;
+			var $title_text = undefined;
 			if (self.sortCriteria[i] >= 0) {
-				$title_link = $($titles.first().children()[self.sortCriteria[i]]).children();
-				$title_link.addClass("hierarchy-asc");
+				$title_text = $($titles.first().children()[self.sortCriteria[i]]).children();
+				$title_text.addClass("hierarchy-asc");
 			} else {
-				$title_link = $($titles.first().children()[-self.sortCriteria[i]-1]).children();
-				$title_link.addClass("hierarchy-desc");
+				$title_text = $($titles.first().children()[-self.sortCriteria[i]-1]).children();
+				$title_text.addClass("hierarchy-desc");
 			}
 			if (self.sortCriteria.length > 1) {
 				var $title_order = $("<div/>");
 				$title_order.addClass("hierarchy-order");
 				$title_order.text(i+1);
-				$title_link.parent().append($title_order);
+				$title_text.parent().append($title_order);
 			}
 		}
 		$thead.append($titles);
@@ -845,7 +844,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 	};
 
 	self.onClickReorder = function() {
-		var th = $(this).parent()[0];	
+		var th = this;	
 		var $ths = self.$table.find("> thead > tr > th");
 		for (var i = 0 ; i != $ths.length ; i++) {
 			if (th == $ths[i]) {
