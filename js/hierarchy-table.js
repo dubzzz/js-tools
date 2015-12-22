@@ -740,7 +740,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 				var rtype = self.rowsType[i];
 				var rsettings = rtype.getSettings();
 				$title.on("contextmenu", 
-					(function(rsettings) {
+					(function(rtype, rsettings) {
 						return function(event) {
 							event.preventDefault();
 							
@@ -765,33 +765,39 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 								var $menuitem_next = $("<span/>");
 								$menuitem_next.addClass("glyphicon glyphicon-chevron-right");
 								$menuitem_next.click(
-										(function(hierarchy_table, setting, $menuitem_span) {
+										(function(hierarchy_table, rtype, setting, $menuitem_span) {
 											return function() {
 												var values = Object.keys(setting['values']);
 												var idx = values.indexOf(setting['current_value']);
 												if (idx !== -1) {
 													setting['current_value'] = values[(idx +1) % values.length];
+													if (rtype.notifyChangeInSettings !== undefined) {
+														rtype.notifyChangeInSettings();
+													}
 													$menuitem_span.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
 													hierarchy_table.build();
 													hierarchy_table.display();
 												}
 											};
-										})(self, setting, $menuitem_span));
+										})(self, rtype, setting, $menuitem_span));
 								var $menuitem_previous = $("<span/>");
 								$menuitem_previous.addClass("glyphicon glyphicon-chevron-left");
 								$menuitem_previous.click(
-										(function(hierarchy_table, setting, $menuitem_span) {
+										(function(hierarchy_table, rtype, setting, $menuitem_span) {
 											return function() {
 												var values = Object.keys(setting['values']);
 												var idx = values.indexOf(setting['current_value']);
 												if (idx !== -1) {
 													setting['current_value'] = values[(idx +values.length -1) % values.length];
+													if (rtype.notifyChangeInSettings !== undefined) {
+														rtype.notifyChangeInSettings();
+													}
 													$menuitem_span.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
 													hierarchy_table.build();
 													hierarchy_table.display();
 												}
 											};
-										})(self, setting, $menuitem_span));
+										})(self, rtype, setting, $menuitem_span));
 								$menuitem.append($menuitem_previous);
 								$menuitem.append($menuitem_next);
 								$menuitem.append($menuitem_span);
@@ -806,7 +812,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 									});
 							return false;
 						}
-					}(rsettings)
+					}(rtype, rsettings)
 				));
 			}
 			else {

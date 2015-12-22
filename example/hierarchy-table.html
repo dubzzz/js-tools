@@ -110,7 +110,8 @@
 			};
 			HierarchySizeItem.getSettings = function() {
 				return __HierarchySizeItem__settings;
-			}
+			};
+			HierarchySizeItem.notifyChangeInSettings = function() { /* settings have changed */ };
 			HierarchySizeItem.prototype = new HierarchyItem;
 
 			function buildHierarchyItem(label, d, known_paths) {
