@@ -80,6 +80,17 @@ table.hierarchy-table thead tr th .hierarchy-order
     font-size: 0.6em;
 }
 
+li.column-settings span.glyphicon.glyphicon-chevron-left
+{
+	float: left;
+	margin-right: 20px;
+}
+li.column-settings span.glyphicon.glyphicon-chevron-right
+{
+	float: right;
+	margin-left: 20px;
+}
+
 /**
  * Content configuration
  */

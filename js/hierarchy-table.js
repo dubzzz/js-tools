@@ -758,21 +758,43 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 								var key = rsettings_keys[i];
 								var setting = rsettings[key];
 
-								var $menuitem = $("<li/>")
-								$menuitem.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
-								$menuitem.click(
-										(function(hierarchy_table, setting) {
+								var $menuitem = $("<li/>");
+								$menuitem.addClass("column-settings");
+								var $menuitem_span = $("<span/>");
+								$menuitem_span.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
+								var $menuitem_next = $("<span/>");
+								$menuitem_next.addClass("glyphicon glyphicon-chevron-right");
+								$menuitem_next.click(
+										(function(hierarchy_table, setting, $menuitem_span) {
 											return function() {
-												$contextmenu.hide(100);
 												var values = Object.keys(setting['values']);
 												var idx = values.indexOf(setting['current_value']);
 												if (idx !== -1) {
 													setting['current_value'] = values[(idx +1) % values.length];
+													$menuitem_span.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
 													hierarchy_table.build();
 													hierarchy_table.display();
 												}
 											};
-										})(self, setting));
+										})(self, setting, $menuitem_span));
+								var $menuitem_previous = $("<span/>");
+								$menuitem_previous.addClass("glyphicon glyphicon-chevron-left");
+								$menuitem_previous.click(
+										(function(hierarchy_table, setting, $menuitem_span) {
+											return function() {
+												var values = Object.keys(setting['values']);
+												var idx = values.indexOf(setting['current_value']);
+												if (idx !== -1) {
+													setting['current_value'] = values[(idx +values.length -1) % values.length];
+													$menuitem_span.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
+													hierarchy_table.build();
+													hierarchy_table.display();
+												}
+											};
+										})(self, setting, $menuitem_span));
+								$menuitem.append($menuitem_previous);
+								$menuitem.append($menuitem_next);
+								$menuitem.append($menuitem_span);
 								$contextmenu.append($menuitem);
 							}
 							$("body").append($contextmenu);
