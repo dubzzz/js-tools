@@ -75,17 +75,41 @@
 				self.data = data;
 
 				self.display = function() {
-					if (self.data > 1024*1024*512)
-						return String((self.data /1024/1024/1024).toFixed(2)) + " go";
-					else if (self.data > 1024*512)
-						return String((self.data /1024/1024).toFixed(2)) + " mo";
-					else if (self.data > 512)
-						return String((self.data /1024).toFixed(2)) + " ko";
+					var policy = HierarchySizeItem.getSettings()['display_policy']['current_value'];
+					if (policy == 'human') {
+						if (self.data > 1024*1024*512)
+							return String((self.data /1024/1024/1024).toFixed(2)) + " go";
+						else if (self.data > 1024*512)
+							return String((self.data /1024/1024).toFixed(2)) + " mo";
+						else if (self.data > 512)
+							return String((self.data /1024).toFixed(2)) + " ko";
+					}
 					return String(self.data) + " o";
 				};
 				self.aggregate = function(other) {
-					return new HierarchySizeItem(self.data + other.data);
+					var policy = HierarchySizeItem.getSettings()['aggregation_policy']['current_value'];
+					if (policy == 'sum') {
+						return new HierarchySizeItem(self.data + other.data);
+					}
+					else {
+						return new HierarchySizeItem(Math.max(self.data, other.data));
+					}
 				};
+			}
+			var __HierarchySizeItem__settings = {
+					aggregation_policy: {
+						label: 'Aggregation policy',
+						current_value: 'sum',
+						values: { sum: 'Sum', max: 'Max' },
+					},
+					display_policy: {
+						label: 'Display policy',
+						current_value: 'human',
+						values: { human: 'Human readable', raw: 'Number of bytes' },
+					},
+			};
+			HierarchySizeItem.getSettings = function() {
+				return __HierarchySizeItem__settings;
 			}
 			HierarchySizeItem.prototype = new HierarchyItem;
 
@@ -176,7 +200,8 @@
 				var num_hierarchy_columns = 1;
 				hierarchyTable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, [
 						{label: "Absolute path to JSON", callback: toJSON}
-						, {label: "Filename to JSON", callback: FilenameToJSON}]);
+						, {label: "Filename to JSON", callback: FilenameToJSON}]
+						, [HierarchyNode, HierarchyFilenameItem, HierarchyDateItem, HierarchySizeItem]);
 				return hierarchyTable;
 			}
 

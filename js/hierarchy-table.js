@@ -596,7 +596,7 @@ $(document).bind("mousedown", function (e) {
 	}
 });
 
-function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCallbacks) {
+function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCallbacks, rowsType) {
 	var self = this;
 	
 	// jQuery element corresponding to a HTML <table/>
@@ -610,6 +610,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 	// self.rows[x][y]: value itself (instanceof HierarchyItem)
 	// The order of this array can change from time to time due to reorderings
 	self.rows = rows;
+	self.rowsType = rowsType;
 	self.internalRows = new Array();
 	
 	// List of sort criteria
@@ -735,6 +736,60 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 		for (var i = 0 ; i != self.titles.length ; i++) {
 			var $title = $("<th/>");
 			$title.click(self.onClickReorder);
+			if (self.rowsType !== undefined && self.rowsType.length > i && self.rowsType[i] !== undefined && self.rowsType[i].getSettings !== undefined) {
+				var rtype = self.rowsType[i];
+				var rsettings = rtype.getSettings();
+				$title.on("contextmenu", 
+					(function(rsettings) {
+						return function(event) {
+							event.preventDefault();
+							
+							var $contextmenu = $("ul.hierarchytable-contextmenu");
+							if ($contextmenu.length == 0) {
+								$contextmenu = $("<ul/>");
+								$contextmenu.addClass("hierarchytable-contextmenu");
+							}
+							else {
+								$contextmenu.html("");
+							}
+
+							var rsettings_keys = Object.keys(rsettings);
+							for (var i = 0 ; i < rsettings_keys.length ; ++i) {
+								var key = rsettings_keys[i];
+								var setting = rsettings[key];
+
+								var $menuitem = $("<li/>")
+								$menuitem.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
+								$menuitem.click(
+										(function(hierarchy_table, setting) {
+											return function() {
+												$contextmenu.hide(100);
+												var values = Object.keys(setting['values']);
+												var idx = values.indexOf(setting['current_value']);
+												if (idx !== -1) {
+													setting['current_value'] = values[(idx +1) % values.length];
+													hierarchy_table.build();
+													hierarchy_table.display();
+												}
+											};
+										})(self, setting));
+								$contextmenu.append($menuitem);
+							}
+							$("body").append($contextmenu);
+							$contextmenu.finish()
+									.toggle(100)
+									.css({
+										top: event.pageY + "px"
+										, left: event.pageX + "px"
+									});
+							return false;
+						}
+					}(rsettings)
+				));
+			}
+			else {
+				$title.on("contextmenu", function(event) { event.preventDefault(); return false; });
+			}
 			var $title_text = $("<span/>");
 			$title_text.text(self.titles[i]);
 			$title.append($title_text);
