@@ -80,6 +80,11 @@ table.hierarchy-table thead tr th .hierarchy-order
     font-size: 0.6em;
 }
 
+li.column-settings span.glyphicon:hover
+{
+	color: #5555ff;
+}
+
 li.column-settings span.glyphicon.glyphicon-chevron-left
 {
 	float: left;
