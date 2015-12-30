@@ -621,6 +621,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 	self.numNodes = numHierarchyColumns;
 
 	self.contextMenuCallbacks = contextMenuCallbacks;
+	var _onReorderCallback = undefined;
 
 	// HierarchyRow
 	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
@@ -923,6 +924,10 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 				self.sortCriteria.splice(sortKey, 1);
 			}
 		}
+
+		if (_onReorderCallback !== undefined) {
+			_onReorderCallback(key, self.sortCriteria);
+		}
 		self.display();
 	};
 
@@ -934,6 +939,10 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 				return self.changeReorder(i);
 			}
 		}
+	};
+
+	self.withOnReorderCallback = function(callback) {
+		_onReorderCallback = callback;
 	};
 
 	{
