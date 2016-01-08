@@ -936,7 +936,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 								var $menuitem_previous = $("<span/>");
 								$menuitem_previous.addClass("glyphicon glyphicon-chevron-left");
 
-								if (properties.isNoSettingsUpdate) {
+								if (properties.isNoSettingsUpdate()) {
 									$menuitem.attr("disabled", "");
 								}
 								else {
