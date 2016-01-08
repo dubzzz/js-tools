@@ -763,7 +763,65 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		}
 		return parentRows;
 	};
+
+	// @private
+	// Callback called when performing a collapse/expand action
+	// on a row of the table
+	self.onCollapseExpand = function(rowIdInt) {
+		var hRow = undefined;
+		var mainRows = self.mainHierarchyRow.getChildren();
+		for (var i = 0 ; i != mainRows.length && hRow === undefined ; i++) {
+			hRow = mainRows[i].lookfor(rowIdInt);
+		}
+		if (hRow !== undefined) {
+			hRow.collapsed = ! hRow.collapsed;
+			self.display();
+		}
+	};
 	
+	// @private
+	// Method switching the reordering of a column to its next value
+	self.changeReorder = function(key) {
+		// Check if we already order on this key
+		var sortKey = -1;
+		for (var i = 0 ; i != self.sortCriteria.length ; i++) {
+			if (key == self.sortCriteria[i] || key == -self.sortCriteria[i] -1) {
+				sortKey = i;
+				break;
+			}
+		}
+
+		if (sortKey == -1) {
+			sortKey = self.sortCriteria.length;
+			self.sortCriteria.push(key);
+		} else {
+			if (key == self.sortCriteria[sortKey]) {
+				self.sortCriteria[sortKey] = -key -1;
+			} else {
+				self.sortCriteria.splice(sortKey, 1);
+			}
+		}
+
+		if (_onReorder !== undefined) {
+			_onReorder(key, self.sortCriteria);
+		}
+		self.display();
+	};
+
+	// @private
+	// Callback called when clicking on the label of a column
+	// Triggers a reordering of a table
+	self.onClickReorder = function() {
+		var th = this;	
+		var $ths = self.$table.find("> thead > tr > th");
+		for (var i = 0 ; i != $ths.length ; i++) {
+			if (th == $ths[i]) {
+				return self.changeReorder(i);
+			}
+		}
+	};
+	
+	// @private
 	// Should only be called once (by the constructor)
 	// It builds the HierarchyRow necessary for the display and sort
 	self.build = function() {
@@ -816,6 +874,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		}
 	};
 
+	// @private
 	self.display = function() {
 		self.mainHierarchyRow.sort(self.sortCriteria);
 		self.$table.children().remove();
@@ -940,6 +999,16 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		}
 		self.$table.append($tbody);
 	};
+
+	/** Force a full refresh of the display **/
+
+	self.refresh = function() {
+		self.build();
+		self.display();
+	};
+
+	/** Modification of an existing table **/
+	/** Keeping the same content, just adding or removing columns (not rows) **/
 	
 	// Remove a column from the table given its position
 	// Both "hierarchy columns" and "normal columns" can be removed with this method
@@ -980,57 +1049,12 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		self.numNodes++;
 		self.rows = new_rows;
 		_columns_properties = __sanitizeProperties(new_properties);
+
 		self.build();
-	};
-
-	self.onCollapseExpand = function(rowIdInt) {
-		var hRow = undefined;
-		var mainRows = self.mainHierarchyRow.getChildren();
-		for (var i = 0 ; i != mainRows.length && hRow === undefined ; i++) {
-			hRow = mainRows[i].lookfor(rowIdInt);
-		}
-		if (hRow !== undefined) {
-			hRow.collapsed = ! hRow.collapsed;
-			self.display();
-		}
-	};
-	
-	self.changeReorder = function(key) {
-		// Check if we already order on this key
-		var sortKey = -1;
-		for (var i = 0 ; i != self.sortCriteria.length ; i++) {
-			if (key == self.sortCriteria[i] || key == -self.sortCriteria[i] -1) {
-				sortKey = i;
-				break;
-			}
-		}
-
-		if (sortKey == -1) {
-			sortKey = self.sortCriteria.length;
-			self.sortCriteria.push(key);
-		} else {
-			if (key == self.sortCriteria[sortKey]) {
-				self.sortCriteria[sortKey] = -key -1;
-			} else {
-				self.sortCriteria.splice(sortKey, 1);
-			}
-		}
-
-		if (_onReorder !== undefined) {
-			_onReorder(key, self.sortCriteria);
-		}
 		self.display();
 	};
 
-	self.onClickReorder = function() {
-		var th = this;	
-		var $ths = self.$table.find("> thead > tr > th");
-		for (var i = 0 ; i != $ths.length ; i++) {
-			if (th == $ths[i]) {
-				return self.changeReorder(i);
-			}
-		}
-	};
+	/** Callback registration **/
 
 	self.registerOnReorderCallback = function(callback) {
 		_onReorder = callback;
@@ -1044,6 +1068,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		_onSettingsChange = callback;
 		return self;
 	};
+
+	/** Accessors **/
 
 	self.getSettingValue = function(column_id, key) {
 		return _columns_properties[column_id].settingValue(key);
