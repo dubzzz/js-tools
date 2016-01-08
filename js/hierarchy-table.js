@@ -649,7 +649,10 @@ function ColumnProperties(title) {
 
 	self.hasSettings = function() { return Object.keys(_settings).length > 0; }
 
-	self.setSettingValue = function(key, value) { _settings_value[key] = value; };
+	self.withSettingValue = function(key, value) {
+		_settings_value[key] = value;
+		return self;
+	};
 
 	// Clone the settings, only holds a copy
 	self.withSettings = function(settings) {
