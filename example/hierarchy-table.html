@@ -108,7 +108,13 @@
 						values: { human: 'Human readable', raw: 'Number of bytes' },
 					},
 			};
-			HierarchySizeItem.notifyChangeInSettings = function() { /* settings have changed */ };
+			function notifyChangeInSettings(column_id, key) {
+				/* settings have changed,
+				false means hierarchy must rebuild itself
+				true refresh as already been done */
+				console.info("Setting [" + key + "] of column " + column_id + " has changed");
+				return false;
+			};
 			HierarchySizeItem.prototype = new HierarchyItem;
 
 			function buildHierarchyItem(label, d, known_paths) {
@@ -204,7 +210,8 @@
 				var num_hierarchy_columns = 1;
 				hierarchyTable = new HierarchyTable($table, properties, data, num_hierarchy_columns, [
 						{label: "Absolute path to JSON", callback: toJSON}
-						, {label: "Filename to JSON", callback: FilenameToJSON}]);
+						, {label: "Filename to JSON", callback: FilenameToJSON}])
+					.registerOnSettingsChange(notifyChangeInSettings);
 				return hierarchyTable;
 			}
 

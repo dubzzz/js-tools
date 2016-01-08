@@ -708,7 +708,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.numNodes = numHierarchyColumns;
 
 	self.contextMenuCallbacks = contextMenuCallbacks;
-	var _onReorderCallback = undefined;
+	var _onReorder = undefined;
+	var _onSettingsChange = undefined;
 	// HierarchyRow
 	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
 	
@@ -827,7 +828,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			$title.click(self.onClickReorder);
 			if (column_properties.hasSettings()) {
 				$title.on("contextmenu", 
-					(function(properties) {
+					(function(properties, column_id) {
 						return function(event) {
 							event.preventDefault();
 							
@@ -853,7 +854,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 								var $menuitem_next = $("<span/>");
 								$menuitem_next.addClass("glyphicon glyphicon-chevron-right");
 								$menuitem_next.click(
-										(function(hierarchy_table, properties, key, $menuitem_span) {
+										(function(hierarchy_table, properties, key, $menuitem_span, column_id) {
 											return function() {
 												var setting = properties.settings()[key];
 												var values = Object.keys(setting['values']);
@@ -862,15 +863,17 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 													var new_value = values[(idx +1) % values.length];
 													properties.setSettingValue(key, new_value);
 													$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
-													hierarchy_table.build();
-													hierarchy_table.display();
+													if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
+														hierarchy_table.build();
+														hierarchy_table.display();
+													}
 												}
 											};
-										})(self, properties, key, $menuitem_span));
+										})(self, properties, key, $menuitem_span, column_id));
 								var $menuitem_previous = $("<span/>");
 								$menuitem_previous.addClass("glyphicon glyphicon-chevron-left");
 								$menuitem_previous.click(
-										(function(hierarchy_table, properties, key, $menuitem_span) {
+										(function(hierarchy_table, properties, key, $menuitem_span, column_id) {
 											return function() {
 												var setting = properties.settings()[key];
 												var values = Object.keys(setting['values']);
@@ -879,11 +882,13 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 													var new_value = values[(idx +values.length -1) % values.length];
 													properties.setSettingValue(key, new_value);
 													$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
-													hierarchy_table.build();
-													hierarchy_table.display();
+													if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
+														hierarchy_table.build();
+														hierarchy_table.display();
+													}
 												}
 											};
-										})(self, properties, key, $menuitem_span));
+										})(self, properties, key, $menuitem_span, column_id));
 								$menuitem.append($menuitem_previous);
 								$menuitem.append($menuitem_next);
 								$menuitem.append($menuitem_span);
@@ -898,7 +903,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 									});
 							return false;
 						}
-					}(column_properties)
+					}(column_properties, i)
 				));
 			}
 			else {
@@ -1011,8 +1016,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			}
 		}
 
-		if (_onReorderCallback !== undefined) {
-			_onReorderCallback(key, self.sortCriteria);
+		if (_onReorder !== undefined) {
+			_onReorder(key, self.sortCriteria);
 		}
 		self.display();
 	};
@@ -1027,8 +1032,17 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		}
 	};
 
-	self.withOnReorderCallback = function(callback) {
-		_onReorderCallback = callback;
+	self.registerOnReorderCallback = function(callback) {
+		_onReorder = callback;
+		return self;
+	};
+
+	// Callback will be called just after the update of settings
+	// It receives: column_id, key (impacted settings)
+	// and should return a boolean: true means that no rebuild and display update is required as everything has been done by the callback
+	self.registerOnSettingsChange = function(callback) {
+		_onSettingsChange = callback;
+		return self;
 	};
 
 	self.getSettingValue = function(column_id, key) {
