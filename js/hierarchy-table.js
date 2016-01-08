@@ -59,6 +59,8 @@ Array.prototype.findAtLevel = function(row, level)
 
 function HierarchyItem(data) {
 	this.data = data;
+	var _hierarchy = undefined;
+	var _column_id = -1;
 	
 	// -1 means this < other
 	//  1 means this > other
@@ -92,6 +94,17 @@ function HierarchyItem(data) {
 	// (from root to node)
 	this.getPathFromRoot = function() {
 		return new Array(this);
+	};
+
+	// Called by the hierarchy table in order to mark its ownership
+	this.register = function(hierarchy, column_id) {
+		_hierarchy = hierarchy;
+		_column_id = column_id;
+	};
+
+	// Return setting's value associated to the setting_key given as a parameter
+	this.getSettingValue = function(setting_key) {
+		return _hierarchy.getSettingValue(_column_id, setting_key);
 	};
 }
 
@@ -581,6 +594,21 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		return path;
 	};
 
+	self.register = function(hierarchy) {
+		// register itself
+		for (var i = 0 ; i != self.data.length ; ++i) {
+			var tmp_data = self.data[i];
+			if (tmp_data !== undefined) {
+				tmp_data.register(hierarchy, i);
+			}
+		}
+
+		// register its children
+		for (var i = 0 ; i != self.children.length ; ++i) {
+			self.children[i].register(hierarchy);
+		}
+	};
+
 	{
 		if (self._parent !== undefined) {
 			self._parent.append(self);
@@ -596,21 +624,79 @@ $(document).bind("mousedown", function (e) {
 	}
 });
 
-function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCallbacks, rowsType) {
+function __cloneObject(o) {
+	var o2 = {};
+	var keys = Object.keys(o);
+	for (var i = 0 ; i != keys.length ; ++i) {
+		o2[key] = o[key];
+	}
+	return o2;
+}
+
+function ColumnProperties(title) {
+	var self = this;
+
+	var _title = title;
+	var _settings = {};
+	var _settings_value = {};
+
+	self.title = function() { return _title; }
+	self.settings = function() { return _settings; };
+	self.settingValue = function(key) { return _settings_value[key]; };
+
+	self.hasSettings = function() { return Object.keys(_settings).length > 0; }
+
+	self.setSettingValue = function(key, value) { _settings_value[key] = value; };
+
+	// Clone the settings, only holds a copy
+	self.withSettings = function(settings) {
+		_settings = {};
+		_settings_value = {};
+
+		var keys = Object.keys(settings);
+		for (var i = 0 ; i != keys.length ; ++i) {
+			var key = keys[i];
+			var setting = settings[key];
+			_settings[key] = {
+					label: setting['label'],
+					values: __cloneObject(setting['values'])
+			};
+			_settings_value[key] = setting['default_value'];
+		}
+		return self;
+	};
+}
+
+// For backward compatibility
+// list of properties was initially a list of titles
+var __sanitizeProperties = function(raw) {
+	if (raw.length == 0) { return raw; }
+	if (raw[0] instanceof ColumnProperties) { return raw };
+
+	console.warn("[HierarchyTable::depreciated] List of titles have been replaced by list of properties");
+	var properties = new Array();
+	for (var i = 0 ; i != raw.length ; ++i) {
+		properties.push(new ColumnProperties(raw[i]));
+	}
+	return properties;
+}
+
+function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMenuCallbacks) {
 	var self = this;
 	
 	// jQuery element corresponding to a HTML <table/>
 	self.$table = $table;
 	
-	// Columns' titles
-	self.titles = titles;
+	// Internal structure holding parameters related to a column
+	// - title
+	// - settings (possible choices) and their values
+	var _columns_properties = __sanitizeProperties(properties);
 
 	// 2-dimension array
 	// self.rows[x]   : row containing several values
 	// self.rows[x][y]: value itself (instanceof HierarchyItem)
 	// The order of this array can change from time to time due to reorderings
 	self.rows = rows;
-	self.rowsType = rowsType;
 	self.internalRows = new Array();
 	
 	// List of sort criteria
@@ -622,7 +708,6 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 
 	self.contextMenuCallbacks = contextMenuCallbacks;
 	var _onReorderCallback = undefined;
-
 	// HierarchyRow
 	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
 	
@@ -676,7 +761,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 		}
 		return parentRows;
 	};
-		
+	
 	// Should only be called once (by the constructor)
 	// It builds the HierarchyRow necessary for the display and sort
 	self.build = function() {
@@ -720,6 +805,7 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 			}
 			self.internalRows.push(relatedRows);
 		}
+		self.mainHierarchyRow.register(self);
 
 		// Compute aggregated values
 		var mainRows = self.mainHierarchyRow.getChildren();
@@ -734,14 +820,13 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 		
 		var $thead = $("<thead/>");
 		var $titles = $("<tr/>");
-		for (var i = 0 ; i != self.titles.length ; i++) {
+		for (var i = 0 ; i != _columns_properties.length ; i++) {
 			var $title = $("<th/>");
+			var column_properties = _columns_properties[i];
 			$title.click(self.onClickReorder);
-			if (self.rowsType !== undefined && self.rowsType.length > i && self.rowsType[i] !== undefined && self.rowsType[i].getSettings !== undefined) {
-				var rtype = self.rowsType[i];
-				var rsettings = rtype.getSettings();
+			if (column_properties.hasSettings()) {
 				$title.on("contextmenu", 
-					(function(rtype, rsettings) {
+					(function(properties) {
 						return function(event) {
 							event.preventDefault();
 							
@@ -754,51 +839,50 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 								$contextmenu.html("");
 							}
 
-							var rsettings_keys = Object.keys(rsettings);
-							for (var i = 0 ; i < rsettings_keys.length ; ++i) {
-								var key = rsettings_keys[i];
-								var setting = rsettings[key];
+							var settings = properties.settings();
+							var column_settings_keys = Object.keys(settings);
+							for (var i = 0 ; i < column_settings_keys.length ; ++i) {
+								var key = column_settings_keys[i];
+								var setting = ettings[key];
 
 								var $menuitem = $("<li/>");
 								$menuitem.addClass("column-settings");
 								var $menuitem_span = $("<span/>");
-								$menuitem_span.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
+								$menuitem_span.text(setting['label'] + ": " + setting['values'][properties.settingValue(key)]);
 								var $menuitem_next = $("<span/>");
 								$menuitem_next.addClass("glyphicon glyphicon-chevron-right");
 								$menuitem_next.click(
-										(function(hierarchy_table, rtype, setting, $menuitem_span) {
+										(function(hierarchy_table, properties, key, $menuitem_span) {
 											return function() {
+												var setting = properties.settings()[key];
 												var values = Object.keys(setting['values']);
-												var idx = values.indexOf(setting['current_value']);
+												var idx = values.indexOf(properties.settingValue(key));
 												if (idx !== -1) {
-													setting['current_value'] = values[(idx +1) % values.length];
-													if (rtype.notifyChangeInSettings !== undefined) {
-														rtype.notifyChangeInSettings();
-													}
-													$menuitem_span.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
+													var new_value = values[(idx +1) % values.length];
+													properties.setSettingValue(key, new_value);
+													$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 													hierarchy_table.build();
 													hierarchy_table.display();
 												}
 											};
-										})(self, rtype, setting, $menuitem_span));
+										})(self, properties, key, $menuitem_span));
 								var $menuitem_previous = $("<span/>");
 								$menuitem_previous.addClass("glyphicon glyphicon-chevron-left");
 								$menuitem_previous.click(
-										(function(hierarchy_table, rtype, setting, $menuitem_span) {
+										(function(hierarchy_table, properties, key, $menuitem_span) {
 											return function() {
+												var setting = properties.settings()[key];
 												var values = Object.keys(setting['values']);
-												var idx = values.indexOf(setting['current_value']);
+												var idx = values.indexOf(properties.settingValue(key));
 												if (idx !== -1) {
-													setting['current_value'] = values[(idx +values.length -1) % values.length];
-													if (rtype.notifyChangeInSettings !== undefined) {
-														rtype.notifyChangeInSettings();
-													}
-													$menuitem_span.text(setting['label'] + ": " + setting['values'][setting['current_value']]);
+													var new_value = values[(idx +values.length -1) % values.length];
+													properties.setSettingValue(key, new_value);
+													$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 													hierarchy_table.build();
 													hierarchy_table.display();
 												}
 											};
-										})(self, rtype, setting, $menuitem_span));
+										})(self, properties, key, $menuitem_span));
 								$menuitem.append($menuitem_previous);
 								$menuitem.append($menuitem_next);
 								$menuitem.append($menuitem_span);
@@ -813,14 +897,14 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 									});
 							return false;
 						}
-					}(rtype, rsettings)
+					}(column_properties)
 				));
 			}
 			else {
 				$title.on("contextmenu", function(event) { event.preventDefault(); return false; });
 			}
 			var $title_text = $("<span/>");
-			$title_text.text(self.titles[i]);
+			$title_text.text(_columns_properties[i].title());
 			$title.append($title_text);
 			$titles.append($title);
 		}
@@ -860,20 +944,21 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 		} else {
 			self.mainHierarchyRow.removeColumn(column_id);
 		}
-		self.titles.splice(column_id, 1);
+		_columns_properties.splice(column_id, 1);
 	};
 	
 	// Append a normal column to the table
 	// the full table need to be passed in new_rows parameter
-	self.addColumn = function(column_id, new_rows, new_titles) {
+	self.addColumn = function(column_id, new_rows, new_properties) {
 		// Add the column
 		self.rows = new_rows; // self.rows is a copy by pointer /!\
-		self.titles = new_titles;
+		_columns_properties = __sanitizeProperties(new_properties);
 		for (var i = 0 ; i != self.rows.length ; i++) {
 			for (var j = 0 ; j != self.internalRows[i].length ; j++) {
 				self.internalRows[i][j].addColumn(self.rows[i][column_id], column_id);
 			}
 		}
+		self.mainHierarchyRow.register(self);
 		
 		// Compute new aggregated values
 		var mainRows = self.mainHierarchyRow.getChildren();
@@ -882,13 +967,13 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 		}
 	};
 	
-	self.addHierarchyColumn = function(column_id, new_rows, new_titles) {
+	self.addHierarchyColumn = function(column_id, new_rows, new_properties) {
 		if (column_id > self.numNodes) {
 			console.warning("Invalid call to HierarchyTable::addHierarchyColumn");
 		}
 		self.numNodes++;
 		self.rows = new_rows;
-		self.titles = new_titles;
+		_columns_properties = __sanitizeProperties(new_properties);
 		self.build();
 	};
 
@@ -943,6 +1028,10 @@ function HierarchyTable($table, titles, rows, numHierarchyColumns, contextMenuCa
 
 	self.withOnReorderCallback = function(callback) {
 		_onReorderCallback = callback;
+	};
+
+	self.getSettingValue = function(column_id, key) {
+		return _columns_properties[column_id].settingValue(key);
 	};
 
 	{

@@ -75,7 +75,7 @@
 				self.data = data;
 
 				self.display = function() {
-					var policy = HierarchySizeItem.getSettings()['display_policy']['current_value'];
+					var policy = self.getSettingValue('display_policy');
 					if (policy == 'human') {
 						if (self.data > 1024*1024*512)
 							return String((self.data /1024/1024/1024).toFixed(2)) + " go";
@@ -87,7 +87,7 @@
 					return String(self.data) + " o";
 				};
 				self.aggregate = function(other) {
-					var policy = HierarchySizeItem.getSettings()['aggregation_policy']['current_value'];
+					var policy = self.getSettingValue('aggregation_policy');
 					if (policy == 'sum') {
 						return new HierarchySizeItem(self.data + other.data);
 					}
@@ -99,17 +99,14 @@
 			var __HierarchySizeItem__settings = {
 					aggregation_policy: {
 						label: 'Aggregation policy',
-						current_value: 'sum',
+						default_value: 'sum',
 						values: { sum: 'Sum', max: 'Max' },
 					},
 					display_policy: {
 						label: 'Display policy',
-						current_value: 'human',
+						default_value: 'human',
 						values: { human: 'Human readable', raw: 'Number of bytes' },
 					},
-			};
-			HierarchySizeItem.getSettings = function() {
-				return __HierarchySizeItem__settings;
 			};
 			HierarchySizeItem.notifyChangeInSettings = function() { /* settings have changed */ };
 			HierarchySizeItem.prototype = new HierarchyItem;
@@ -201,8 +198,7 @@
 				var num_hierarchy_columns = 1;
 				hierarchyTable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, [
 						{label: "Absolute path to JSON", callback: toJSON}
-						, {label: "Filename to JSON", callback: FilenameToJSON}]
-						, [HierarchyNode, HierarchyFilenameItem, HierarchyDateItem, HierarchySizeItem]);
+						, {label: "Filename to JSON", callback: FilenameToJSON}]);
 				return hierarchyTable;
 			}
 
