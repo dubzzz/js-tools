@@ -179,3 +179,15 @@ ul.hierarchytable-contextmenu {
     background-color: #DEF;
 }
 
+.hierarchytable-contextmenu li.separator
+{
+	margin-top: 10px;
+	margin-left: 10px;
+	border-top: 1px solid #CCC;
+	height: 0;
+	cursor: none;
+}
+
+.hierarchytable-contextmenu li.separator:hover {
+    background-color: #FFF;
+}

@@ -888,7 +888,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			var $title = $("<th/>");
 			var column_properties = _columns_properties[i];
 			$title.click(self._onClickReorder);
-			if (column_properties.hasSettings()) {
+			if (column_properties.hasSettings() || (_row_contextmenu !== undefined && _row_contextmenu.length > 0)) {
 				$title.on("contextmenu", 
 					(function(properties, column_id) {
 						return function(event) {
@@ -956,6 +956,34 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 								$menuitem.append($menuitem_span);
 								$contextmenu.append($menuitem);
 							}
+
+							if (_row_contextmenu !== undefined && _row_contextmenu.length > 0) {
+								if (properties.hasSettings()) {
+									var $menuitem = $("<li/>");
+									$menuitem.addClass("separator");
+									$contextmenu.append($menuitem);
+								}
+								for (var i = 0 ; i < _row_contextmenu.length ; ++i) {
+									var $menuitem = $("<li/>");
+									if (_row_contextmenu[i]['safeLabel'] !== undefined) {
+										$menuitem.html(_row_contextmenu[i]['safeLabel']);
+									}
+									else {
+										$menuitem.text(_row_contextmenu[i]['label']);
+									}
+									$menuitem.click(
+											(function(callback, row) {
+												return function() {
+													var children_data = new Array();
+													row.appendData(children_data);
+													callback(children_data);
+													$contextmenu.hide(100);
+												};
+											})(_row_contextmenu[i]['callback'], _main_hierarchy_row));
+									$contextmenu.append($menuitem);
+								}
+							}
+
 							$("body").append($contextmenu);
 							$contextmenu.finish()
 									.toggle(100)
