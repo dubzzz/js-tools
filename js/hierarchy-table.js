@@ -691,6 +691,9 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	var $_table = $table;
 	
 	// Internal structure holding parameters related to a column
+	// They are shared with the caller (in case they are given as an array of ColumnProperties)
+	// If the caller, modify one of the ColumnProperties in the array it must refresh table display
+	// It can be useful in case, multiple tables share the same columns schemas
 	// - title
 	// - settings (possible choices) and their values
 	var _columns_properties = __sanitizeProperties(properties);
