@@ -478,7 +478,7 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 				$icon.addClass(self.collapsed ? "collapsed" : "expanded");
 				$icon.click(
 						(function(id) {
-							return function() { hierarchytable.onCollapseExpand(id); };
+							return function() { hierarchytable._onCollapseExpand(id); };
 						})(self.id));
 
 				if (last_filled !== undefined) {
@@ -723,7 +723,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// - parentRows: list of HierarchyRow
 	// Add item to the parentRows
 	// Return updated parentRows
-	self.buildOneColumn = function(item, column_id, items, parentRows) {
+	self._buildOneColumn = function(item, column_id, items, parentRows) {
 		var path_from_root = item.getPathFromRoot();
 		for (var i = 0 ; i != path_from_root.length ; i++) {
 			var node = path_from_root[i];
@@ -740,7 +740,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 
 	// @private
 	// Build hierarchy columns (if necessary) for a given row
-	self.buildColumns = function(row) {
+	self._buildColumns = function(row) {
 		// Create parent rows if necessary
 		var parentRows = new Array(_main_hierarchy_row);
 		var items = new Array(new Array());
@@ -752,7 +752,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 				for (var k = 0 ; k != row[j].children.length ; k++) {
 					var clonedParentRows = parentRows.clone();
 					var clonedItems = items.rclone();
-					self.buildOneColumn(row[j].children[k], j, clonedItems, clonedParentRows);
+					self._buildOneColumn(row[j].children[k], j, clonedItems, clonedParentRows);
 					for (var l = 0 ; l != clonedItems.length ; l++) {
 						nextParentRows.push(clonedParentRows[l]);
 						nextItems.push(clonedItems[l].clone());
@@ -761,7 +761,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 				parentRows = nextParentRows;
 				items = nextItems;
 			} else {
-				self.buildOneColumn(row[j], j, items, parentRows);
+				self._buildOneColumn(row[j], j, items, parentRows);
 			}
 		}
 		return parentRows;
@@ -770,7 +770,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// @private
 	// Callback called when performing a collapse/expand action
 	// on a row of the table
-	self.onCollapseExpand = function(rowIdInt) {
+	self._onCollapseExpand = function(rowIdInt) {
 		var hRow = undefined;
 		var mainRows = _main_hierarchy_row.getChildren();
 		for (var i = 0 ; i != mainRows.length && hRow === undefined ; i++) {
@@ -778,13 +778,13 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		}
 		if (hRow !== undefined) {
 			hRow.collapsed = ! hRow.collapsed;
-			self.display();
+			self._display();
 		}
 	};
 	
 	// @private
 	// Method switching the reordering of a column to its next value
-	self.changeReorder = function(key) {
+	self._changeReorder = function(key) {
 		// Check if we already order on this key
 		var sortKey = -1;
 		for (var i = 0 ; i != _sortCriteria.length ; i++) {
@@ -808,18 +808,18 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		if (_onReorder !== undefined) {
 			_onReorder(key, _sortCriteria);
 		}
-		self.display();
+		self._display();
 	};
 
 	// @private
 	// Callback called when clicking on the label of a column
 	// Triggers a reordering of a table
-	self.onClickReorder = function() {
+	self._onClickReorder = function() {
 		var th = this;	
 		var $ths = $_table.find("> thead > tr > th");
 		for (var i = 0 ; i != $ths.length ; i++) {
 			if (th == $ths[i]) {
-				return self.changeReorder(i);
+				return self._changeReorder(i);
 			}
 		}
 	};
@@ -827,13 +827,13 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// @private
 	// Should only be called once (by the constructor)
 	// It builds the HierarchyRow necessary for the display and sort
-	self.build = function() {
+	self._build = function() {
 		// Build the hierarchy based on _rows
 		_main_hierarchy_row = new HierarchyRow(undefined, undefined, undefined, _row_contextmenu);
 		_internal_rows = new Array();
 		for (var i = 0 ; i != _rows.length ; i++) {
 			var relatedRows = new Array();
-			var parentRows = self.buildColumns(_rows[i]);
+			var parentRows = self._buildColumns(_rows[i]);
 			
 			// Treat the case of double-contributions
 			for (var j = 0 ; j < parentRows.length ; j++)
@@ -878,7 +878,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	};
 
 	// @private
-	self.display = function() {
+	self._display = function() {
 		_main_hierarchy_row.sort(_sortCriteria);
 		$_table.children().remove();
 		
@@ -887,7 +887,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		for (var i = 0 ; i != _columns_properties.length ; i++) {
 			var $title = $("<th/>");
 			var column_properties = _columns_properties[i];
-			$title.click(self.onClickReorder);
+			$title.click(self._onClickReorder);
 			if (column_properties.hasSettings()) {
 				$title.on("contextmenu", 
 					(function(properties, column_id) {
@@ -916,7 +916,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 								var $menuitem_next = $("<span/>");
 								$menuitem_next.addClass("glyphicon glyphicon-chevron-right");
 								$menuitem_next.click(
-										(function(hierarchy_table, properties, key, $menuitem_span, column_id) {
+										(function(properties, key, $menuitem_span, column_id) {
 											return function() {
 												var setting = properties.settings()[key];
 												var values = Object.keys(setting['values']);
@@ -926,16 +926,16 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 													properties.setSettingValue(key, new_value);
 													$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 													if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
-														hierarchy_table.build();
-														hierarchy_table.display();
+														self._build();
+														self._display();
 													}
 												}
 											};
-										})(self, properties, key, $menuitem_span, column_id));
+										})(properties, key, $menuitem_span, column_id));
 								var $menuitem_previous = $("<span/>");
 								$menuitem_previous.addClass("glyphicon glyphicon-chevron-left");
 								$menuitem_previous.click(
-										(function(hierarchy_table, properties, key, $menuitem_span, column_id) {
+										(function(properties, key, $menuitem_span, column_id) {
 											return function() {
 												var setting = properties.settings()[key];
 												var values = Object.keys(setting['values']);
@@ -945,12 +945,12 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 													properties.setSettingValue(key, new_value);
 													$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 													if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
-														hierarchy_table.build();
-														hierarchy_table.display();
+														self._build();
+														self._display();
 													}
 												}
 											};
-										})(self, properties, key, $menuitem_span, column_id));
+										})(properties, key, $menuitem_span, column_id));
 								$menuitem.append($menuitem_previous);
 								$menuitem.append($menuitem_next);
 								$menuitem.append($menuitem_span);
@@ -1006,8 +1006,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	/** Force a full refresh of the display **/
 
 	self.refresh = function() {
-		self.build();
-		self.display();
+		self._build();
+		self._display();
 	};
 
 	/** Modification of an existing table **/
@@ -1023,6 +1023,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			_main_hierarchy_row.removeColumn(column_id);
 		}
 		_columns_properties.splice(column_id, 1);
+		self._display();
 	};
 	
 	// Append a normal column to the table
@@ -1043,6 +1044,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		for (var i = 0 ; i != mainRows.length ; i++) {
 			mainRows[i].compute(_num_aggregation_columns, column_id);
 		}
+		self._display();
 	};
 	
 	self.addHierarchyColumn = function(column_id, new_rows, new_properties) {
@@ -1053,8 +1055,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		_rows = new_rows;
 		_columns_properties = __sanitizeProperties(new_properties);
 
-		self.build();
-		self.display();
+		self._build();
+		self._display();
 	};
 
 	/** Callback registration **/
@@ -1078,8 +1080,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.getSortCriteria = function() { return _sortCriteria; };
 
 	{
-		self.build();
-		self.display();
+		self._build();
+		self._display();
 	}
 }
 

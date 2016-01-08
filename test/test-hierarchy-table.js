@@ -599,7 +599,6 @@ QUnit.test("Remove a column", function(assert) {
 	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
 
 	htable.removeColumn(1);
-	htable.display();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -627,7 +626,6 @@ QUnit.test("Remove a column does not collapse anything", function(assert) {
 	$($table.find("tbody > tr .expand-button")[0]).click();
 
 	htable.removeColumn(1);
-	htable.display();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -656,7 +654,6 @@ QUnit.test("Remove a column then expand", function(assert) {
 	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
 
 	htable.removeColumn(1);
-	htable.display();
 
 	assert.ok(true, "Expand 20>");
 	$($table.find("tbody > tr .expand-button")[1]).click();
@@ -690,7 +687,6 @@ QUnit.test("Remove a hierarchy column", function(assert) {
 	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
 
 	htable.removeColumn(1);
-	htable.display();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -732,7 +728,6 @@ QUnit.test("Remove a hierarchy column does not collapse expanded nodes", functio
 	checkContent(assert, real_content, expected_content);
 
 	htable.removeColumn(1);
-	htable.display();
 
 	assert.ok(true, "Remove the 2nd column");
 
@@ -761,7 +756,6 @@ QUnit.test("Remove a hierarchy column then expand", function(assert) {
 	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
 
 	htable.removeColumn(1);
-	htable.display();
 
 	assert.ok(true, "Expand 20>");
 	$($table.find("tbody > tr .expand-button")[1]).click();
@@ -806,7 +800,6 @@ QUnit.test("Add a column", function(assert) {
 	var htable = new HierarchyTable($table, items_labels_old, data_old, num_hierarchy_columns, undefined);
 
 	htable.addColumn(1, data_new, items_labels_new);
-	htable.display();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -840,7 +833,6 @@ QUnit.test("Add a column on expanded and keep it expanded", function(assert) {
 	$($table.find("tbody > tr .expand-button")[0]).click();
 
 	htable.addColumn(1, data_new, items_labels_new);
-	htable.display();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
