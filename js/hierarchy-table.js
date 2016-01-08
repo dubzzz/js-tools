@@ -1,3 +1,5 @@
+(function(exports) {
+
 // a and b are instances of HierarchyItem (or derived)
 // criteria is the order on which we should consider the column for the sort
 Array.prototype.hierarchyTableSort = function(criteria) {
@@ -710,7 +712,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.contextMenuCallbacks = contextMenuCallbacks;
 	var _onReorder = undefined;
 	var _onSettingsChange = undefined;
-	
+
 	// HierarchyRow
 	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
 	
@@ -1081,3 +1083,18 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	}
 }
 
+exports.HierarchyItem = HierarchyItem;
+exports.HierarchyNode = HierarchyNode;
+exports.HierarchyList = HierarchyList;
+exports.ColumnProperties = ColumnProperties;
+exports.HierarchyTable = HierarchyTable;
+
+}(typeof exports === 'undefined'
+		? (this['JsTools'] === undefined ? this['JsTools']={} : this['JsTools'])
+		: exports));
+
+var HierarchyItem = JsTools.HierarchyItem;
+var HierarchyNode = JsTools.HierarchyNode;
+var HierarchyList = JsTools.HierarchyList;
+var ColumnProperties = JsTools.ColumnProperties;
+var HierarchyTable = JsTools.HierarchyTable;
