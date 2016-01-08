@@ -948,7 +948,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 													var idx = values.indexOf(properties.settingValue(key));
 													if (idx !== -1) {
 														var new_value = values[(idx +1) % values.length];
-														properties.setSettingValue(key, new_value);
+														properties.withSettingValue(key, new_value);
 														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
 															self._build();
@@ -965,7 +965,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 													var idx = values.indexOf(properties.settingValue(key));
 													if (idx !== -1) {
 														var new_value = values[(idx +values.length -1) % values.length];
-														properties.setSettingValue(key, new_value);
+														properties.withSettingValue(key, new_value);
 														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
 															self._build();
