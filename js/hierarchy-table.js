@@ -688,7 +688,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	var self = this;
 	
 	// jQuery element corresponding to a HTML <table/>
-	self.$table = $table;
+	var $_table = $table;
 	
 	// Internal structure holding parameters related to a column
 	// - title
@@ -696,25 +696,25 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	var _columns_properties = __sanitizeProperties(properties);
 
 	// 2-dimension array
-	// self.rows[x]   : row containing several values
-	// self.rows[x][y]: value itself (instanceof HierarchyItem)
+	// _rows[x]   : row containing several values
+	// _rows[x][y]: value itself (instanceof HierarchyItem)
 	// The order of this array can change from time to time due to reorderings
-	self.rows = rows;
-	self.internalRows = new Array();
+	var _rows = rows;
+	var _internal_rows = new Array();
 	
 	// List of sort criteria
 	// by default: order on first column
 	var _sortCriteria = [0];
 	
 	// Number of columns that will consider to aggregate data
-	self.numNodes = numHierarchyColumns;
+	var _num_aggregation_columns = numHierarchyColumns;
 
-	self.contextMenuCallbacks = contextMenuCallbacks;
+	var _row_contextmenu = contextMenuCallbacks;
 	var _onReorder = undefined;
 	var _onSettingsChange = undefined;
 
 	// HierarchyRow
-	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
+	var _main_hierarchy_row = new HierarchyRow(undefined, undefined, undefined, _row_contextmenu);
 	
 	// @private
 	// Build one hierarchy column
@@ -731,7 +731,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 				items[j][column_id] = node;
 				var found = parentRows[j].lookforImmediate(items[j]);
 				if (found === undefined) {
-					found = new HierarchyRow(items[j].clone(), parentRows[j], column_id, self.contextMenuCallbacks);
+					found = new HierarchyRow(items[j].clone(), parentRows[j], column_id, _row_contextmenu);
 				}
 				parentRows[j] = found;
 			}
@@ -742,10 +742,10 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// Build hierarchy columns (if necessary) for a given row
 	self.buildColumns = function(row) {
 		// Create parent rows if necessary
-		var parentRows = new Array(self.mainHierarchyRow);
+		var parentRows = new Array(_main_hierarchy_row);
 		var items = new Array(new Array());
 		items[0][row.length -1] = undefined;
-		for (var j = 0 ; j != self.numNodes ; j++) {
+		for (var j = 0 ; j != _num_aggregation_columns ; j++) {
 			if (row[j] instanceof HierarchyList) {
 				var nextParentRows = new Array();
 				var nextItems = new Array();
@@ -772,7 +772,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// on a row of the table
 	self.onCollapseExpand = function(rowIdInt) {
 		var hRow = undefined;
-		var mainRows = self.mainHierarchyRow.getChildren();
+		var mainRows = _main_hierarchy_row.getChildren();
 		for (var i = 0 ; i != mainRows.length && hRow === undefined ; i++) {
 			hRow = mainRows[i].lookfor(rowIdInt);
 		}
@@ -816,7 +816,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// Triggers a reordering of a table
 	self.onClickReorder = function() {
 		var th = this;	
-		var $ths = self.$table.find("> thead > tr > th");
+		var $ths = $_table.find("> thead > tr > th");
 		for (var i = 0 ; i != $ths.length ; i++) {
 			if (th == $ths[i]) {
 				return self.changeReorder(i);
@@ -828,12 +828,12 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// Should only be called once (by the constructor)
 	// It builds the HierarchyRow necessary for the display and sort
 	self.build = function() {
-		// Build the hierarchy based on self.rows
-		self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
-		self.internalRows = new Array();
-		for (var i = 0 ; i != self.rows.length ; i++) {
+		// Build the hierarchy based on _rows
+		_main_hierarchy_row = new HierarchyRow(undefined, undefined, undefined, _row_contextmenu);
+		_internal_rows = new Array();
+		for (var i = 0 ; i != _rows.length ; i++) {
 			var relatedRows = new Array();
-			var parentRows = self.buildColumns(self.rows[i]);
+			var parentRows = self.buildColumns(_rows[i]);
 			
 			// Treat the case of double-contributions
 			for (var j = 0 ; j < parentRows.length ; j++)
@@ -848,7 +848,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 					{
 						last_common_not_included++;
 					}
-					if (last_common_not_included > 1) // >1 because of self.mainHierarchyRow
+					if (last_common_not_included > 1) // >1 because of _main_hierarchy_row
 					{
 						path1[last_common_not_included -1].setDoubleContribution(true);
 					}
@@ -857,30 +857,30 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 
 			// Create the row associated to our element
 			var items = new Array();
-			items[self.rows[0].length -1] = undefined;
+			items[_rows[0].length -1] = undefined;
 			for (var k = 0 ; k != parentRows.length ; k++) {
-				for (var j = 0 ; j < self.rows[i].length ; j++) {
-					items[j] = self.rows[i][j];
+				for (var j = 0 ; j < _rows[i].length ; j++) {
+					items[j] = _rows[i][j];
 				}
-				var itemRow = new HierarchyRow(items.clone(), parentRows[k], undefined, self.contextMenuCallbacks);
+				var itemRow = new HierarchyRow(items.clone(), parentRows[k], undefined, _row_contextmenu);
 				itemRow.setReference(i);
 				relatedRows.push(itemRow);
 			}
-			self.internalRows.push(relatedRows);
+			_internal_rows.push(relatedRows);
 		}
-		self.mainHierarchyRow.register(self);
+		_main_hierarchy_row.register(self);
 
 		// Compute aggregated values
-		var mainRows = self.mainHierarchyRow.getChildren();
+		var mainRows = _main_hierarchy_row.getChildren();
 		for (var i = 0 ; i != mainRows.length ; i++) {
-			mainRows[i].compute(self.numNodes);
+			mainRows[i].compute(_num_aggregation_columns);
 		}
 	};
 
 	// @private
 	self.display = function() {
-		self.mainHierarchyRow.sort(_sortCriteria);
-		self.$table.children().remove();
+		_main_hierarchy_row.sort(_sortCriteria);
+		$_table.children().remove();
 		
 		var $thead = $("<thead/>");
 		var $titles = $("<tr/>");
@@ -993,14 +993,14 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			}
 		}
 		$thead.append($titles);
-		self.$table.append($thead);
+		$_table.append($thead);
 		
 		var $tbody = $("<tbody/>");
-		var mainRows = self.mainHierarchyRow.getChildren();
+		var mainRows = _main_hierarchy_row.getChildren();
 		for (var i = 0 ; i != mainRows.length ; i++) {
-			mainRows[i].display($tbody, self.numNodes, self);
+			mainRows[i].display($tbody, _num_aggregation_columns, self);
 		}
-		self.$table.append($tbody);
+		$_table.append($tbody);
 	};
 
 	/** Force a full refresh of the display **/
@@ -1016,11 +1016,11 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// Remove a column from the table given its position
 	// Both "hierarchy columns" and "normal columns" can be removed with this method
 	self.removeColumn = function(column_id) {
-		if (column_id < self.numNodes) {
-			self.numNodes--;
-			self.mainHierarchyRow.removeHierarchyColumn(column_id);
+		if (column_id < _num_aggregation_columns) {
+			--_num_aggregation_columns;
+			_main_hierarchy_row.removeHierarchyColumn(column_id);
 		} else {
-			self.mainHierarchyRow.removeColumn(column_id);
+			_main_hierarchy_row.removeColumn(column_id);
 		}
 		_columns_properties.splice(column_id, 1);
 	};
@@ -1029,28 +1029,28 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// the full table need to be passed in new_rows parameter
 	self.addColumn = function(column_id, new_rows, new_properties) {
 		// Add the column
-		self.rows = new_rows; // self.rows is a copy by pointer /!\
+		_rows = new_rows; // _rows is a copy by pointer /!\
 		_columns_properties = __sanitizeProperties(new_properties);
-		for (var i = 0 ; i != self.rows.length ; i++) {
-			for (var j = 0 ; j != self.internalRows[i].length ; j++) {
-				self.internalRows[i][j].addColumn(self.rows[i][column_id], column_id);
+		for (var i = 0 ; i != _rows.length ; i++) {
+			for (var j = 0 ; j != _internal_rows[i].length ; j++) {
+				_internal_rows[i][j].addColumn(_rows[i][column_id], column_id);
 			}
 		}
-		self.mainHierarchyRow.register(self);
+		_main_hierarchy_row.register(self);
 		
 		// Compute new aggregated values
-		var mainRows = self.mainHierarchyRow.getChildren();
+		var mainRows = _main_hierarchy_row.getChildren();
 		for (var i = 0 ; i != mainRows.length ; i++) {
-			mainRows[i].compute(self.numNodes, column_id);
+			mainRows[i].compute(_num_aggregation_columns, column_id);
 		}
 	};
 	
 	self.addHierarchyColumn = function(column_id, new_rows, new_properties) {
-		if (column_id > self.numNodes) {
+		if (column_id > _num_aggregation_columns) {
 			console.warning("Invalid call to HierarchyTable::addHierarchyColumn");
 		}
-		self.numNodes++;
-		self.rows = new_rows;
+		++_num_aggregation_columns;
+		_rows = new_rows;
 		_columns_properties = __sanitizeProperties(new_properties);
 
 		self.build();
