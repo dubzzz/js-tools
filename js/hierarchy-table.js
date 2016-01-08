@@ -702,7 +702,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	
 	// List of sort criteria
 	// by default: order on first column
-	self.sortCriteria = [0];
+	var _sortCriteria = [0];
 	
 	// Number of columns that will consider to aggregate data
 	self.numNodes = numHierarchyColumns;
@@ -710,6 +710,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.contextMenuCallbacks = contextMenuCallbacks;
 	var _onReorder = undefined;
 	var _onSettingsChange = undefined;
+	
 	// HierarchyRow
 	self.mainHierarchyRow = new HierarchyRow(undefined, undefined, undefined, self.contextMenuCallbacks);
 	
@@ -784,26 +785,26 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.changeReorder = function(key) {
 		// Check if we already order on this key
 		var sortKey = -1;
-		for (var i = 0 ; i != self.sortCriteria.length ; i++) {
-			if (key == self.sortCriteria[i] || key == -self.sortCriteria[i] -1) {
+		for (var i = 0 ; i != _sortCriteria.length ; i++) {
+			if (key == _sortCriteria[i] || key == -_sortCriteria[i] -1) {
 				sortKey = i;
 				break;
 			}
 		}
 
 		if (sortKey == -1) {
-			sortKey = self.sortCriteria.length;
-			self.sortCriteria.push(key);
+			sortKey = _sortCriteria.length;
+			_sortCriteria.push(key);
 		} else {
-			if (key == self.sortCriteria[sortKey]) {
-				self.sortCriteria[sortKey] = -key -1;
+			if (key == _sortCriteria[sortKey]) {
+				_sortCriteria[sortKey] = -key -1;
 			} else {
-				self.sortCriteria.splice(sortKey, 1);
+				_sortCriteria.splice(sortKey, 1);
 			}
 		}
 
 		if (_onReorder !== undefined) {
-			_onReorder(key, self.sortCriteria);
+			_onReorder(key, _sortCriteria);
 		}
 		self.display();
 	};
@@ -876,7 +877,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 
 	// @private
 	self.display = function() {
-		self.mainHierarchyRow.sort(self.sortCriteria);
+		self.mainHierarchyRow.sort(_sortCriteria);
 		self.$table.children().remove();
 		
 		var $thead = $("<thead/>");
@@ -973,16 +974,16 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			$title.append($title_text);
 			$titles.append($title);
 		}
-		for (var i = 0 ; i != self.sortCriteria.length ; i++) {
+		for (var i = 0 ; i != _sortCriteria.length ; i++) {
 			var $title_text = undefined;
-			if (self.sortCriteria[i] >= 0) {
-				$title_text = $($titles.first().children()[self.sortCriteria[i]]).children();
+			if (_sortCriteria[i] >= 0) {
+				$title_text = $($titles.first().children()[_sortCriteria[i]]).children();
 				$title_text.addClass("hierarchy-asc");
 			} else {
-				$title_text = $($titles.first().children()[-self.sortCriteria[i]-1]).children();
+				$title_text = $($titles.first().children()[-_sortCriteria[i]-1]).children();
 				$title_text.addClass("hierarchy-desc");
 			}
-			if (self.sortCriteria.length > 1) {
+			if (_sortCriteria.length > 1) {
 				var $title_order = $("<div/>");
 				$title_order.addClass("hierarchy-order");
 				$title_order.text(i+1);
@@ -1071,9 +1072,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 
 	/** Accessors **/
 
-	self.getSettingValue = function(column_id, key) {
-		return _columns_properties[column_id].settingValue(key);
-	};
+	self.getSettingValue = function(column_id, key) { return _columns_properties[column_id].settingValue(key); };
+	self.getSortCriteria = function() { return _sortCriteria; };
 
 	{
 		self.build();
