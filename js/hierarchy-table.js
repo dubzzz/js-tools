@@ -642,13 +642,19 @@ function ColumnProperties(title) {
 	var _title = title;
 	var _settings = {};
 	var _settings_value = {};
+	var _no_settings_update = false;
 
 	self.title = function() { return _title; }
 	self.settings = function() { return _settings; };
 	self.settingValue = function(key) { return _settings_value[key]; };
 
-	self.hasSettings = function() { return Object.keys(_settings).length > 0; }
+	self.isNoSettingsUpdate = function() { return _no_settings_update; };
+	self.hasSettings = function() { return Object.keys(_settings).length > 0; };
 
+	self.withNoSettingsUpdate = function() {
+		_no_settings_update = true;
+		return self;
+	};
 	self.withSettingValue = function(key, value) {
 		_settings_value[key] = value;
 		return self;
