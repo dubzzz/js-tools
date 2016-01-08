@@ -1076,6 +1076,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 
 	/** Accessors **/
 
+	self.getSettings = function(column_id) { return _columns_properties[column_id].settings(); };
 	self.getSettingValue = function(column_id, key) { return _columns_properties[column_id].settingValue(key); };
 	self.getSortCriteria = function() { return _sortCriteria; };
 
