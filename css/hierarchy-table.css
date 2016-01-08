@@ -80,22 +80,6 @@ table.hierarchy-table thead tr th .hierarchy-order
     font-size: 0.6em;
 }
 
-li.column-settings span.glyphicon:hover
-{
-	color: #5555ff;
-}
-
-li.column-settings span.glyphicon.glyphicon-chevron-left
-{
-	float: left;
-	margin-right: 20px;
-}
-li.column-settings span.glyphicon.glyphicon-chevron-right
-{
-	float: right;
-	margin-left: 20px;
-}
-
 /**
  * Content configuration
  */
@@ -179,15 +163,49 @@ ul.hierarchytable-contextmenu {
     background-color: #DEF;
 }
 
+.hierarchytable-contextmenu li[disabled]
+{
+	color: #777777;
+	background-color: #FFF;
+	cursor: not-allowed;
+}
+
+.hierarchytable-contextmenu li:hover[disabled]
+{
+	color: #777777;
+	background-color: #FFF;
+}
+
 .hierarchytable-contextmenu li.separator
 {
 	margin: 10px 10px 10px 10px;
 	padding: 0 0 0 0;
 	border-top: 1px solid #CCC;
 	height: 0;
-	cursor: none;
+	cursor: default;
 }
 
 .hierarchytable-contextmenu li.separator:hover {
     background-color: #FFF;
+}
+
+.hierarchytable-contextmenu li.column-settings span.glyphicon:hover
+{
+	color: #5555ff;
+}
+
+.hierarchytable-contextmenu li.column-settings[disabled] span.glyphicon:hover
+{
+	color: #777777;
+}
+
+.hierarchytable-contextmenu li.column-settings span.glyphicon.glyphicon-chevron-left
+{
+	float: left;
+	margin-right: 20px;
+}
+.hierarchytable-contextmenu li.column-settings span.glyphicon.glyphicon-chevron-right
+{
+	float: right;
+	margin-left: 20px;
 }

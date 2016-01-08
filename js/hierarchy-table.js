@@ -651,8 +651,13 @@ function ColumnProperties(title) {
 	self.isNoSettingsUpdate = function() { return _no_settings_update; };
 	self.hasSettings = function() { return Object.keys(_settings).length > 0; };
 
-	self.withNoSettingsUpdate = function() {
-		_no_settings_update = true;
+	self.withNoSettingsUpdate = function(value) {
+		if (value === false) {
+			_no_settings_update = false;
+		}
+		else {
+			_no_settings_update = true;
+		}
 		return self;
 	};
 	self.withSettingValue = function(key, value) {
@@ -925,44 +930,51 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 								$menuitem.addClass("column-settings");
 								var $menuitem_span = $("<span/>");
 								$menuitem_span.text(setting['label'] + ": " + setting['values'][properties.settingValue(key)]);
+								
 								var $menuitem_next = $("<span/>");
 								$menuitem_next.addClass("glyphicon glyphicon-chevron-right");
-								$menuitem_next.click(
-										(function(properties, key, $menuitem_span, column_id) {
-											return function() {
-												var setting = properties.settings()[key];
-												var values = Object.keys(setting['values']);
-												var idx = values.indexOf(properties.settingValue(key));
-												if (idx !== -1) {
-													var new_value = values[(idx +1) % values.length];
-													properties.setSettingValue(key, new_value);
-													$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
-													if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
-														self._build();
-														self._display();
-													}
-												}
-											};
-										})(properties, key, $menuitem_span, column_id));
 								var $menuitem_previous = $("<span/>");
 								$menuitem_previous.addClass("glyphicon glyphicon-chevron-left");
-								$menuitem_previous.click(
-										(function(properties, key, $menuitem_span, column_id) {
-											return function() {
-												var setting = properties.settings()[key];
-												var values = Object.keys(setting['values']);
-												var idx = values.indexOf(properties.settingValue(key));
-												if (idx !== -1) {
-													var new_value = values[(idx +values.length -1) % values.length];
-													properties.setSettingValue(key, new_value);
-													$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
-													if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
-														self._build();
-														self._display();
+
+								if (properties.isNoSettingsUpdate) {
+									$menuitem.attr("disabled", "");
+								}
+								else {
+									$menuitem_next.click(
+											(function(properties, key, $menuitem_span, column_id) {
+												return function() {
+													var setting = properties.settings()[key];
+													var values = Object.keys(setting['values']);
+													var idx = values.indexOf(properties.settingValue(key));
+													if (idx !== -1) {
+														var new_value = values[(idx +1) % values.length];
+														properties.setSettingValue(key, new_value);
+														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
+														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
+															self._build();
+															self._display();
+														}
 													}
-												}
-											};
-										})(properties, key, $menuitem_span, column_id));
+												};
+											})(properties, key, $menuitem_span, column_id));
+									$menuitem_previous.click(
+											(function(properties, key, $menuitem_span, column_id) {
+												return function() {
+													var setting = properties.settings()[key];
+													var values = Object.keys(setting['values']);
+													var idx = values.indexOf(properties.settingValue(key));
+													if (idx !== -1) {
+														var new_value = values[(idx +values.length -1) % values.length];
+														properties.setSettingValue(key, new_value);
+														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
+														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
+															self._build();
+															self._display();
+														}
+													}
+												};
+											})(properties, key, $menuitem_span, column_id));
+								}
 								$menuitem.append($menuitem_previous);
 								$menuitem.append($menuitem_next);
 								$menuitem.append($menuitem_span);
