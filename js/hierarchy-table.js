@@ -628,6 +628,7 @@ function __cloneObject(o) {
 	var o2 = {};
 	var keys = Object.keys(o);
 	for (var i = 0 ; i != keys.length ; ++i) {
+		var key = keys[i];
 		o2[key] = o[key];
 	}
 	return o2;
@@ -843,7 +844,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 							var column_settings_keys = Object.keys(settings);
 							for (var i = 0 ; i < column_settings_keys.length ; ++i) {
 								var key = column_settings_keys[i];
-								var setting = ettings[key];
+								var setting = settings[key];
 
 								var $menuitem = $("<li/>");
 								$menuitem.addClass("column-settings");

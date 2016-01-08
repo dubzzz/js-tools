@@ -195,8 +195,14 @@
 					}
 					data.push(items);
 				}
+				var properties = new Array();
+				for (var i = 0 ; i != items_labels.length ; ++i) {
+					properties.push(new ColumnProperties(items_labels[i]));
+				}
+				properties[3].withSettings(__HierarchySizeItem__settings);
+
 				var num_hierarchy_columns = 1;
-				hierarchyTable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, [
+				hierarchyTable = new HierarchyTable($table, properties, data, num_hierarchy_columns, [
 						{label: "Absolute path to JSON", callback: toJSON}
 						, {label: "Filename to JSON", callback: FilenameToJSON}]);
 				return hierarchyTable;
