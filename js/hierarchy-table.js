@@ -745,8 +745,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 
 	var _row_contextmenu = contextMenuCallbacks;
 	var _onReorder = undefined;
-	var _onTitleChange = undefined;
 	var _onSettingsChange = undefined;
+	var _onTitleChange = undefined;
 
 	// HierarchyRow
 	var _main_hierarchy_row = new HierarchyRow(undefined, undefined, undefined, _row_contextmenu);
@@ -1183,6 +1183,15 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	// and should return a boolean: true means that no rebuild and display update is required as everything has been done by the callback
 	self.registerOnSettingsChange = function(callback) {
 		_onSettingsChange = callback;
+		return self;
+	};
+
+	// Callback will be called just after the update of column's title
+	// It receives: column_id (impacted properties)
+	// and should return a boolean: true means that no rebuild and display update is required as everything has been done by the callback
+	// Column's title has to be defined as editable using withTitleUpdate
+	self.registerOnTitleChange = function(callback) {
+		_onTitleChange = callback;
 		return self;
 	};
 
