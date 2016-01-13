@@ -1121,7 +1121,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 
 	/** Refresh of display **/
 
-	// Force a full refresh of the display
+	// Refresh only column's title
 	self.refreshTitles = function() {
 		var $titles = $_table.find("thead > tr");
 		$titles.empty();
