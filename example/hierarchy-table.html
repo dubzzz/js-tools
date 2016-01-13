@@ -205,7 +205,8 @@
 				for (var i = 0 ; i != items_labels.length ; ++i) {
 					properties.push(new ColumnProperties(items_labels[i]));
 				}
-				properties[3].withSettings(__HierarchySizeItem__settings);
+				properties[0].withTitleUpdate();
+				properties[3].withSettings(__HierarchySizeItem__settings).withTitleUpdate();
 
 				var num_hierarchy_columns = 1;
 				hierarchyTable = new HierarchyTable($table, properties, data, num_hierarchy_columns, [

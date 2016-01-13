@@ -643,12 +643,14 @@ function ColumnProperties(title) {
 	var _settings = {};
 	var _settings_value = {};
 	var _no_settings_update = false;
+	var _title_update = false;
 
 	self.title = function() { return _title; }
 	self.settings = function() { return _settings; };
 	self.settingValue = function(key) { return _settings_value[key]; };
 
 	self.isNoSettingsUpdate = function() { return _no_settings_update; };
+	self.isTitleUpdate = function() { return _title_update; };
 	self.hasSettings = function() { return Object.keys(_settings).length > 0; };
 
 	self.withNoSettingsUpdate = function(value) {
@@ -660,6 +662,17 @@ function ColumnProperties(title) {
 		}
 		return self;
 	};
+
+	self.withTitleUpdate = function(value) {
+		if (value === false) {
+			_title_update = false;
+		}
+		else {
+			_title_update = true;
+		}
+		return self;
+	};
+
 	self.withSettingValue = function(key, value) {
 		_settings_value[key] = value;
 		return self;
@@ -681,6 +694,10 @@ function ColumnProperties(title) {
 			_settings_value[key] = setting['default_value'];
 		}
 		return self;
+	};
+
+	self.withTitle = function(title) {
+		_title = title;
 	};
 }
 
@@ -728,6 +745,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 
 	var _row_contextmenu = contextMenuCallbacks;
 	var _onReorder = undefined;
+	var _onTitleChange = undefined;
 	var _onSettingsChange = undefined;
 
 	// HierarchyRow
@@ -905,7 +923,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			var $title = $("<th/>");
 			var column_properties = _columns_properties[i];
 			$title.click(self._onClickReorder);
-			if (column_properties.hasSettings() || (_row_contextmenu !== undefined && _row_contextmenu.length > 0)) {
+			if (column_properties.isTitleUpdate() || column_properties.hasSettings() || (_row_contextmenu !== undefined && _row_contextmenu.length > 0)) {
 				$title.on("contextmenu", 
 					(function(properties, column_id) {
 						return function(event) {
@@ -918,6 +936,48 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 							}
 							else {
 								$contextmenu.html("");
+							}
+
+							if (properties.isTitleUpdate()) {
+								var $menuitem = $("<li/>");
+								$menuitem.addClass("column-settings");
+								var $menuitem_span = $("<span/>");
+								$menuitem_span.text("Rename");
+								$menuitem.append($menuitem_span);
+								var $menuitem_input = $("<input/>");
+								$menuitem_input.css("visibility", "hidden");
+								$menuitem_input.val(properties.title());
+								$menuitem_input.keypress(
+										(function(properties) {
+											return function(e) {
+												if(e.which == 13) {
+													properties.withTitle($(this).val());
+													$contextmenu.hide(100);
+													if (_onTitleChange === undefined || ! _onTitleChange(column_id)) {
+														self._build();
+														self._display();
+													}
+								    			}
+											};
+										})(properties));
+								$menuitem.append($menuitem_input);
+								$menuitem.click(function(e) {
+										var $input = $(this).find("input");
+										if ($input.css("visibility") == "hidden") {
+											var $span = $(this).find("span");
+											$span.text($span.text() + ": ");
+											$input.css("visibility", "visible");
+											$input.focus();
+											$input.select();
+										}
+								});
+								$contextmenu.append($menuitem);
+							}
+
+							if (properties.isTitleUpdate() && properties.hasSettings()) {
+								var $menuitem = $("<li/>");
+								$menuitem.addClass("separator");
+								$contextmenu.append($menuitem);
 							}
 
 							var settings = properties.settings();
@@ -982,7 +1042,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 							}
 
 							if (_row_contextmenu !== undefined && _row_contextmenu.length > 0) {
-								if (properties.hasSettings()) {
+								if (properties.hasSettings() || (properties.isTitleUpdate() && ! properties.hasSettings())) {
 									var $menuitem = $("<li/>");
 									$menuitem.addClass("separator");
 									$contextmenu.append($menuitem);
