@@ -679,7 +679,8 @@ function ColumnProperties(title) {
 			var setting = settings[key];
 			_settings[key] = {
 					label: setting['label'],
-					values: __cloneObject(setting['values'])
+					values: __cloneObject(setting['values']),
+					default_value: setting['default_value']
 			};
 			_settings_value[key] = setting['default_value'];
 		}
@@ -696,6 +697,36 @@ function ColumnProperties(title) {
 		}
 		else {
 			_title_update = true;
+		}
+		return self;
+	};
+
+	self.toString = function(export_defaults) {
+		var escaped_title = encodeURIComponent(title);
+		var escaped_settings_list = new Array();
+		var keys = Object.keys(_settings);
+		for (var i = 0 ; i != keys.length ; ++i) {
+			var key = keys[i];
+			var value = _settings_value[key];
+			if (export_defaults === true || value != _settings[key]['default_value']) {
+				escaped_settings_list.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+			}
+		}
+		return escaped_title + ":" + escaped_settings_list.join(";");
+	};
+
+	self.fromString = function(str) {
+		var splitted = str.split(":");
+		if (splitted.length != 2) {
+			return;
+		}
+
+		self.withTitle(decodeURIComponent(splitted[0]));
+
+		var escaped_settings_list = splitted[1].split(";");
+		for (var i = 0 ; i != escaped_settings_list.length ; ++i) {
+			var key_value = escaped_settings_list[i].split("=");
+			self.withSettingValue(decodeURIComponent(key_value[0]), decodeURIComponent(key_value[1]));
 		}
 		return self;
 	};
