@@ -1214,9 +1214,10 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.getSettingValue = function(column_id, key) { return _columns_properties[column_id].settingValue(key); };
 	self.getSortCriteria = function() { return _sortCriteria; };
 	
+	// Table will be sorted and displayed again
 	self.sort = function(criteria) {
 		_sortCriteria = criteria.slice();
-		self.refresh();
+		self._display();
 	};
 
 	{
