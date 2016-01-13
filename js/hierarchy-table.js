@@ -1131,6 +1131,11 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.getSettings = function(column_id) { return _columns_properties[column_id].settings(); };
 	self.getSettingValue = function(column_id, key) { return _columns_properties[column_id].settingValue(key); };
 	self.getSortCriteria = function() { return _sortCriteria; };
+	
+	self.sort = function(criteria) {
+		_sortCriteria = criteria.slice();
+		self.refresh();
+	};
 
 	{
 		self._build();
