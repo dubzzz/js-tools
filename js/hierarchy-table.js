@@ -663,16 +663,6 @@ function ColumnProperties(title) {
 		return self;
 	};
 
-	self.withTitleUpdate = function(value) {
-		if (value === false) {
-			_title_update = false;
-		}
-		else {
-			_title_update = true;
-		}
-		return self;
-	};
-
 	self.withSettingValue = function(key, value) {
 		_settings_value[key] = value;
 		return self;
@@ -698,6 +688,16 @@ function ColumnProperties(title) {
 
 	self.withTitle = function(title) {
 		_title = title;
+	};
+
+	self.withTitleUpdate = function(value) {
+		if (value === false) {
+			_title_update = false;
+		}
+		else {
+			_title_update = true;
+		}
+		return self;
 	};
 }
 
@@ -912,13 +912,8 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		}
 	};
 
-	// @private
-	self._display = function() {
-		_main_hierarchy_row.sort(_sortCriteria);
-		$_table.children().remove();
-		
-		var $thead = $("<thead/>");
-		var $titles = $("<tr/>");
+	self._displayTitles = function($titles)
+	{
 		for (var i = 0 ; i != _columns_properties.length ; i++) {
 			var $title = $("<th/>");
 			var column_properties = _columns_properties[i];
@@ -954,8 +949,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 													properties.withTitle($(this).val());
 													$contextmenu.hide(100);
 													if (_onTitleChange === undefined || ! _onTitleChange(column_id)) {
-														self._build();
-														self._display();
+														self.refreshTitles();
 													}
 								    			}
 											};
@@ -1104,6 +1098,16 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 				$title_text.parent().append($title_order);
 			}
 		}
+	};
+
+	// @private
+	self._display = function() {
+		_main_hierarchy_row.sort(_sortCriteria);
+		$_table.children().remove();
+		
+		var $thead = $("<thead/>");
+		var $titles = $("<tr/>");
+		self._displayTitles($titles);
 		$thead.append($titles);
 		$_table.append($thead);
 		
@@ -1115,8 +1119,16 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		$_table.append($tbody);
 	};
 
-	/** Force a full refresh of the display **/
+	/** Refresh of display **/
 
+	// Force a full refresh of the display
+	self.refreshTitles = function() {
+		var $titles = $_table.find("thead > tr");
+		$titles.empty();
+		self._displayTitles($titles);
+	};
+
+	// Force a full refresh of the display
 	self.refresh = function() {
 		self._build();
 		self._display();
