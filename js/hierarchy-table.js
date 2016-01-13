@@ -639,7 +639,7 @@ function __cloneObject(o) {
 function ColumnProperties(title) {
 	var self = this;
 
-	var _title = title;
+	var _title = title.replace(/^\s+|\s+$/g, '');
 	var _settings = {};
 	var _settings_value = {};
 	var _no_settings_update = false;
@@ -688,7 +688,7 @@ function ColumnProperties(title) {
 	};
 
 	self.withTitle = function(title) {
-		_title = title;
+		_title = title.replace(/^\s+|\s+$/g, '');
 	};
 
 	self.withTitleUpdate = function(value) {
