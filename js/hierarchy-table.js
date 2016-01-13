@@ -639,7 +639,8 @@ function __cloneObject(o) {
 function ColumnProperties(title) {
 	var self = this;
 
-	var _title = title.replace(/^\s+|\s+$/g, '');
+	var _initial_title = title.replace(/^\s+|\s+$/g, '');
+	var _title = _initial_title;
 	var _settings = {};
 	var _settings_value = {};
 	var _no_settings_update = false;
@@ -702,7 +703,9 @@ function ColumnProperties(title) {
 	};
 
 	self.toString = function(export_defaults) {
-		var escaped_title = encodeURIComponent(_title);
+		var escaped_title = export_defaults === true || _title != _initial_title
+			? (_title.length == 0 ? encodeURIComponent(" ") : encodeURIComponent(_title))
+			: "";
 		var escaped_settings_list = new Array();
 		var keys = Object.keys(_settings);
 		for (var i = 0 ; i != keys.length ; ++i) {
@@ -721,7 +724,9 @@ function ColumnProperties(title) {
 			return;
 		}
 
-		self.withTitle(decodeURIComponent(splitted[0]));
+		if (splitted[0].length > 0) { // =0 means that we do not have any details concerning the title
+			self.withTitle(decodeURIComponent(splitted[0]));
+		}
 
 		var escaped_settings_list = splitted[1].split(";");
 		for (var i = 0 ; i != escaped_settings_list.length ; ++i) {
