@@ -702,7 +702,7 @@ function ColumnProperties(title) {
 	};
 
 	self.toString = function(export_defaults) {
-		var escaped_title = encodeURIComponent(title);
+		var escaped_title = encodeURIComponent(_title);
 		var escaped_settings_list = new Array();
 		var keys = Object.keys(_settings);
 		for (var i = 0 ; i != keys.length ; ++i) {
