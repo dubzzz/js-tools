@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="colResizable-1.5.min.js"></script> <!-- http://www.bacubacu.com/colresizable/js/colResizable-1.5.min.js -->
 
     <link rel="stylesheet" href="../css/hierarchy-table.css" />
     <script src="../js/hierarchy-table.js"></script>
@@ -15,7 +16,7 @@
   </head>
   <body>
     <div id="webpage-content" class="container">
-		<table id="display-tree-expenses-table" class="hierarchy-table">
+		<table id="display-tree-expenses-table" class="hierarchy-table" width="500px">
 			<thead>
 				<tr><th></th></tr>
 			</thead>
@@ -114,9 +115,21 @@
 				/* properties have changed,
 				false means hierarchy must rebuild itself
 				true refresh as already been done */
-				if (column_id == 3) {
-					window.location.hash = "#" + htable.getProperties(column_id).toString();
+				var table_size = 0;
+
+				var $columns = $table.find("tr > th");
+				var columns_size = new Array();
+				for (var i = 0 ; i != $columns.length ; ++i) {
+					var col_size = $($columns[i]).outerWidth();
+					columns_size.push(col_size);
+					table_size += col_size;
 				}
+				var columns_percentage = new Array();
+				for (var i = 0 ; i != columns_size.length ; ++i) {
+					columns_percentage.push(Math.round(100 * columns_size[i] / table_size));
+				}
+
+				window.location.hash = "#" + columns_percentage.join(",") + ":" + htable.getProperties(3).toString();
 				return false;
 			};
 			
@@ -221,7 +234,7 @@
 				properties[3]
 						.withSettings(__HierarchySizeItem__settings)
 						.withTitleUpdate()
-						.fromString(window.location.hash.substr(1));
+						.fromString(window.location.hash.substr(1).split(":").splice(1).join(":"));
 
 				var num_hierarchy_columns = 1;
 				hierarchyTable = new HierarchyTable($table, properties, data, num_hierarchy_columns, [
@@ -233,6 +246,16 @@
 			}
 
 			var htable = buildHierarchyTable(rawdata, $table);
+			$table.colResizable({liveDrag:true, onResize:function(){notifyChangeInProperties(undefined);}});
+			var hash_split = window.location.hash.substr(1).split(":");
+			if (hash_split.length > 0) {
+				var col_sizes = hash_split[0].split(",");
+				var $columns = $table.find("tr > th");
+				for (var i = 0 ; i != col_sizes.length ; ++i) {
+					$($columns[i]).outerWidth($table.outerWidth() * parseInt(col_sizes[i])/100)
+				}
+			}
+			notifyChangeInProperties(undefined);
 		-->
 		</script>
     </div>
