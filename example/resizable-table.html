@@ -70,14 +70,42 @@
 			</tbody>
 		</table>
 		</div>
+		<div>
+		<table class="resizable-table" width="800px">
+			<thead>
+				<tr>
+					<th>Column 1</th>
+					<th>Column 2</th>
+					<th>Column 3</th>
+					<th>Column 4</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Data 1.1</td>
+					<td>Data 1.2</td>
+					<td>Data 1.3</td>
+					<td>Data 1.4</td>
+				</tr>
+				<tr>
+					<td>Data 2.1</td>
+					<td>Data 2.2</td>
+					<td>Data 2.3</td>
+					<td>Data 2.4</td>
+				</tr>
+			</tbody>
+		</table>
+		</div>
 		<script type="text/javascript">
 		<!--
 			function resizeBoth(inst, $table, sizes) {
-				if (inst == resizable1) { resizable2.resize(sizes, true); }
-				if (inst == resizable2) { resizable1.resize(sizes, true); }
+				if (inst == resizable1) { resizable2.resize(sizes, true); resizable3.resize(sizes, true); }
+				if (inst == resizable2) { resizable1.resize(sizes, true); resizable3.resize(sizes, true); }
+				if (inst == resizable3) { resizable1.resize(sizes, true); resizable2.resize(sizes, true); }
 			}
 			var resizable1 = new ResizableTable($(".resizable-table").eq(0)).registerOnResize(resizeBoth);
 			var resizable2 = new ResizableTable($(".resizable-table").eq(1)).registerOnResize(resizeBoth);
+			var resizable3 = new ResizableTable($(".resizable-table").eq(2)).registerOnResize(resizeBoth);
 		-->
 		</script>
     </div>
