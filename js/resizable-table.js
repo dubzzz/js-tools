@@ -6,12 +6,16 @@ function ResizableTable($table) {
 	var $_table_container = $("<div/>");
 	var $_table = $table;
 
+	var _onResize = undefined;
+
 	// Resize the table with given columns dimensions (try to apply these dimensions)
 	// @param sizes Array of dimensions that should be applied to columns
 	//     if the number of given dimensions differ from the number of columns: unspecified behaviour
 	//     if one of the dimensions is negative: unspecified behaviour
 	//     if sum of dimensions different from table's size, will apply a ratio to have the new values
-	self.resize = function(sizes) {
+	// @param no_callback Deactivate onResize callback for this call, Default=false
+	self.resize = function(sizes, no_callback) {
+		console.log("in: " + sizes);
 		// move cursors towards expected result
 		var $columns = $_table.find("> thead > tr > th");
 		if (sizes.length != $columns.length) {
@@ -31,7 +35,7 @@ function ResizableTable($table) {
 		}
 
 		// resize the table itself to follow the cursors
-		self.resizeToLastKnown();
+		self.resizeToLastKnown(no_callback);
 
 		// move the cursor to their new positions (table not be exactly inlined with cursors that is why we move the cursors)
 		self.refresh();
@@ -39,7 +43,9 @@ function ResizableTable($table) {
 
 	// Resize the table to fit with last known cursors
 	// Table adapts to cursors
-	self.resizeToLastKnown = function() {
+	// @param no_callback Deactivate onResize callback for this call, Default=false
+	// @return true if it had impacts on table's columns
+	self.resizeToLastKnown = function(no_callback) {
 		var $cursors = $_table_container.find("> div.resizable-table-cursor");
 		var $columns = $_table.find("> thead > tr > th");
 		var previous = 0;
@@ -47,6 +53,14 @@ function ResizableTable($table) {
 			var left = $cursors.eq(i).position().left;
 			$columns.eq(i).outerWidth(left-previous);
 			previous = left;
+		}
+
+		if (no_callback !== true && _onResize !== undefined) {
+			var sizes = new Array();
+			for (var i = 0 ; i != $columns.length ; ++i) {
+				sizes.push($columns.eq(i).outerWidth());
+			}
+			_onResize(self, $_table, sizes);
 		}
 	};
 
@@ -84,6 +98,17 @@ function ResizableTable($table) {
 			})($cursor));
 			$_table_container.append($cursor);
 		}
+	};
+
+	// Callback will be called each time a resize operation handled by ResizableTable
+	// imply changes columns's dimension
+	// Callback receives the parameters:
+	//  - self:   instance of ResizableTable
+	//  - $table: jQuery DOM of the table
+	//  - sizes:  column's dimensions
+	self.registerOnResize = function(callback) {
+		_onResize = callback;
+		return self;
 	};
 
 	{
