@@ -5,7 +5,6 @@ function ResizableTable($table) {
 
 	var $_table_container = $("<div/>");
 	var $_table = $table;
-	self._last_width = 0;
 	self._ongoing_changes = false;
 
 	var _onResize = undefined;
@@ -77,8 +76,6 @@ function ResizableTable($table) {
 	// Refresh the cursors' position to fit with current table's state
 	// Cursors adapt to table
 	self.refresh = function() {
-		self._last_width = $_table_container.outerWidth();
-
 		// remove existing cursors
 		$_table_container.find("> div.resizable-table-cursor").remove();
 
@@ -141,26 +138,6 @@ function ResizableTable($table) {
 		$_table_container.addClass("resizable-table-container");
 		$_table.before($_table_container); // create table container to wrap the table (created before the table element)
 		$_table_container.append($_table); // move table into the container
-
-		self._last_width = $_table_container.outerWidth();
-		$_table.bind("DOMSubtreeModified", function() {
-			if (self._ongoing_changes) {
-				return;
-			}
-			var sizes = new Array();
-			var $cursors = $_table_container.find("> div.resizable-table-cursor");
-			if ($cursors.length == 0) {
-				return;
-			}
-			var previous = 0;
-			for (var i = 0 ; i != $cursors.length ; ++i) {
-				var left = $cursors.eq(i).position().left;
-				sizes.push(left-previous);
-				previous = left;
-			}
-			sizes.push(self._last_width-previous);
-			self.resize(sizes);
-		});
 
 		self.refresh();
 	}
