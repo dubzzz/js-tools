@@ -54,11 +54,7 @@ function ResizableTable($table) {
 		}
 
 		if (no_callback !== true && _onResize !== undefined) {
-			var sizes = new Array();
-			for (var i = 0 ; i != $columns.length ; ++i) {
-				sizes.push($columns.eq(i).outerWidth());
-			}
-			_onResize(self, $_table, sizes);
+			_onResize(self, $_table, self.getSizes());
 		}
 	};
 
@@ -98,11 +94,7 @@ function ResizableTable($table) {
 		}
 
 		if (no_callback !== true && _onResize !== undefined) {
-			var sizes = new Array();
-			for (var i = 0 ; i != $columns.length ; ++i) {
-				sizes.push($columns.eq(i).outerWidth());
-			}
-			_onResize(self, $_table, sizes);
+			_onResize(self, $_table, self.getSizes());
 		}
 	};
 
@@ -115,6 +107,16 @@ function ResizableTable($table) {
 	self.registerOnResize = function(callback) {
 		_onResize = callback;
 		return self;
+	};
+
+	// @return current columns's dimensions
+	self.getSizes = function() {
+		var $columns = $_table.find("> thead > tr > th");
+		var sizes = new Array();
+		for (var i = 0 ; i != $columns.length ; ++i) {
+			sizes.push($columns.eq(i).outerWidth());
+		}
+		return sizes;
 	};
 
 	{
