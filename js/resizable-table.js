@@ -15,7 +15,6 @@ function ResizableTable($table) {
 	//     if sum of dimensions different from table's size, will apply a ratio to have the new values
 	// @param no_callback Deactivate onResize callback for this call, Default=false
 	self.resize = function(sizes, no_callback) {
-		console.log("in: " + sizes);
 		// move cursors towards expected result
 		var $columns = $_table.find("> thead > tr > th");
 		if (sizes.length != $columns.length) {
@@ -35,16 +34,15 @@ function ResizableTable($table) {
 		}
 
 		// resize the table itself to follow the cursors
-		self.resizeToLastKnown(no_callback);
+		self.resizeToLastKnown(true);
 
 		// move the cursor to their new positions (table not be exactly inlined with cursors that is why we move the cursors)
-		self.refresh();
+		self.refresh(no_callback);
 	};
 
 	// Resize the table to fit with last known cursors
 	// Table adapts to cursors
 	// @param no_callback Deactivate onResize callback for this call, Default=false
-	// @return true if it had impacts on table's columns
 	self.resizeToLastKnown = function(no_callback) {
 		var $cursors = $_table_container.find("> div.resizable-table-cursor");
 		var $columns = $_table.find("> thead > tr > th");
@@ -66,7 +64,7 @@ function ResizableTable($table) {
 
 	// Refresh the cursors' position to fit with current table's state
 	// Cursors adapt to table
-	self.refresh = function() {
+	self.refresh = function(no_callback) {
 		// remove existing cursors
 		$_table_container.find("> div.resizable-table-cursor").remove();
 
@@ -97,6 +95,14 @@ function ResizableTable($table) {
 				};
 			})($cursor));
 			$_table_container.append($cursor);
+		}
+
+		if (no_callback !== true && _onResize !== undefined) {
+			var sizes = new Array();
+			for (var i = 0 ; i != $columns.length ; ++i) {
+				sizes.push($columns.eq(i).outerWidth());
+			}
+			_onResize(self, $_table, sizes);
 		}
 	};
 
