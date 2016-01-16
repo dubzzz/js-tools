@@ -6,6 +6,17 @@ function ResizableTable($table) {
 	var $_table_container = $("<div/>");
 	var $_table = $table;
 
+	self._followCursors = function() {
+		var $cursors = $_table_container.find("> div.resizable-table-cursor");
+		var $columns = $_table.find("> thead > tr > th");
+		var previous = 0;
+		for (var i = 0 ; i != $cursors.length ; ++i) {
+			var left = $cursors.eq(i).position().left;
+			$columns.eq(i).outerWidth(left-previous);
+			previous = left;
+		}
+	};
+
 	self.refresh = function() {
 		// remove existing cursors
 		$_table_container.find("> div.resizable-table-cursor").remove();
@@ -18,6 +29,20 @@ function ResizableTable($table) {
 			$cursor.addClass("resizable-table-cursor");
 			$cursor.css("left", $column.position().left);
 			$cursor.css("top", 0);
+			$cursor.on("mousedown", (function($cursor) {
+				return function(e) {
+					var move_handler = function(e) {
+						var x = e.pageX;
+						$cursor.css("left", x - $_table_container.position().left);
+						self._followCursors();
+					};
+					$("body").bind("mousemove", move_handler);
+					$("body").on("mouseup", function() {
+						$("body").unbind("mousemove", move_handler);
+						self.refresh();
+					});
+				};
+			})($cursor));
 			$_table_container.append($cursor);
 		}
 	};
