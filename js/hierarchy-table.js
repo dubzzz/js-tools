@@ -780,6 +780,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	var _num_aggregation_columns = numHierarchyColumns;
 
 	var _row_contextmenu = contextMenuCallbacks;
+	var _onDisplayUpdate = undefined;
 	var _onReorder = undefined;
 	var _onSettingsChange = undefined;
 	var _onTitleChange = undefined;
@@ -1153,6 +1154,14 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			mainRows[i].display($tbody, _num_aggregation_columns, self);
 		}
 		$_table.append($tbody);
+		self._notifyDisplayUpdate();
+	};
+
+	// @private
+	self._notifyDisplayUpdate = function() {
+		if (_onDisplayUpdate !== undefined) {
+			_onDisplayUpdate(self, $table);
+		}
 	};
 
 	/** Refresh of display **/
@@ -1162,6 +1171,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		var $titles = $_table.find("thead > tr");
 		$titles.empty();
 		self._displayTitles($titles);
+		self._notifyDisplayUpdate();
 	};
 
 	// Force a full refresh of the display
@@ -1220,6 +1230,11 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	};
 
 	/** Callback registration **/
+
+	self.registerOnDisplayUpdate = function(callback) {
+		_onDisplayUpdate = callback;
+		return self;
+	};
 
 	self.registerOnReorderCallback = function(callback) {
 		_onReorder = callback;

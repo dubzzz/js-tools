@@ -6,6 +6,7 @@ function ResizableTable($table) {
 	var $_table_container = $("<div/>");
 	var $_table = $table;
 	self._ongoing_changes = false;
+	self._last_width = 0;
 
 	var _onResize = undefined;
 
@@ -39,17 +40,18 @@ function ResizableTable($table) {
 		}
 
 		// resize the table itself to follow the cursors
-		self.resizeToLastKnown(true);
+		self._adaptToCursors(true);
 
 		// move the cursor to their new positions (table not be exactly inlined with cursors that is why we move the cursors)
 		self.refresh();
 		self._ongoing_changes = false;
 	};
 
+	// @private
 	// Resize the table to fit with last known cursors
 	// Table adapts to cursors
 	// @param no_callback Deactivate onResize callback for this call, Default=false
-	self.resizeToLastKnown = function(no_callback) {
+	self._adaptToCursors = function(no_callback) {
 		if (no_callback !== true) {
 			if (self._ongoing_changes) {
 				return;
@@ -73,9 +75,26 @@ function ResizableTable($table) {
 		}
 	};
 
+	// Resize the table to fit with last known dimensions
+	// Ratios will apply
+	self.resizeToPrevious = function() {
+		var sizes = new Array();
+		var $cursors = $_table_container.find("> div.resizable-table-cursor");
+		var previous = 0;
+		for (var i = 0 ; i != $cursors.length ; ++i) {
+			var left = $cursors.eq(i).position().left;
+			sizes.push(left-previous);
+			previous = left;
+		}
+		sizes.push(self._last_width-previous);
+		self.resize(sizes);
+	};
+
 	// Refresh the cursors' position to fit with current table's state
 	// Cursors adapt to table
 	self.refresh = function() {
+		self._last_width = $_table_container.outerWidth();
+
 		// remove existing cursors
 		$_table_container.find("> div.resizable-table-cursor").remove();
 
@@ -95,7 +114,7 @@ function ResizableTable($table) {
 						var maxPosition = $_table_container.outerWidth();
 						if (newPosition >= 0 && newPosition < maxPosition) {
 							$cursor.css("left", newPosition);
-							self.resizeToLastKnown();
+							self._adaptToCursors();
 						}
 					};
 					$("body").bind("mousemove", move_handler);
@@ -138,6 +157,7 @@ function ResizableTable($table) {
 		$_table_container.addClass("resizable-table-container");
 		$_table.before($_table_container); // create table container to wrap the table (created before the table element)
 		$_table_container.append($_table); // move table into the container
+		self._last_width = $_table_container.outerWidth();
 
 		self.refresh();
 	}

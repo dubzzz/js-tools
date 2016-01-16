@@ -12,11 +12,13 @@
 
     <link rel="stylesheet" href="../css/hierarchy-table.css" />
     <script src="../js/hierarchy-table.js"></script>
+    <link rel="stylesheet" href="../css/resizable-table.css" />
+    <script src="../js/resizable-table.js"></script>
     <script src="hierarchy-table-data.js"></script>
   </head>
   <body>
     <div id="webpage-content" class="container">
-		<table id="display-tree-expenses-table" class="hierarchy-table" width="500px">
+		<table id="display-tree-expenses-table" class="hierarchy-table" width="800px">
 			<thead>
 				<tr><th></th></tr>
 			</thead>
@@ -200,6 +202,8 @@
 				}
 				alert(JSON.stringify(json_items));
 			}
+
+			var resizable1 = new ResizableTable($table);
 			function buildHierarchyTable(rawdata, $table) {
 				var known_paths = {};
 				var items_labels = ["path", "filename", "date", "size"];
@@ -227,11 +231,13 @@
 						{label: "Absolute path to JSON", callback: toJSON}
 						, {label: "Filename to JSON", callback: FilenameToJSON}])
 					.registerOnSettingsChange(notifyChangeInSettings)
-					.registerOnTitleChange(notifyChangeInProperties);
+					.registerOnTitleChange(notifyChangeInProperties)
+					.registerOnDisplayUpdate(function(htable, $table) { resizable1.resizeToPrevious() });
 				return hierarchyTable;
 			}
 
 			var htable = buildHierarchyTable(rawdata, $table);
+			resizable1.refresh();
 			notifyChangeInProperties(undefined);
 		-->
 		</script>
