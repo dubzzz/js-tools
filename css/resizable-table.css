@@ -1,0 +1,32 @@
+/**
+ * Overlay configuration
+ */
+
+div.resizable-table-container
+{
+    display: inline-block;
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+div.resizable-table-cursor
+{
+    position: absolute;
+    z-index: 999;
+
+    width: 10px;
+    height: 100%;
+    
+    margin-left: -5px;
+    cursor: w-resize;
+}
+
+div.resizable-table-cursor:hover:after
+{
+    content: '';
+    display: block;
+    height: 100%;
+    margin-left: 4px;
+    border-left: 1px dotted #000000;
+}
