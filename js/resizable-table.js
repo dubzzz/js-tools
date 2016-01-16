@@ -6,7 +6,40 @@ function ResizableTable($table) {
 	var $_table_container = $("<div/>");
 	var $_table = $table;
 
-	self._followCursors = function() {
+	// Resize the table with given columns dimensions (try to apply these dimensions)
+	// @param sizes Array of dimensions that should be applied to columns
+	//     if the number of given dimensions differ from the number of columns: unspecified behaviour
+	//     if one of the dimensions is negative: unspecified behaviour
+	//     if sum of dimensions different from table's size, will apply a ratio to have the new values
+	self.resize = function(sizes) {
+		// move cursors towards expected result
+		var $columns = $_table.find("> thead > tr > th");
+		if (sizes.length != $columns.length) {
+			console.warn("ResizableTable::resize: the number of given dimensions differ from the number of columns");
+			return;
+		}
+		var total_size = 0;
+		for (var i = 0 ; i != sizes.length ; ++i) {
+			total_size += sizes[i];
+		}
+		var ratio = $_table_container.outerWidth() / total_size;
+		var $cursors = $_table_container.find("> div.resizable-table-cursor");
+		var last = 0;
+		for (var i = 0 ; i != sizes.length ; ++i) {
+			last += ratio * sizes[i];
+			$cursors.eq(i).css("left", last);
+		}
+
+		// resize the table itself to follow the cursors
+		self.resizeToLastKnown();
+
+		// move the cursor to their new positions (table not be exactly inlined with cursors that is why we move the cursors)
+		self.refresh();
+	};
+
+	// Resize the table to fit with last known cursors
+	// Table adapts to cursors
+	self.resizeToLastKnown = function() {
 		var $cursors = $_table_container.find("> div.resizable-table-cursor");
 		var $columns = $_table.find("> thead > tr > th");
 		var previous = 0;
@@ -17,6 +50,8 @@ function ResizableTable($table) {
 		}
 	};
 
+	// Refresh the cursors' position to fit with current table's state
+	// Cursors adapt to table
 	self.refresh = function() {
 		// remove existing cursors
 		$_table_container.find("> div.resizable-table-cursor").remove();
@@ -37,7 +72,7 @@ function ResizableTable($table) {
 						var maxPosition = $_table_container.outerWidth();
 						if (newPosition >= 0 && newPosition < maxPosition) {
 							$cursor.css("left", newPosition);
-							self._followCursors();
+							self.resizeToLastKnown();
 						}
 					};
 					$("body").bind("mousemove", move_handler);
