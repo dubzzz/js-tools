@@ -99,9 +99,9 @@
 		<script type="text/javascript">
 		<!--
 			function resizeBoth(inst, $table, sizes) {
-				if (inst == resizable1) { resizable2.resize(sizes, true); resizable3.resize(sizes, true); }
-				if (inst == resizable2) { resizable1.resize(sizes, true); resizable3.resize(sizes, true); }
-				if (inst == resizable3) { resizable1.resize(sizes, true); resizable2.resize(sizes, true); }
+				resizable1.resize(sizes);
+				resizable2.resize(sizes);
+				resizable3.resize(sizes);
 			}
 			var resizable1 = new ResizableTable($(".resizable-table").eq(0)).registerOnResize(resizeBoth);
 			var resizable2 = new ResizableTable($(".resizable-table").eq(1)).registerOnResize(resizeBoth);
