@@ -33,8 +33,12 @@ function ResizableTable($table) {
 				return function(e) {
 					var move_handler = function(e) {
 						var x = e.pageX;
-						$cursor.css("left", x - $_table_container.position().left);
-						self._followCursors();
+						var newPosition = x - $_table_container.position().left;
+						var maxPosition = $_table_container.outerWidth();
+						if (newPosition >= 0 && newPosition < maxPosition) {
+							$cursor.css("left", newPosition);
+							self._followCursors();
+						}
 					};
 					$("body").bind("mousemove", move_handler);
 					$("body").on("mouseup", function() {
