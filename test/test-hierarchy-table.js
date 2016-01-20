@@ -858,7 +858,7 @@ function HierarchySettingsItem(data, assert) {
 			return String(self.data);
 		}
 		else {
-			return "~" + String(Math.floor(self.data/100));
+			return "~" + String(Math.floor(self.data % 100)) + "." + String(Math.floor(self.data/100));
 		}
 	};
 	self.aggregate = function(other) {
@@ -938,13 +938,13 @@ QUnit.test("One unique column with settings", function(assert) {
 			["30",   ""]];
 	checkContent(assert, real_content, expected_content);
 
-	assert.ok(true, "Expand line 2");
+	assert.ok(true, "Expand line 3");
 	$table.find("tbody > tr .expand-button").eq(2).click();
-	assert.ok(true, "Expand line 1");
+	assert.ok(true, "Expand line 2");
 	$table.find("tbody > tr .expand-button").eq(1).click();
-	assert.ok(true, "Expand line 0");
+	assert.ok(true, "Expand line 1");
 	$table.find("tbody > tr .expand-button").eq(0).click();
-	assert.ok(true, "Add sort on column 1");
+	assert.ok(true, "Add sort on column 2");
 	$table.find("thead > tr > th").eq(1).click();
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
@@ -988,6 +988,69 @@ QUnit.test("One unique column with settings as hierarchy", function(assert) {
 			["110", "20"],
 			[ "20",  "0"],
 			["120", "60"]];
+	checkContent(assert, real_content, expected_content);
+});
+
+QUnit.test("Multiple columns sharing same class having settings", function(assert) {
+	var data = [
+		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert),  new HierarchySettingsItem(20, assert)],
+		[new HierarchyItem(10), new HierarchySettingsItem(105, assert), new HierarchySettingsItem(105, assert)],
+		[new HierarchyItem(20), new HierarchySettingsItem(110, assert), new HierarchySettingsItem(110, assert)],
+		[new HierarchyItem(20), new HierarchySettingsItem(150, assert), new HierarchySettingsItem(150, assert)],
+		[new HierarchyItem(10),  new HierarchySettingsItem(10, assert),  new HierarchySettingsItem(10, assert)],
+		[new HierarchyItem(30),   new HierarchySettingsItem(1, assert),   new HierarchySettingsItem(1, assert)],
+		[new HierarchyItem(30), new HierarchySettingsItem(101, assert), new HierarchySettingsItem(101, assert)],
+		[new HierarchyItem(40),   new HierarchySettingsItem(1, assert),   new HierarchySettingsItem(1, assert)],
+		[new HierarchyItem(40),   new HierarchySettingsItem(1, assert),   new HierarchySettingsItem(1, assert)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_columns = [
+			new ColumnProperties("Data 1")
+			, new ColumnProperties("Data 2")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("aggregate", "a2")
+				.withSettingValue("display", "d2")
+			, new ColumnProperties("Data 3")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("compare", "c2")
+	];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10",      "",   ""],
+			["20", "~60.2",   ""],
+			["30",      "",   ""],
+			["40",  "~2.0",  "2"]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Expand line 4");
+	$table.find("tbody > tr .expand-button").eq(3).click();
+	assert.ok(true, "Expand line 3");
+	$table.find("tbody > tr .expand-button").eq(2).click();
+	assert.ok(true, "Expand line 2");
+	$table.find("tbody > tr .expand-button").eq(1).click();
+	assert.ok(true, "Expand line 1");
+	$table.find("tbody > tr .expand-button").eq(0).click();
+	assert.ok(true, "Add sort on column 3");
+	$table.find("thead > tr > th").eq(2).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10",      "",    ""],
+			[  "",  "~5.1", "105"],
+			[  "", "~10.0",  "10"],
+			[  "", "~20.0",  "20"],
+			["20", "~60.2",    ""],
+			[  "", "~10.1", "110"],
+			[  "", "~50.1", "150"],
+			["30",      "",    ""],
+			[  "",  "~1.0",   "1"],
+			[  "",  "~1.1", "101"],
+			["40",  "~2.0",   "2"],
+			[  "",  "~1.0",   "1"],
+			[  "",  "~1.0",   "1"]];
 	checkContent(assert, real_content, expected_content);
 });
 
