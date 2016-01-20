@@ -716,7 +716,6 @@ QUnit.test("Remove a hierarchy column does not collapse expanded nodes", functio
 	$($table.find("tbody > tr .expand-button")[2]).click();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
-	console.log(real_content);
 	var expected_content = [
 			["10",             "35"],
 			[      "10",       "25"],
@@ -842,4 +841,158 @@ QUnit.test("Add a column on expanded and keep it expanded", function(assert) {
 			[  "",  "0", "10"],
 			["20", "30", "60"]];
 	checkContent(assert, real_content, expected_content);
+});
+
+QUnit.module("HierarchyNode::ColumnProperties");
+
+QUnit.test("<constructor>", function(assert) {
+	var properties = new ColumnProperties("My wonderful properties");
+	assert.equal(properties.title(), "My wonderful properties", "Title correctly defined");
+	assert.deepEqual(properties.settings(), {}, "No settings defined");
+	assert.ok(!properties.isNoSettingsUpdate(), "Flag: No settings update correctly set");
+	assert.ok(!properties.isTitleUpdate(), "Flag: Update title correctly set");
+	assert.ok(!properties.hasSettings(), "Flag: Has settings correctly set");
+});
+
+QUnit.test("Trimmed title", function(assert) {
+	var p1 = new ColumnProperties("    trim left with constructor");
+	assert.equal(p1.title(), "trim left with constructor", "Trim left with constructor");
+
+	var p2 = new ColumnProperties("trim right with constructor    ");
+	assert.equal(p2.title(), "trim right with constructor", "Trim right with constructor");
+
+	var p3 = new ColumnProperties("    trim both with constructor    ");
+	assert.equal(p3.title(), "trim both with constructor", "Trim both with constructor");
+
+	var p = new ColumnProperties("no trim");
+	p.withTitle("    trim left with setter");
+	assert.equal(p.title(), "trim left with setter", "Trim left with setter");
+
+	p.withTitle("trim right with setter    ");
+	assert.equal(p.title(), "trim right with setter", "Trim right with setter");
+
+	p.withTitle("    trim both with setter    ");
+	assert.equal(p.title(), "trim both with setter", "Trim both with setter");
+});
+
+QUnit.test("withSettings copies the settings", function(assert) {
+	var properties = new ColumnProperties("My wonderful properties");
+	var settings = {
+		"setting1": {
+			label: "label setting1",
+			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
+			default_value: "v1.1"
+		}, "setting2": {
+			label: "label setting2",
+			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
+			default_value: "v2.1"
+		}, 
+	};
+	var settings_copy_original = {
+		"setting1": {
+			label: "label setting1",
+			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
+			default_value: "v1.1"
+		}, "setting2": {
+			label: "label setting2",
+			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
+			default_value: "v2.1"
+		}, 
+	};
+	properties.withSettings(settings);
+
+	settings["setting3"] = {
+		label: "label setting3",
+		values: {"v3.1": "value of v3.1", "v3.2": "value of v3.2"},
+		default_value: "v3.1"
+	};
+	assert.deepEqual(properties.settings(), settings_copy_original, "Settings should not be altered");
+
+	settings["setting1"]["values"]["v1.2"] = "value of v1.2";
+	assert.deepEqual(properties.settings(), settings_copy_original, "Settings should not be altered");
+});
+
+QUnit.test("Check setting value", function(assert) {
+	var properties = new ColumnProperties("My wonderful properties");
+	var settings = {
+		"setting1": {
+			label: "label setting1",
+			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
+			default_value: "v1.1"
+		}, "setting2": {
+			label: "label setting2",
+			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
+			default_value: "v2.2"
+		}, 
+	};
+	
+	properties.withSettings(settings);
+
+	assert.equal(properties.settingValue("setting1"), "v1.1", "Use 'default_value' key for the initial value of the setting");
+	assert.equal(properties.settingValue("setting2"), "v2.2", "Use 'default_value' key for the initial value of the setting");
+});
+
+QUnit.test("Check export using toString", function(assert) {
+	var properties = new ColumnProperties("My wonderful properties");
+	var settings = {
+		"setting1": {
+			label: "label setting1",
+			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
+			default_value: "v1.1"
+		}, "setting2": {
+			label: "label setting2",
+			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
+			default_value: "v2.2"
+		}, 
+	};
+	properties.withSettings(settings);
+
+	assert.equal(properties.toString(), ":", "Only export modified values");
+	properties.withSettingValue("setting2", "v2.1");
+	assert.equal(properties.toString(), ":setting2=v2.1", "Only export modified values");
+	properties.withSettingValue("setting2", "v2.2");
+	properties.withSettingValue("setting1", "v1.3");
+	assert.equal(properties.toString(), ":setting1=v1.3", "Only export modified values");
+	properties.withTitle("My wonderful properties");
+	assert.equal(properties.toString(), ":setting1=v1.3", "Only export modified values");
+	properties.withTitle("My wonderful properties 2");
+	assert.equal(properties.toString(), "My%20wonderful%20properties%202:setting1=v1.3", "Only export modified values");
+	
+	properties.withSettings(settings);
+	properties.withTitle("My wonderful properties");
+	properties.withSettingValue("setting1", "v1.3");
+
+	var result = properties.toString(true);
+	assert.ok(result == "My%20wonderful%20properties:setting1=v1.3;setting2=v2.2" || result == "My%20wonderful%20properties:setting2=v2.2;setting1=v1.3", "Export everything");
+});
+
+QUnit.test("Check import using fromString", function(assert) {
+	var properties = new ColumnProperties("My wonderful properties");
+	var settings = {
+		"setting1": {
+			label: "label setting1",
+			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
+			default_value: "v1.1"
+		}, "setting2": {
+			label: "label setting2",
+			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
+			default_value: "v2.2"
+		}, 
+	};
+	properties.withSettings(settings).withSettingValue("setting2", "v2.1");
+
+	properties.fromString(":");
+	assert.equal(properties.title(), "My wonderful properties" , "Nothing should have been modified <title>");
+	assert.equal(properties.settingValue("setting1"), "v1.1" , "Nothing should have been modified <setting1>");
+	assert.equal(properties.settingValue("setting2"), "v2.1" , "Nothing should have been modified <setting2>");
+
+	properties.fromString(":setting1=v1.3");
+	assert.equal(properties.title(), "My wonderful properties" , "Only <setting1> has been modified <title>");
+	assert.equal(properties.settingValue("setting1"), "v1.3" , "Only <setting1> has been modified <setting1>");
+	assert.equal(properties.settingValue("setting2"), "v2.1" , "Only <setting1> has been modified <setting2>");
+
+	properties.fromString("%20:setting1=v1.1;setting2=v2.2");
+	assert.equal(properties.title(), "" , "Everything has been modified <title>");
+	assert.equal(properties.settingValue("setting1"), "v1.1" , "Everything has been modified <setting1>");
+	assert.equal(properties.settingValue("setting2"), "v2.2" , "Everything has been modified <setting2>");
 });
