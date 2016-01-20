@@ -96,11 +96,11 @@ function retrieveHierarchyTableContent($table_lines) {
 	var real_content = new Array();
 	for (var i = 0 ; i != $table_lines.length ; ++i) {
 		var line = new Array();
-		var $line_tds = $($table_lines[i]).find("td");
+		var $line_tds = $table_lines.eq(i).find("td");
 		for (var j = 0 ; j != $line_tds.length ; ++j) {
-			var $td = $($line_tds[j]);
+			var $td = $line_tds.eq(j);
 			if ($td.find(".expanded").length > 0 || $td.find(".collapsed").length > 0) { // aggreagated
-				line.push($($td.find("span")[1]).text());
+				line.push($td.find("span").eq(1).text());
 			}
 			else {
 				line.push($td.text());
@@ -165,12 +165,12 @@ QUnit.test("Basic HierarchyItem: No aggregation", function(assert) {
 
 	var $table_headers = $table.find("thead > tr > th > span");
 	assert.strictEqual($table_headers.length, 2, "Two-column table");
-	assert.strictEqual($($table_headers[0]).text(), "Data 1", "First column is: Data 1");
-	assert.strictEqual($($table_headers[1]).text(), "Data 2", "Second column is: Data 2");
-	assert.strictEqual($($table_headers[0]).hasClass("hierarchy-asc"), true, "Ascending ordering on first column");
-	assert.strictEqual($($table_headers[0]).hasClass("hierarchy-desc"), false, "No descending ordering on first column");
-	assert.strictEqual($($table_headers[1]).hasClass("hierarchy-asc")
-			|| $($table_headers[1]).hasClass("hierarchy-desc"), false, "No ordering on second column");
+	assert.strictEqual($table_headers.eq(0).text(), "Data 1", "First column is: Data 1");
+	assert.strictEqual($table_headers.eq(1).text(), "Data 2", "Second column is: Data 2");
+	assert.strictEqual($table_headers.eq(0).hasClass("hierarchy-asc"), true, "Ascending ordering on first column");
+	assert.strictEqual($table_headers.eq(0).hasClass("hierarchy-desc"), false, "No descending ordering on first column");
+	assert.strictEqual($table_headers.eq(1).hasClass("hierarchy-asc")
+			|| $table_headers.eq(1).hasClass("hierarchy-desc"), false, "No ordering on second column");
 
 	var $table_lines = $table.find("tbody > tr");
 	var $line_expands = $table_lines.find(".expand-button");
@@ -265,7 +265,7 @@ QUnit.test("Basic HierarchyItem: Multi-level collapse/expand lines", function(as
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Expand 10>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
 			["10"      , ""],
@@ -275,7 +275,7 @@ QUnit.test("Basic HierarchyItem: Multi-level collapse/expand lines", function(as
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Expand 10>0>");
-	$($table.find("tbody > tr .expand-button")[2]).click();
+	$table.find("tbody > tr .expand-button").eq(2).click();
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
 			["10"      ,  ""],
@@ -286,7 +286,7 @@ QUnit.test("Basic HierarchyItem: Multi-level collapse/expand lines", function(as
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Expand 20>");
-	$($table.find("tbody > tr .expand-button")[3]).click();
+	$table.find("tbody > tr .expand-button").eq(3).click();
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
 			["10"      ,  ""],
@@ -299,7 +299,7 @@ QUnit.test("Basic HierarchyItem: Multi-level collapse/expand lines", function(as
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Collapse 10>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
 			["10"      , ""],
@@ -316,8 +316,8 @@ QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables", fun
 		[new HierarchyItem(30), new HierarchyItem(10)],
 		[new HierarchyItem(10), new HierarchyItem(20)]];
 
-	var $table1 = $($('#qunit-fixture > table')[0]);
-	var $table2 = $($('#qunit-fixture > table')[1]);
+	var $table1 = $('#qunit-fixture > table').eq(0);
+	var $table2 = $('#qunit-fixture > table').eq(1);
 	var items_labels = ["Data 1", "Data 2"];
 	var num_hierarchy_columns = 1;
 	var htable1 = new HierarchyTable($table1, items_labels, data1, num_hierarchy_columns, undefined);
@@ -336,7 +336,7 @@ QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables", fun
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Expand on table 2");
-	$($table2.find("tbody > tr .expand-button")[0]).click();
+	$table2.find("tbody > tr .expand-button").eq(0).click();
 
 	assert.ok(true, "Content of table 1");
 	real_content = retrieveHierarchyTableContent($table1.find("tbody > tr"));
@@ -356,8 +356,8 @@ QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables with 
 		[new HierarchyItem(10), new HierarchyItem(10)],
 		[new HierarchyItem(10),  new HierarchyItem(0)]];
 
-	var $table1 = $($('#qunit-fixture > table')[0]);
-	var $table2 = $($('#qunit-fixture > table')[1]);
+	var $table1 = $('#qunit-fixture > table').eq(0);
+	var $table2 = $('#qunit-fixture > table').eq(1);
 	var items_labels = ["Data 1", "Data 2"];
 	var num_hierarchy_columns = 1;
 	var htable1 = new HierarchyTable($table1, items_labels, data, num_hierarchy_columns, undefined);
@@ -374,7 +374,7 @@ QUnit.test("Basic HierarchyItem: No collision between two hierarchy tables with 
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Expand on table 2");
-	$($table2.find("tbody > tr .expand-button")[0]).click();
+	$table2.find("tbody > tr .expand-button").eq(0).click();
 
 	assert.ok(true, "Content of table 1");
 	real_content = retrieveHierarchyTableContent($table1.find("tbody > tr"));
@@ -406,7 +406,7 @@ QUnit.test("Basic HierarchyItem: Reverse sort", function(assert) {
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Reverse sort on column 1");
-	$($table.find("thead > tr > th")[0]).click();
+	$table.find("thead > tr > th").eq(0).click();
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
@@ -425,10 +425,10 @@ QUnit.test("Basic HierarchyItem: Expand after reverse sort", function(assert) {
 	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
 
 	assert.ok(true, "Reverse sort on column 1");
-	$($table.find("thead > tr > th")[0]).click();
+	$table.find("thead > tr > th").eq(0).click();
 
 	assert.ok(true, "Expand 20>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -458,7 +458,7 @@ QUnit.test("Basic HierarchyItem: Sorting on other column", function(assert) {
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Reverse sort on column 1");
-	$($table.find("thead > tr > th")[0]).click();
+	$table.find("thead > tr > th").eq(0).click();
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
@@ -467,10 +467,10 @@ QUnit.test("Basic HierarchyItem: Sorting on other column", function(assert) {
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Cancel sort on column 1");
-	$($table.find("thead > tr > th")[0]).click();
+	$table.find("thead > tr > th").eq(0).click();
 
 	assert.ok(true, "Sort on column 2");
-	$($table.find("thead > tr > th")[1]).click();
+	$table.find("thead > tr > th").eq(1).click();
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
@@ -479,7 +479,7 @@ QUnit.test("Basic HierarchyItem: Sorting on other column", function(assert) {
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Reverse sort on column 2");
-	$($table.find("thead > tr > th")[1]).click();
+	$table.find("thead > tr > th").eq(1).click();
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
@@ -502,9 +502,9 @@ QUnit.test("Basic HierarchyItem: Sorting on multiple columns", function(assert) 
 	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
 
 	assert.ok(true, "Expand 20>");
-	$($table.find("tbody > tr .expand-button")[1]).click();
+	$table.find("tbody > tr .expand-button").eq(1).click();
 	assert.ok(true, "Expand 10>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -519,7 +519,7 @@ QUnit.test("Basic HierarchyItem: Sorting on multiple columns", function(assert) 
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Add sort on column 3");
-	$($table.find("thead > tr > th")[2]).click();
+	$table.find("thead > tr > th").eq(2).click();
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
@@ -534,7 +534,7 @@ QUnit.test("Basic HierarchyItem: Sorting on multiple columns", function(assert) 
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "Reverse sort on column 1");
-	$($table.find("thead > tr > th")[0]).click();
+	$table.find("thead > tr > th").eq(0).click();
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
@@ -549,7 +549,7 @@ QUnit.test("Basic HierarchyItem: Sorting on multiple columns", function(assert) 
 	checkContent(assert, real_content, expected_content);
 
 	assert.ok(true, "No more sort on column 1");
-	$($table.find("thead > tr > th")[0]).click();
+	$table.find("thead > tr > th").eq(0).click();
 
 	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	expected_content = [
@@ -621,9 +621,9 @@ QUnit.test("Remove a column does not collapse anything", function(assert) {
 	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
 
 	assert.ok(true, "Expand 20>");
-	$($table.find("tbody > tr .expand-button")[1]).click();
+	$table.find("tbody > tr .expand-button").eq(1).click();
 	assert.ok(true, "Expand 10>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 
 	htable.removeColumn(1);
 
@@ -656,9 +656,9 @@ QUnit.test("Remove a column then expand", function(assert) {
 	htable.removeColumn(1);
 
 	assert.ok(true, "Expand 20>");
-	$($table.find("tbody > tr .expand-button")[1]).click();
+	$table.find("tbody > tr .expand-button").eq(1).click();
 	assert.ok(true, "Expand 10>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -709,11 +709,11 @@ QUnit.test("Remove a hierarchy column does not collapse expanded nodes", functio
 	var htable = new HierarchyTable($table, items_labels, data, num_hierarchy_columns, undefined);
 	
 	assert.ok(true, "Expand 10>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 	assert.ok(true, "Expand 10>10>");
-	$($table.find("tbody > tr .expand-button")[1]).click();
+	$table.find("tbody > tr .expand-button").eq(1).click();
 	assert.ok(true, "Expand 10>10>10>");
-	$($table.find("tbody > tr .expand-button")[2]).click();
+	$table.find("tbody > tr .expand-button").eq(2).click();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -757,9 +757,9 @@ QUnit.test("Remove a hierarchy column then expand", function(assert) {
 	htable.removeColumn(1);
 
 	assert.ok(true, "Expand 20>");
-	$($table.find("tbody > tr .expand-button")[1]).click();
+	$table.find("tbody > tr .expand-button").eq(1).click();
 	assert.ok(true, "Expand 10>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
@@ -829,7 +829,7 @@ QUnit.test("Add a column on expanded and keep it expanded", function(assert) {
 	var htable = new HierarchyTable($table, items_labels_old, data_old, num_hierarchy_columns, undefined);
 
 	assert.ok(true, "Expand 10>");
-	$($table.find("tbody > tr .expand-button")[0]).click();
+	$table.find("tbody > tr .expand-button").eq(0).click();
 
 	htable.addColumn(1, data_new, items_labels_new);
 
