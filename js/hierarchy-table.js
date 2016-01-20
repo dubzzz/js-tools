@@ -61,8 +61,8 @@ Array.prototype.findAtLevel = function(row, level)
 
 function HierarchyItem(data) {
 	this.data = data;
-	var _hierarchy = undefined;
-	var _column_id = -1;
+	this._hierarchy = undefined;
+	this._column_id = -1;
 	
 	// -1 means this < other
 	//  1 means this > other
@@ -99,14 +99,16 @@ function HierarchyItem(data) {
 	};
 
 	// Called by the hierarchy table in order to mark its ownership
+	//this.register = undefined;
 	this.register = function(hierarchy, column_id) {
-		_hierarchy = hierarchy;
-		_column_id = column_id;
+		this._hierarchy = hierarchy;
+		this._column_id = column_id;
 	};
 
 	// Return setting's value associated to the setting_key given as a parameter
+	///this.getSettingValue = undefined;
 	this.getSettingValue = function(setting_key) {
-		return _hierarchy.getSettingValue(_column_id, setting_key);
+		return this._hierarchy.getSettingValue(this._column_id, setting_key);
 	};
 }
 
@@ -209,6 +211,9 @@ function HierarchyList(children) {
 			}
 			if (aggregated_node === undefined) {
 				break;
+			}
+			else {
+				aggregated_node.register(this.children[i]._hierarchy, this.children[i]._column_id);
 			}
 		}
 		return aggregated_node ? aggregated_node.display() : "";
@@ -551,6 +556,9 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 				}
 				if (aggregated === undefined) {
 					break;
+				}
+				else {
+					aggregated.register(base_elts[j].data[i]._hierarchy, base_elts[j].data[i]._column_id);
 				}
 			}
 			self.data[i] = aggregated;

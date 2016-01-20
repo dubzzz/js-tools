@@ -206,7 +206,7 @@
 			var resizable1 = new ResizableTable($table);
 			function buildHierarchyTable(rawdata, $table) {
 				var known_paths = {};
-				var items_labels = ["path", "filename", "date", "size"];
+				var items_labels = ["path", "filename", "date", "size", "size"];
 				var data = new Array();
 				for (var i = 0 ; i != rawdata.length ; ++i) {
 					var d = rawdata[i];
@@ -222,6 +222,10 @@
 				}
 				properties[0].withTitleUpdate();
 				properties[3]
+						.withSettings(__HierarchySizeItem__settings)
+						.withTitleUpdate()
+						.fromString(window.location.hash.substr(1));
+				properties[4]
 						.withSettings(__HierarchySizeItem__settings)
 						.withTitleUpdate()
 						.fromString(window.location.hash.substr(1));
