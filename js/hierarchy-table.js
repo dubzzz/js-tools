@@ -336,12 +336,18 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		}
 	};
 
-	self.addColumn = function(item, column_id) {
+	self.addColumn = function(item, column_id, hierarchy) {
 		// Append the column to the current element
 		self.data.splice(column_id, 0, item);
+		for (var i = column_id ; i < self.data.length ; ++i) {
+			var tmp_data = self.data[i];
+			if (tmp_data !== undefined) {
+				tmp_data.register(hierarchy, i);
+			}
+		}
 		// and to its parent if it has never been done before
 		if (self._parent !== undefined && self._parent.data.length != self.data.length) {
-			self._parent.addColumn(undefined, column_id);
+			self._parent.addColumn(undefined, column_id, hierarchy);
 		}
 	};
 	
@@ -614,21 +620,6 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		var path = self._parent.getPathFromRoot();
 		path.push(self);
 		return path;
-	};
-
-	self.register = function(hierarchy) {
-		// register itself
-		for (var i = 0 ; i != self.data.length ; ++i) {
-			var tmp_data = self.data[i];
-			if (tmp_data !== undefined) {
-				tmp_data.register(hierarchy, i);
-			}
-		}
-
-		// register its children
-		for (var i = 0 ; i != self.children.length ; ++i) {
-			self.children[i].register(hierarchy);
-		}
 	};
 
 	{
@@ -963,7 +954,6 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 			}
 			_internal_rows.push(relatedRows);
 		}
-		_main_hierarchy_row.register(self);
 
 		// Compute aggregated values
 		var mainRows = _main_hierarchy_row.getChildren();
@@ -1227,10 +1217,9 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		_columns_properties = __sanitizeProperties(new_properties);
 		for (var i = 0 ; i != _rows.length ; i++) {
 			for (var j = 0 ; j != _internal_rows[i].length ; j++) {
-				_internal_rows[i][j].addColumn(_rows[i][column_id], column_id);
+				_internal_rows[i][j].addColumn(_rows[i][column_id], column_id, self);
 			}
 		}
-		_main_hierarchy_row.register(self);
 		
 		// Compute new aggregated values
 		var mainRows = _main_hierarchy_row.getChildren();
