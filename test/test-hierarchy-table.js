@@ -1054,6 +1054,77 @@ QUnit.test("Multiple columns sharing same class having settings", function(asser
 	checkContent(assert, real_content, expected_content);
 });
 
+QUnit.test("Remove one of the columns with settings", function(assert) {
+	var data = [
+		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert),  new HierarchySettingsItem(20, assert)],
+		[new HierarchyItem(10), new HierarchySettingsItem(105, assert), new HierarchySettingsItem(105, assert)],
+		[new HierarchyItem(20), new HierarchySettingsItem(110, assert), new HierarchySettingsItem(110, assert)],
+		[new HierarchyItem(20), new HierarchySettingsItem(150, assert), new HierarchySettingsItem(150, assert)],
+		[new HierarchyItem(10),  new HierarchySettingsItem(10, assert),  new HierarchySettingsItem(10, assert)],
+		[new HierarchyItem(30),   new HierarchySettingsItem(1, assert),   new HierarchySettingsItem(1, assert)],
+		[new HierarchyItem(30), new HierarchySettingsItem(101, assert), new HierarchySettingsItem(101, assert)],
+		[new HierarchyItem(40),   new HierarchySettingsItem(1, assert),   new HierarchySettingsItem(1, assert)],
+		[new HierarchyItem(40),   new HierarchySettingsItem(1, assert),   new HierarchySettingsItem(1, assert)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_columns = [
+			new ColumnProperties("Data 1")
+			, new ColumnProperties("Data 2")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("aggregate", "a2")
+				.withSettingValue("display", "d2")
+			, new ColumnProperties("Data 3")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("compare", "c2")
+	];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined);
+	htable.removeColumn(1);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10",  ""],
+			["20",  ""],
+			["30",  ""],
+			["40", "2"]];
+	checkContent(assert, real_content, expected_content);
+});
+
+QUnit.test("Remove one of the hierarchy columns with settings", function(assert) {
+	var data = [
+		[new HierarchySettingsItem(20, assert),   new HierarchySettingsItem(20, assert)],
+		[new HierarchySettingsItem(105, assert), new HierarchySettingsItem(105, assert)],
+		[new HierarchySettingsItem(110, assert), new HierarchySettingsItem(110, assert)],
+		[new HierarchySettingsItem(150, assert), new HierarchySettingsItem(150, assert)],
+		[new HierarchySettingsItem(10, assert),   new HierarchySettingsItem(10, assert)],
+		[new HierarchySettingsItem(1, assert),     new HierarchySettingsItem(1, assert)],
+		[new HierarchySettingsItem(101, assert), new HierarchySettingsItem(101, assert)],
+		[new HierarchySettingsItem(1, assert),     new HierarchySettingsItem(1, assert)],
+		[new HierarchySettingsItem(1, assert),     new HierarchySettingsItem(1, assert)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_columns = [
+			new ColumnProperties("Data 1")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+			, new ColumnProperties("Data 2")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("compare", "c2")
+				.withSettingValue("display", "d2")
+	];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined);
+	
+	assert.ok(true, "Add sort on column 2");
+	$table.find("thead > tr > th").eq(1).click();
+	
+	assert.ok(true, "Remove column 1");
+	htable.removeColumn(0);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [["~1.0"], ["~1.0"], ["~1.0"], ["~1.1"], ["~5.1"], ["~10.0"], ["~10.1"], ["~20.0"], ["~50.1"]];
+	checkContent(assert, real_content, expected_content);
+});
+
 QUnit.module("HierarchyNode::ColumnProperties");
 
 QUnit.test("<constructor>", function(assert) {

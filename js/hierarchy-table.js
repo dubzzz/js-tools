@@ -271,16 +271,22 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 	
 	// This method remove the data corresponding to the column column_id
 	// It also removes children rows which are instances of column_id
-	self.removeHierarchyColumn = function(column_id) {
+	self.removeHierarchyColumn = function(column_id, hierarchy) {
 		// Remove column column_id from data
 		self.data.splice(column_id, 1);
+		for (var i = column_id ; i < self.data.length ; ++i) {
+			var tmp_data = self.data[i];
+			if (tmp_data !== undefined) {
+				tmp_data.register(hierarchy, i);
+			}
+		}
 
 		// Remove children instances of column_id
 		// /!\ this.children can be of different levels
 		var children_after_removal = new Array();
 		for (var i = 0 ; i != self.children.length ; i++)
 		{
-			self.children[i].removeHierarchyColumn(column_id);
+			self.children[i].removeHierarchyColumn(column_id, hierarchy);
 			if (self.children[i].level == column_id)
 			{
 				for (var j = 0 ; j != self.children[i].children.length ; j++)
@@ -317,10 +323,16 @@ function HierarchyRow(data, _parent, level, contextMenuCallbacks) {
 		self.children = children_after_removal;
 	};
 
-	self.removeColumn = function(column_id) {
+	self.removeColumn = function(column_id, hierarchy) {
 		self.data.splice(column_id, 1);
+		for (var i = column_id ; i < self.data.length ; ++i) {
+			var tmp_data = self.data[i];
+			if (tmp_data !== undefined) {
+				tmp_data.register(hierarchy, i);
+			}
+		}
 		for (var i = 0 ; i != self.children.length ; i++) {
-			self.children[i].removeColumn(column_id);
+			self.children[i].removeColumn(column_id, hierarchy);
 		}
 	};
 
@@ -1199,9 +1211,9 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.removeColumn = function(column_id) {
 		if (column_id < _num_aggregation_columns) {
 			--_num_aggregation_columns;
-			_main_hierarchy_row.removeHierarchyColumn(column_id);
+			_main_hierarchy_row.removeHierarchyColumn(column_id, self);
 		} else {
-			_main_hierarchy_row.removeColumn(column_id);
+			_main_hierarchy_row.removeColumn(column_id, self);
 		}
 		_columns_properties.splice(column_id, 1);
 		self._display();
