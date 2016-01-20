@@ -912,6 +912,9 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 		_main_hierarchy_row = new HierarchyRow(undefined, undefined, undefined, _row_contextmenu);
 		_internal_rows = new Array();
 		for (var i = 0 ; i != _rows.length ; i++) {
+			for (var j = 0 ; j != _rows[i].length ; ++j) {
+				_rows[i][j].register(self, j);
+			}
 			var relatedRows = new Array();
 			var parentRows = self._buildColumns(_rows[i]);
 			
