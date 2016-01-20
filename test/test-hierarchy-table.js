@@ -918,8 +918,7 @@ QUnit.test("One unique column with settings", function(assert) {
 		[new HierarchyItem(20),   new HierarchySettingsItem(0, assert)],
 		[new HierarchyItem(10),  new HierarchySettingsItem(10, assert)],
 		[new HierarchyItem(30),   new HierarchySettingsItem(1, assert)],
-		[new HierarchyItem(30), new HierarchySettingsItem(101, assert)],
-		];
+		[new HierarchyItem(30), new HierarchySettingsItem(101, assert)]];
 
 	var $table = $('#qunit-fixture > table').first();
 	var items_columns = [
@@ -1122,6 +1121,53 @@ QUnit.test("Remove one of the hierarchy columns with settings", function(assert)
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [["~1.0"], ["~1.0"], ["~1.0"], ["~1.1"], ["~5.1"], ["~10.0"], ["~10.1"], ["~20.0"], ["~50.1"]];
+	checkContent(assert, real_content, expected_content);
+});
+QUnit.test("Add a column with settings", function(assert) {
+	var data_old = [
+		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert)],
+		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert)],
+		[new HierarchyItem(20),  new HierarchySettingsItem(10, assert)],
+		[new HierarchyItem(20),  new HierarchySettingsItem(50, assert)],
+		[new HierarchyItem(30),   new HierarchySettingsItem(1, assert)],
+		[new HierarchyItem(30), new HierarchySettingsItem(101, assert)]];
+
+	var data_new = [
+		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert),  new HierarchySettingsItem(20, assert)],
+		[new HierarchyItem(10),   new HierarchySettingsItem(5, assert),  new HierarchySettingsItem(20, assert)],
+		[new HierarchyItem(20),  new HierarchySettingsItem(10, assert),  new HierarchySettingsItem(10, assert)],
+		[new HierarchyItem(20),  new HierarchySettingsItem(50, assert),  new HierarchySettingsItem(50, assert)],
+		[new HierarchyItem(30),   new HierarchySettingsItem(1, assert),   new HierarchySettingsItem(1, assert)],
+		[new HierarchyItem(30), new HierarchySettingsItem(101, assert), new HierarchySettingsItem(101, assert)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_labels_old = [
+			new ColumnProperties("Data 1")
+			, new ColumnProperties("Data 2")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+	];
+
+	var items_labels_new =[
+			new ColumnProperties("Data 1")
+			, new ColumnProperties("Data new")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("aggregate", "a2")
+				.withSettingValue("display", "d2")
+			, new ColumnProperties("Data 2")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+	];
+
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_labels_old, data_old, num_hierarchy_columns, undefined);
+
+	assert.ok(true, "Add column 1");
+	htable.addColumn(1, data_new, items_labels_new);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "~25.0", "40"],
+			["20", "~60.0",   ""],
+			["30",      "",   ""]];
 	checkContent(assert, real_content, expected_content);
 });
 

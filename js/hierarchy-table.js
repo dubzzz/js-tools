@@ -1211,6 +1211,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	
 	// Append a normal column to the table
 	// the full table need to be passed in new_rows parameter
+	// Only elements from column_id are supposed to have change, behaviour is unexpected for others (especially if their behaviour changed)
 	self.addColumn = function(column_id, new_rows, new_properties) {
 		// Add the column
 		_rows = new_rows; // _rows is a copy by pointer /!\
