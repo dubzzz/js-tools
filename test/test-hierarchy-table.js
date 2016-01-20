@@ -843,6 +843,154 @@ QUnit.test("Add a column on expanded and keep it expanded", function(assert) {
 	checkContent(assert, real_content, expected_content);
 });
 
+QUnit.module("HierarchyTable:: columns with settings");
+
+function HierarchySettingsItem(data, assert) {
+	var self = this;
+	self.data = data;
+	var assert = assert;
+
+	self.display = function() {
+		var setting = self.getSettingValue("display");
+		assert.notEqual(setting, undefined, "::display should never be called with uninitialized settings");
+		
+		if (setting == "d1") {
+			return String(self.data);
+		}
+		else {
+			return "~" + String(Math.floor(self.data/100));
+		}
+	};
+	self.aggregate = function(other) {
+		var setting = self.getSettingValue("aggregate");
+		assert.notEqual(setting, undefined, "::aggregate should never be called with uninitialized settings");
+		
+		var agg = false;
+		if (setting == "a1") { agg = self.data == other.data; }
+		else { agg = Math.floor(self.data/100) == Math.floor(other.data/100); }
+
+		if (agg) {
+			return new HierarchySettingsItem(self.data + other.data, assert);
+		}
+		else {
+			return undefined;
+		}
+	};
+	self.compare = function(other) {
+		var setting = self.getSettingValue("compare");
+		assert.notEqual(setting, undefined, "::compare should never be called with uninitialized settings");
+		if (setting == "c1") {
+			return self.data < other.data ? -1 : (self.data > other.data ? 1 : 0);
+		}
+		else {
+			var smod = self.data % 100;
+			var omod = other.data % 100;
+			var sfloor = Math.floor(self.data/100);
+			var ofloor = Math.floor(other.data/100);
+			return smod < omod ? -1 : (smod > omod ? 1
+				: (sfloor < ofloor ? -1 : (sfloor > ofloor ? 1 : 0)))
+		}
+	};
+}
+HierarchySettingsItem.__SETTINGS__ = {
+	aggregate: {
+		label: 'Aggregate setting',
+		default_value: 'a1',
+		values: { a1: 'data itself', a2: 'floor(data/100)' },
+	}, compare: {
+		label: 'Compare setting',
+		default_value: 'c1',
+		values: { c1: 'data itself', c2: 'data%100 then floor(data/100)' },
+	}, display: {
+		label: 'Display setting',
+		default_value: 'd1',
+		values: { d1: 'data itself', d2: 'floor(data/100)' },
+	}
+};
+HierarchySettingsItem.prototype = new HierarchyItem;
+
+QUnit.test("One unique column with settings", function(assert) {
+	var data = [
+		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert)],
+		[new HierarchyItem(10),   new HierarchySettingsItem(5, assert)],
+		[new HierarchyItem(20),  new HierarchySettingsItem(10, assert)],
+		[new HierarchyItem(20),  new HierarchySettingsItem(50, assert)],
+		[new HierarchyItem(20),   new HierarchySettingsItem(0, assert)],
+		[new HierarchyItem(10),  new HierarchySettingsItem(10, assert)],
+		[new HierarchyItem(30),   new HierarchySettingsItem(1, assert)],
+		[new HierarchyItem(30), new HierarchySettingsItem(101, assert)],
+		];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_columns = [
+			new ColumnProperties("Data 1")
+			, new ColumnProperties("Data 2")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("aggregate", "a2")
+	];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "35"],
+			["20", "60"],
+			["30",   ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Expand line 2");
+	$table.find("tbody > tr .expand-button").eq(2).click();
+	assert.ok(true, "Expand line 1");
+	$table.find("tbody > tr .expand-button").eq(1).click();
+	assert.ok(true, "Expand line 0");
+	$table.find("tbody > tr .expand-button").eq(0).click();
+	assert.ok(true, "Add sort on column 1");
+	$table.find("thead > tr > th").eq(1).click();
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10", "35"],
+			[  "",  "5"],
+			[  "", "10"],
+			[  "", "20"],
+			["20", "60"],
+			[  "",  "0"],
+			[  "", "10"],
+			[  "", "50"],
+			["30",   ""],
+			[  "",  "1"],
+			[  "","101"]];
+	checkContent(assert, real_content, expected_content);
+});
+
+QUnit.test("One unique column with settings as hierarchy", function(assert) {
+	var data = [
+		[new HierarchySettingsItem(110, assert), new HierarchySumItem(20)],
+		[ new HierarchySettingsItem(10, assert),  new HierarchySumItem(5)],
+		[new HierarchySettingsItem(120, assert), new HierarchySumItem(10)],
+		[new HierarchySettingsItem(120, assert), new HierarchySumItem(50)],
+		[ new HierarchySettingsItem(20, assert),  new HierarchySumItem(0)],
+		[ new HierarchySettingsItem(10, assert), new HierarchySumItem(10)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_columns = [
+			new ColumnProperties("Data 1")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("compare", "c2")
+			, new ColumnProperties("Data 2")
+	];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined);
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			[ "10", "15"],
+			["110", "20"],
+			[ "20",  "0"],
+			["120", "60"]];
+	checkContent(assert, real_content, expected_content);
+});
+
 QUnit.module("HierarchyNode::ColumnProperties");
 
 QUnit.test("<constructor>", function(assert) {
