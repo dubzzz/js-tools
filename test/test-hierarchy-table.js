@@ -961,7 +961,6 @@ QUnit.test("One unique column with settings", function(assert) {
 			[  "","101"]];
 	checkContent(assert, real_content, expected_content);
 });
-
 QUnit.test("One unique column with settings as hierarchy", function(assert) {
 	var data = [
 		[new HierarchySettingsItem(110, assert), new HierarchySumItem(20)],
@@ -989,7 +988,6 @@ QUnit.test("One unique column with settings as hierarchy", function(assert) {
 			["120", "60"]];
 	checkContent(assert, real_content, expected_content);
 });
-
 QUnit.test("Multiple columns sharing same class having settings", function(assert) {
 	var data = [
 		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert),  new HierarchySettingsItem(20, assert)],
@@ -1052,7 +1050,6 @@ QUnit.test("Multiple columns sharing same class having settings", function(asser
 			[  "",  "~1.0",   "1"]];
 	checkContent(assert, real_content, expected_content);
 });
-
 QUnit.test("Remove one of the columns with settings", function(assert) {
 	var data = [
 		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert),  new HierarchySettingsItem(20, assert)],
@@ -1088,7 +1085,6 @@ QUnit.test("Remove one of the columns with settings", function(assert) {
 			["40", "2"]];
 	checkContent(assert, real_content, expected_content);
 });
-
 QUnit.test("Remove one of the hierarchy columns with settings", function(assert) {
 	var data = [
 		[new HierarchySettingsItem(20, assert),   new HierarchySettingsItem(20, assert)],
@@ -1168,6 +1164,51 @@ QUnit.test("Add a column with settings", function(assert) {
 			["10", "~25.0", "40"],
 			["20", "~60.0",   ""],
 			["30",      "",   ""]];
+	checkContent(assert, real_content, expected_content);
+});
+
+QUnit.test("Access settings with right click", function(assert) {
+	var data = [
+		[new HierarchyItem(10),  new HierarchySettingsItem(20, assert)],
+		[new HierarchyItem(10),   new HierarchySettingsItem(5, assert)],
+		[new HierarchyItem(20),  new HierarchySettingsItem(10, assert)],
+		[new HierarchyItem(20),  new HierarchySettingsItem(50, assert)],
+		[new HierarchyItem(20),   new HierarchySettingsItem(0, assert)],
+		[new HierarchyItem(10),  new HierarchySettingsItem(10, assert)],
+		[new HierarchyItem(30),   new HierarchySettingsItem(1, assert)],
+		[new HierarchyItem(30), new HierarchySettingsItem(101, assert)]];
+
+	var $table = $('#qunit-fixture > table').first();
+	var items_columns = [
+			new ColumnProperties("Data 1")
+			, new ColumnProperties("Data 2")
+				.withSettings(HierarchySettingsItem.__SETTINGS__)
+				.withSettingValue("aggregate", "a2")
+	];
+	var num_hierarchy_columns = 1;
+	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined);
+
+	assert.ok(true, "Right click on header of column 2");
+	$table.find("thead > tr > th").eq(1).contextmenu();
+	
+	assert.strictEqual($("ul.hierarchytable-contextmenu").length, 1, "Context menu has been triggered");
+
+	var $lis_for_settings = $("ul.hierarchytable-contextmenu li.column-settings span.glyphicon-chevron-right").parent();
+	assert.strictEqual($lis_for_settings.length, 3, "Column has 3 settings");
+	for (var i = 0 ; i != $lis_for_settings.length ; ++i) {
+		var $li = $lis_for_settings.eq(i);
+		if ($li.find("span").eq(2).text() == "Display setting: data itself") {
+			assert.ok(true, "Change setting associated to <Display>");
+			$li.find("span.glyphicon-chevron-right").click();
+			assert.equal($li.find("span").eq(2).text(), "Display setting: floor(data/100)", "Setting label is: floor(data/100)");
+		}
+	}
+
+	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	var expected_content = [
+			["10", "~35.0"],
+			["20", "~60.0"],
+			["30",      ""]];
 	checkContent(assert, real_content, expected_content);
 });
 
