@@ -1186,7 +1186,13 @@ QUnit.test("Access settings with right click", function(assert) {
 				.withSettingValue("aggregate", "a2")
 	];
 	var num_hierarchy_columns = 1;
-	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined);
+	var settingsChanged = {column_id: undefined, key: undefined};
+	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined)
+			.registerOnSettingsChange(function(column_id, key) {
+				settingsChanged["column_id"] = column_id;
+				settingsChanged["key"] = key;
+				return false;
+			});
 
 	assert.ok(true, "Right click on header of column 2");
 	$table.find("thead > tr > th").eq(1).contextmenu();
@@ -1203,6 +1209,9 @@ QUnit.test("Access settings with right click", function(assert) {
 			assert.equal($li.find("span").eq(2).text(), "Display setting: floor(data/100)", "Setting label is: floor(data/100)");
 		}
 	}
+
+	assert.strictEqual(settingsChanged["column_id"], 1, "OnSettingChange callback called with column_id=1");
+	assert.equal(settingsChanged["key"], "display", "OnSettingChange callback called with key=display");
 
 	var real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
 	var expected_content = [
