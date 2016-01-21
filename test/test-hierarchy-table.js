@@ -1196,7 +1196,6 @@ QUnit.test("Access settings with right click", function(assert) {
 
 	assert.ok(true, "Right click on header of column 2");
 	$table.find("thead > tr > th").eq(1).contextmenu();
-	
 	assert.strictEqual($("ul.hierarchytable-contextmenu").length, 1, "Context menu has been triggered");
 
 	var $lis_for_settings = $("ul.hierarchytable-contextmenu li.column-settings span.glyphicon-chevron-right").parent();
@@ -1219,6 +1218,39 @@ QUnit.test("Access settings with right click", function(assert) {
 			["20", "~60.0"],
 			["30",      ""]];
 	checkContent(assert, real_content, expected_content);
+
+	htable.registerOnSettingsChange(function(column_id, key) { return true; });
+	assert.ok(true, "Right click on header of column 2");
+	$table.find("thead > tr > th").eq(1).contextmenu();
+
+	var $lis_for_settings = $("ul.hierarchytable-contextmenu li.column-settings span.glyphicon-chevron-right").parent();
+	assert.strictEqual($lis_for_settings.length, 3, "Column has 3 settings");
+	for (var i = 0 ; i != $lis_for_settings.length ; ++i) {
+		var $li = $lis_for_settings.eq(i);
+		if ($li.find("span").eq(2).text() == "Display setting: floor(data/100)") {
+			assert.ok(true, "Change setting associated to <Display>");
+			$li.find("span.glyphicon-chevron-right").click();
+			assert.equal($li.find("span").eq(2).text(), "Display setting: data itself", "Setting label is: data itself");
+		}
+	}
+
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10", "~35.0"],
+			["20", "~60.0"],
+			["30",      ""]];
+	checkContent(assert, real_content, expected_content);
+
+	assert.ok(true, "Force refresh (not called OnSettingChange due to cllaback returning true)");
+	htable.refresh();
+	
+	real_content = retrieveHierarchyTableContent($table.find("tbody > tr"));
+	expected_content = [
+			["10", "35"],
+			["20", "60"],
+			["30",   ""]];
+	checkContent(assert, real_content, expected_content);
+	$("ul.hierarchytable-contextmenu").detach();
 });
 
 QUnit.module("HierarchyNode::ColumnProperties");
