@@ -692,7 +692,8 @@ function ColumnProperties(title) {
 			_settings[key] = {
 					label: setting['label'],
 					values: __cloneObject(setting['values']),
-					default_value: setting['default_value']
+					default_value: setting['default_value'],
+					impacts: setting['impacts'] !== undefined ? setting['impacts'] : ColumnProperties.Impacts.ALL
 			};
 			_settings_value[key] = setting['default_value'];
 		}
@@ -747,6 +748,12 @@ function ColumnProperties(title) {
 		return self;
 	};
 }
+ColumnProperties.Impacts = {};
+ColumnProperties.Impacts.NO = 0;
+ColumnProperties.Impacts.AGGREGATE = 1;
+ColumnProperties.Impacts.COMPARE = 2;
+ColumnProperties.Impacts.DISPLAY = 4;
+ColumnProperties.Impacts.ALL = ColumnProperties.Impacts.AGGREGATE | ColumnProperties.Impacts.COMPARE | ColumnProperties.Impacts.DISPLAY;
 
 // For backward compatibility
 // list of properties was initially a list of titles
@@ -1055,8 +1062,16 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 														properties.withSettingValue(key, new_value);
 														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
-															self._build();
-															self._display();
+															var impacts = setting['impacts'];
+															if (impacts == ColumnProperties.Impacts.NO) {
+															}
+															else if ((impacts & (ColumnProperties.Impacts.AGGREGATE | ColumnProperties.Impacts.COMPARE)) != 0) {
+																self._build();
+																self._display();
+															}
+															else {
+																self._display();
+															}
 														}
 													}
 												};
@@ -1072,8 +1087,16 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 														properties.withSettingValue(key, new_value);
 														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
-															self._build();
-															self._display();
+															var impacts = setting['impacts'];
+															if (impacts == ColumnProperties.Impacts.NO) {
+															}
+															else if ((impacts & (ColumnProperties.Impacts.AGGREGATE | ColumnProperties.Impacts.COMPARE)) != 0) {
+																self._build();
+																self._display();
+															}
+															else {
+																self._display();
+															}
 														}
 													}
 												};

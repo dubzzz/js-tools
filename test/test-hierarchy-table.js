@@ -897,14 +897,17 @@ HierarchySettingsItem.__SETTINGS__ = {
 		label: 'Aggregate setting',
 		default_value: 'a1',
 		values: { a1: 'data itself', a2: 'floor(data/100)' },
+		impacts: ColumnProperties.Impacts.AGGREGATE,
 	}, compare: {
 		label: 'Compare setting',
 		default_value: 'c1',
 		values: { c1: 'data itself', c2: 'data%100 then floor(data/100)' },
+		impacts: ColumnProperties.Impacts.COMPARE,
 	}, display: {
 		label: 'Display setting',
 		default_value: 'd1',
 		values: { d1: 'data itself', d2: 'floor(data/100)' },
+		impacts: ColumnProperties.Impacts.DISPLAY,
 	}
 };
 HierarchySettingsItem.prototype = new HierarchyItem;
@@ -1291,22 +1294,26 @@ QUnit.test("withSettings copies the settings", function(assert) {
 		"setting1": {
 			label: "label setting1",
 			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
-			default_value: "v1.1"
+			default_value: "v1.1",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, "setting2": {
 			label: "label setting2",
 			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
-			default_value: "v2.1"
+			default_value: "v2.1",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, 
 	};
 	var settings_copy_original = {
 		"setting1": {
 			label: "label setting1",
 			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
-			default_value: "v1.1"
+			default_value: "v1.1",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, "setting2": {
 			label: "label setting2",
 			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
-			default_value: "v2.1"
+			default_value: "v2.1",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, 
 	};
 	properties.withSettings(settings);
@@ -1328,11 +1335,13 @@ QUnit.test("Check setting value", function(assert) {
 		"setting1": {
 			label: "label setting1",
 			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
-			default_value: "v1.1"
+			default_value: "v1.1",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, "setting2": {
 			label: "label setting2",
 			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
-			default_value: "v2.2"
+			default_value: "v2.2",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, 
 	};
 	
@@ -1348,11 +1357,13 @@ QUnit.test("Check export using toString", function(assert) {
 		"setting1": {
 			label: "label setting1",
 			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
-			default_value: "v1.1"
+			default_value: "v1.1",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, "setting2": {
 			label: "label setting2",
 			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
-			default_value: "v2.2"
+			default_value: "v2.2",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, 
 	};
 	properties.withSettings(settings);
@@ -1382,11 +1393,13 @@ QUnit.test("Check import using fromString", function(assert) {
 		"setting1": {
 			label: "label setting1",
 			values: {"v1.1": "value of v1.1", "v1.3": "value of v1.3"},
-			default_value: "v1.1"
+			default_value: "v1.1",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, "setting2": {
 			label: "label setting2",
 			values: {"v2.1": "value of v2.1", "v2.2": "value of v2.2"},
-			default_value: "v2.2"
+			default_value: "v2.2",
+			impacts: ColumnProperties.Impacts.ALL,
 		}, 
 	};
 	properties.withSettings(settings).withSettingValue("setting2", "v2.1");

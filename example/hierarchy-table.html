@@ -104,11 +104,13 @@
 						label: 'Aggregation policy',
 						default_value: 'sum',
 						values: { sum: 'Sum', max: 'Max' },
+						impacts: ColumnProperties.Impacts.AGGREGATION,
 					},
 					display_policy: {
 						label: 'Display policy',
 						default_value: 'human',
 						values: { human: 'Human readable', raw: 'Number of bytes' },
+						impacts: ColumnProperties.Impacts.DISPLAY,
 					},
 			};
 			HierarchySizeItem.prototype = new HierarchyItem;
