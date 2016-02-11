@@ -1062,16 +1062,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 														properties.withSettingValue(key, new_value);
 														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
-															var impacts = setting['impacts'];
-															if (impacts == ColumnProperties.Impacts.NO) {
-															}
-															else if ((impacts & (ColumnProperties.Impacts.AGGREGATE | ColumnProperties.Impacts.COMPARE)) != 0) {
-																self._build();
-																self._display();
-															}
-															else {
-																self._display();
-															}
+															self.refreshForSettingUpdate(column_id, key);
 														}
 													}
 												};
@@ -1087,16 +1078,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 														properties.withSettingValue(key, new_value);
 														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
 														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
-															var impacts = setting['impacts'];
-															if (impacts == ColumnProperties.Impacts.NO) {
-															}
-															else if ((impacts & (ColumnProperties.Impacts.AGGREGATE | ColumnProperties.Impacts.COMPARE)) != 0) {
-																self._build();
-																self._display();
-															}
-															else {
-																self._display();
-															}
+															self.refreshForSettingUpdate(column_id, key);
 														}
 													}
 												};
@@ -1214,6 +1196,23 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	self.refresh = function() {
 		self._build();
 		self._display();
+	};
+
+	// Force a partial refresh following a change in a setting
+	// Make sure to call this method if and only if you changed one setting only
+	// or call it for every setting (but very costly and you might prefer calling refresh in this case)
+	self.refreshForSettingUpdate = function(column_id, key) {
+		var setting = self.getSettings(column_id)[key];
+		var impacts = setting['impacts'];
+		if (impacts == ColumnProperties.Impacts.NO) {
+		}
+		else if ((impacts & (ColumnProperties.Impacts.AGGREGATE | ColumnProperties.Impacts.COMPARE)) != 0) {
+			self._build();
+			self._display();
+		}
+		else {
+			self._display();
+		}
 	};
 
 	/** Modification of an existing table **/
