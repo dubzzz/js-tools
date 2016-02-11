@@ -1,12 +1,36 @@
-function compareForSortOnBestScore(a, b, reversedOrder) {
-	if(a['autocomplete_score'] < b['autocomplete_score']){
+function compareForSortOnBestScore(a, b) {
+	var a_score = a['autocomplete_score'];
+	var b_score = b['autocomplete_score'];
+	if(a_score < b_score){
 		return -1;
-	} else if(a['autocomplete_score'] > b['autocomplete_score']) {
+	} else if(a_score > b_score) {
 		return 1;
-	} else if (a['autocomplete_rawdata_on'] < b['autocomplete_rawdata_on']) {
-		return reversedOrder ? 1 : -1;
-	} else if (a['autocomplete_rawdata_on'] > b['autocomplete_rawdata_on']) {
-		return reversedOrder ? -1 : 1;
+	} else {
+		var a_raw = a['autocomplete_rawdata_on'];
+		var b_raw = b['autocomplete_rawdata_on'];
+		if (a_raw < b_raw) {
+			return -1;
+		} else if (a_raw > b_raw) {
+			return 1;
+		}
+	}
+	return 0;
+}
+function compareForSortOnBestScoreReversed(a, b) {
+	var a_score = a['autocomplete_score'];
+	var b_score = b['autocomplete_score'];
+	if(a_score < b_score){
+		return -1;
+	} else if(a_score > b_score) {
+		return 1;
+	} else {
+		var a_raw = a['autocomplete_rawdata_on'];
+		var b_raw = b['autocomplete_rawdata_on'];
+		if (a_raw < b_raw) {
+			return 1;
+		} else if (a_raw > b_raw) {
+			return -1;
+		}
 	}
 	return 0;
 }
@@ -23,27 +47,35 @@ function shuffle(array) {
 	return array;
 }
 
-function partialSortHelper(tab, num_elts, start, end, reversedOrder) {
+function partialSortHelper(tab, num_elts, start, end, compare) {
 	if (start >= end) {
 		return;
 	}
 
 	var pivot_pos = start;
 	var pivot_value = tab[end -1];
-	for (var pos = start ; pos < end -1 ; ++pos) {
+
+	var tmp_end = end -1;
+	for (var pos = start ; pos != tmp_end ; ++pos) {
+		// < pivot_value  |  pivot_value >=  |  unknown
+		//                 ^                  ^
+		//                 pivot_pos          pos
 		var at_pos = tab[pos];
-		if (compareForSortOnBestScore(at_pos, pivot_value, reversedOrder) == -1) {
+		if (compare(at_pos, pivot_value) == -1) {
 			tab[pos] = tab[pivot_pos];
 			tab[pivot_pos] = at_pos;
 			++pivot_pos;
 		}
 	}
+	// < pivot_value  | |  pivot_value >=
+	//                 ^
+	//                 pivot_pos
 	tab[end -1] = tab[pivot_pos];
 	tab[pivot_pos] = pivot_value;
 
-	partialSortHelper(tab, num_elts, start, pivot_pos);
+	partialSortHelper(tab, num_elts, start, pivot_pos, compare);
 	if (pivot_pos +1 < num_elts) {
-		partialSortHelper(tab, num_elts, pivot_pos +1, end);
+		partialSortHelper(tab, num_elts, pivot_pos +1, end, compare);
 	}
 }
 
@@ -52,7 +84,12 @@ function partialSort(tab, num_elts, reversedOrder) {
 	 *      elements might disappear(size might be different) *
 	 *      ordering of elements might be changed too         */
 	shuffle(tab);
-	partialSortHelper(tab, num_elts, 0, tab.length, reversedOrder);
+	if (reversedOrder) {
+		partialSortHelper(tab, num_elts, 0, tab.length, compareForSortOnBestScoreReversed);
+	}
+	else {
+		partialSortHelper(tab, num_elts, 0, tab.length, compareForSortOnBestScore);
+	}
 	return tab.slice(0, num_elts);
 }
 
@@ -259,9 +296,16 @@ function AutocompleteItem($input, available_elts) {
 			return partialSort(elts_to_display, self.numMaxResults, self.reversedOrder);
 		}
 
-		elts_to_display.sort(
-				function(a, b) {
-					return compareForSortOnBestScore(a, b, self.reversedOrder);});
+		if (self.reversedOrder) {
+			elts_to_display.sort(
+					function(a, b) {
+						return compareForSortOnBestScoreReversed(a, b);});
+		}
+		else {
+			elts_to_display.sort(
+					function(a, b) {
+						return compareForSortOnBestScore(a, b);});
+		}
 		return elts_to_display;
 	};
 	
