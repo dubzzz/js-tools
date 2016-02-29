@@ -115,7 +115,7 @@
 			};
 			HierarchySizeItem.prototype = new HierarchyItem;
 			
-			function notifyChangeInProperties(column_id) {
+			function notifyChangeInProperties(htable, column_id) {
 				/* properties have changed,
 				false means hierarchy must rebuild itself
 				true refresh as already been done */
@@ -123,12 +123,12 @@
 				return false;
 			};
 			
-			function notifyChangeInSettings(column_id, key) {
+			function notifyChangeInSettings(htable, column_id, key) {
 				/* settings have changed,
 				false means hierarchy must rebuild itself
 				true refresh as already been done */
 				console.info("Setting [" + key + "] of column " + column_id + " has changed");
-				notifyChangeInProperties(column_id);
+				notifyChangeInProperties(htable, column_id);
 				return false;
 			};
 
@@ -244,7 +244,7 @@
 
 			var htable = buildHierarchyTable(rawdata, $table);
 			resizable1.refresh();
-			notifyChangeInProperties(undefined);
+			notifyChangeInProperties(htable, undefined);
 		-->
 		</script>
     </div>

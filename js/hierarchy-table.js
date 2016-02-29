@@ -1006,7 +1006,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 												if(e.which == 13) {
 													properties.withTitle($(this).val());
 													$contextmenu.hide(100);
-													if (_onTitleChange === undefined || ! _onTitleChange(column_id)) {
+													if (_onTitleChange === undefined || ! _onTitleChange(self, column_id)) {
 														self.refreshTitles();
 													}
 								    			}
@@ -1062,7 +1062,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 														var new_value = values[(idx +1) % values.length];
 														properties.withSettingValue(key, new_value);
 														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
-														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
+														if (_onSettingsChange === undefined || ! _onSettingsChange(self, column_id, key)) {
 															self.refreshForSettingUpdate(column_id, key);
 														}
 													}
@@ -1078,7 +1078,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 														var new_value = values[(idx +values.length -1) % values.length];
 														properties.withSettingValue(key, new_value);
 														$menuitem_span.text(setting['label'] + ": " + setting['values'][new_value]);
-														if (_onSettingsChange === undefined || ! _onSettingsChange(column_id, key)) {
+														if (_onSettingsChange === undefined || ! _onSettingsChange(self, column_id, key)) {
 															self.refreshForSettingUpdate(column_id, key);
 														}
 													}
@@ -1278,7 +1278,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	};
 
 	// Callback will be called just after the update of settings
-	// It receives: column_id, key (impacted settings)
+	// It receives: self, column_id, key (impacted settings)
 	// and should return a boolean: true means that no rebuild and display update is required as everything has been done by the callback
 	self.registerOnSettingsChange = function(callback) {
 		_onSettingsChange = callback;
@@ -1286,7 +1286,7 @@ function HierarchyTable($table, properties, rows, numHierarchyColumns, contextMe
 	};
 
 	// Callback will be called just after the update of column's title
-	// It receives: column_id (impacted properties)
+	// It receives: self, column_id (impacted properties)
 	// and should return a boolean: true means that no rebuild and display update is required as everything has been done by the callback
 	// Column's title has to be defined as editable using withTitleUpdate
 	self.registerOnTitleChange = function(callback) {
