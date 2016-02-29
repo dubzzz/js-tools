@@ -702,6 +702,7 @@ function ColumnProperties(title) {
 
 	self.withTitle = function(title) {
 		_title = title.replace(/^\s+|\s+$/g, '');
+		return self;
 	};
 
 	self.withTitleUpdate = function(value) {
@@ -733,7 +734,7 @@ function ColumnProperties(title) {
 	self.fromString = function(str) {
 		var splitted = str.split(":");
 		if (splitted.length != 2) {
-			return;
+			return self;
 		}
 
 		if (splitted[0].length > 0) { // =0 means that we do not have any details concerning the title
