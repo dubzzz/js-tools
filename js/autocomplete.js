@@ -275,6 +275,41 @@ function AutocompleteItem($input, available_elts) {
 		}
 	};
 	
+	// Compute display
+	self._computeItemDisplay = function(elt, query) {
+		var best_score = elt["autocomplete_score"];
+		var best_origin = elt["autocomplete_best_origin"];
+		
+		var elt_text = elt['autocomplete_rawdata_on'];
+		var elt_text_lower = elt_text.toLowerCase();
+		var query_lower = query.toLowerCase();
+
+		// Highlight match characteristics
+		if (query.length == 0) {
+			elt['autocomplete_display'] = toSafeHtml(elt_text);
+		} else {
+			elt['autocomplete_display'] = "";
+			var i = 0;
+			var query_pos = 0;
+			for ( ; i != elt_text_lower.length ; i++) {
+				if (i >= best_origin && query_pos != query_lower.length && elt_text_lower[i] == query_lower[query_pos]) {
+					elt['autocomplete_display'] += "<b>" + toSafeHtml(elt_text[i]) + "</b>";
+					query_pos++;
+				}
+				else
+				{
+					elt['autocomplete_display'] += toSafeHtml(elt_text[i]);
+				}
+			}
+		}
+	};
+	self._computeAllItemsDisplay = function(items, query) {
+		for (var i = 0 ; i != items.length ; ++i) {
+			self._computeItemDisplay(items[i], query);
+		}
+		return items;
+	};
+	
 	// Compute the list of available choices based on the query
 	self.computeChoices = function(query) {
 		var elts_to_display = new Array();
@@ -293,7 +328,7 @@ function AutocompleteItem($input, available_elts) {
 		}
 
 		if (self.numMaxResults > 0) {
-			return partialSort(elts_to_display, self.numMaxResults, self.reversedOrder);
+			return self._computeAllItemsDisplay(partialSort(elts_to_display, self.numMaxResults, self.reversedOrder), query);
 		}
 
 		if (self.reversedOrder) {
@@ -306,7 +341,7 @@ function AutocompleteItem($input, available_elts) {
 					function(a, b) {
 						return compareForSortOnBestScore(a, b);});
 		}
-		return elts_to_display;
+		return self._computeAllItemsDisplay(elts_to_display, query);
 	};
 	
 	// Compute the score for element i
@@ -348,23 +383,7 @@ function AutocompleteItem($input, available_elts) {
 		if (best_score != -1) {
 			var new_elt = elt;
 			new_elt["autocomplete_score"] = best_score;
-			if (query.length == 0) {
-				new_elt['autocomplete_display'] = toSafeHtml(elt_text);
-			} else {
-				new_elt['autocomplete_display'] = "";
-				var i = 0;
-				var query_pos = 0;
-				for ( ; i != elt_text_lower.length ; i++) {
-					if (i >= best_origin && query_pos != query_lower.length && elt_text_lower[i] == query_lower[query_pos]) {
-						new_elt['autocomplete_display'] += "<b>" + toSafeHtml(elt_text[i]) + "</b>";
-						query_pos++;
-					}
-					else
-					{
-						new_elt['autocomplete_display'] += toSafeHtml(elt_text[i]);
-					}
-				}
-			}
+			new_elt["autocomplete_best_origin"] = best_origin;
 			return new_elt;
 		}
 		return undefined;

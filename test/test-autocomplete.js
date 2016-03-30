@@ -21,7 +21,9 @@ QUnit.test("Empty choice", function(assert) {
 
 QUnit.test("Empty query", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
-	var resulting_elt = autocomp.computePriority("", 0);
+	var query = "";
+	var resulting_elt = autocomp.computePriority(query, 0);
+	autocomp._computeItemDisplay(resulting_elt, query);
 	assert.notStrictEqual(resulting_elt, undefined, "Defined result");
 	assert.equal(resulting_elt['autocomplete_score'], 0, "Score of 0");
 	assert.equal(resulting_elt['autocomplete_display'], "Choice", "Nothing into bold");
@@ -29,7 +31,9 @@ QUnit.test("Empty query", function(assert) {
 
 QUnit.test("Query: string itself", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
-	var resulting_elt = autocomp.computePriority("Choice", 0);
+	var query = "Choice";
+	var resulting_elt = autocomp.computePriority(query, 0);
+	autocomp._computeItemDisplay(resulting_elt, query);
 	assert.notStrictEqual(resulting_elt, undefined, "Defined result");
 	assert.equal(resulting_elt['autocomplete_score'], 0, "Score of 0");
 	assert.equal(resulting_elt['autocomplete_display'],
@@ -39,7 +43,9 @@ QUnit.test("Query: string itself", function(assert) {
 
 QUnit.test("Query: character from the string", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
-	var resulting_elt = autocomp.computePriority("i", 0);
+	var query = "i";
+	var resulting_elt = autocomp.computePriority(query, 0);
+	autocomp._computeItemDisplay(resulting_elt, query);
 	assert.notStrictEqual(resulting_elt, undefined, "Defined result");
 	assert.equal(resulting_elt['autocomplete_score'], 0, "Score of 0");
 	assert.equal(resulting_elt['autocomplete_display'], "Cho<b>i</b>ce",
@@ -48,7 +54,9 @@ QUnit.test("Query: character from the string", function(assert) {
 
 QUnit.test("Query: lower case / Choice: upper case", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["CHOICE"]);
-	var resulting_elt = autocomp.computePriority("choice", 0);
+	var query = "choice";
+	var resulting_elt = autocomp.computePriority(query, 0);
+	autocomp._computeItemDisplay(resulting_elt, query);
 	assert.notStrictEqual(resulting_elt, undefined, "Defined result");
 	assert.equal(resulting_elt['autocomplete_score'], 0, "Score of 0");
 	assert.equal(resulting_elt['autocomplete_display'],
@@ -58,7 +66,9 @@ QUnit.test("Query: lower case / Choice: upper case", function(assert) {
 
 QUnit.test("Query: upper case / Choice: lower case", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["choice"]);
-	var resulting_elt = autocomp.computePriority("CHOICE", 0);
+	var query = "CHOICE";
+	var resulting_elt = autocomp.computePriority(query, 0);
+	autocomp._computeItemDisplay(resulting_elt, query);
 	assert.notStrictEqual(resulting_elt, undefined, "Defined result");
 	assert.equal(resulting_elt['autocomplete_score'], 0, "Score of 0");
 	assert.equal(resulting_elt['autocomplete_display'],
@@ -68,13 +78,16 @@ QUnit.test("Query: upper case / Choice: lower case", function(assert) {
 
 QUnit.test("Query: no match", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
-	var resulting_elt = autocomp.computePriority("w", 0);
+	var query = "w";
+	var resulting_elt = autocomp.computePriority(query, 0);
 	assert.strictEqual(resulting_elt, undefined, "Undefined result");
 });
 
 QUnit.test("Query: match on two separate characters", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
-	var resulting_elt = autocomp.computePriority("oe", 0);
+	var query = "oe";
+	var resulting_elt = autocomp.computePriority(query, 0);
+	autocomp._computeItemDisplay(resulting_elt, query);
 	assert.notStrictEqual(resulting_elt, undefined, "Defined result");
 	assert.equal(resulting_elt['autocomplete_score'], 2, "Score of 2");
 	assert.equal(resulting_elt['autocomplete_display'], "Ch<b>o</b>ic<b>e</b>",
@@ -83,7 +96,9 @@ QUnit.test("Query: match on two separate characters", function(assert) {
 
 QUnit.test("Query: match on several separate characters", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
-	var resulting_elt = autocomp.computePriority("Coe", 0);
+	var query = "Coe";
+	var resulting_elt = autocomp.computePriority(query, 0);
+	autocomp._computeItemDisplay(resulting_elt, query);
 	assert.notStrictEqual(resulting_elt, undefined, "Defined result");
 	assert.equal(resulting_elt['autocomplete_score'], 3, "Score of 3");
 	assert.equal(resulting_elt['autocomplete_display'], "<b>C</b>h<b>o</b>ic<b>e</b>",
@@ -92,7 +107,9 @@ QUnit.test("Query: match on several separate characters", function(assert) {
 
 QUnit.test("Query: multiple matches in the string", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Abracadabra"]);
-	var resulting_elt = autocomp.computePriority("ACA", 0);
+	var query = "ACA";
+	var resulting_elt = autocomp.computePriority(query, 0);
+	autocomp._computeItemDisplay(resulting_elt, query);
 	assert.notStrictEqual(resulting_elt, undefined, "Defined result");
 	assert.equal(resulting_elt['autocomplete_score'], 0, "Score of 0");
 	assert.equal(resulting_elt['autocomplete_display'],
