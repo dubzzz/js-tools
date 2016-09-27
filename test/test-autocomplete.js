@@ -1,12 +1,5 @@
 function buildAutocompleteFromArray(choices) {
-	var autocomplete_choices = new Array();
-	for (var i = 0 ; i != choices.length ; i++) {
-		autocomplete_choices.push({
-				autocomplete_id: i,
-				autocomplete_rawdata_on: choices[i],
-		});
-	}
-	return new AutocompleteItem($("input#autocomplete"), autocomplete_choices);
+	return new AutocompleteItem($("input#autocomplete"), choices);
 }
 
 QUnit.start();
@@ -123,7 +116,7 @@ QUnit.test("Eliminate mismatches", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Orange", "Red"]);
 	var choices = autocomp.computeChoices("Orange");
 	assert.equal(choices.length, 1, "Only a single match");
-	assert.strictEqual(choices[0]["autocomplete_id"], 0, "Correct match");
+	assert.strictEqual(choices[0].underlying, "Orange", "Correct match");
 });
 
 QUnit.test("Order on score", function(assert) {
@@ -205,17 +198,13 @@ QUnit.test("Pre-Filter", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Orange", "Red"]);
 	autocomp.setOnFilterChoicesCallback(function($input, selected_elt) {
 		assert.ok(true, "Two items have to be scanned");
-		if (selected_elt["autocomplete_id"] == 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return selected_elt == "Orange";
 	});
 
 	assert.expect(4);
 	var choices = autocomp.computeChoices("");
 	assert.equal(choices.length, 1, "Only a single match (the other filtered)");
-	assert.equal(choices[0]["autocomplete_id"], 1, "Second item not filtered");
+	assert.equal(choices[0].underlying, "Red", "Second item not filtered");
 });
 
 QUnit.module("AutocompleteItem::clickSomewhere(event)");
@@ -253,7 +242,7 @@ QUnit.test("Click on autocomplete list", function(assert) {
 QUnit.test("Click on choice", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
 	autocomp.setOnSelectCallback(function($input, selected_elt) {
-		assert.strictEqual(selected_elt["autocomplete_id"], 0, "Selected item is #0");
+		assert.strictEqual(selected_elt, "Choice", "Selected item is #0");
 	});
 	autocomp.setAutomaticallyEraseValue(true); //prevent for change in default
 
@@ -273,7 +262,7 @@ QUnit.test("Click on choice", function(assert) {
 QUnit.test("Click on choice without erase", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
 	autocomp.setOnSelectCallback(function($input, selected_elt) {
-		assert.strictEqual(selected_elt["autocomplete_id"], 0, "Selected item is #0");
+		assert.strictEqual(selected_elt, "Choice", "Selected item is #0");
 	});
 	autocomp.setAutomaticallyEraseValue(false);
 

@@ -97,6 +97,34 @@ function toSafeHtml(text) {
 	return $("<a/>").text(text).html();
 }
 
+var AutocompleteElementWrapper = function(underlying) {
+	AutocompleteElementWrapper.count = 0;
+
+	// legacy fields
+	this.autocomplete_id = undefined;
+	this.autocomplete_rawdata_on = undefined;
+
+	// internal fields
+	this.autocomplete_score = undefined;
+	this.autocomplete_best_origin = undefined;
+	this.autocomplete_display = undefined;
+
+	// new fields
+	this.underlying = underlying;
+
+	{
+		if (underlying.hasOwnProperty("autocomplete_id") && underlying.hasOwnProperty("autocomplete_rawdata_on")) {
+			this.autocomplete_id = underlying.autocomplete_id;
+			this.autocomplete_rawdata_on = underlying.autocomplete_rawdata_on;
+		}
+		else {
+			this.autocomplete_id = ++AutocompleteElementWrapper.num_instances;
+			this.autocomplete_rawdata_on = String(underlying);
+		}
+	}
+};
+AutocompleteElementWrapper.__proto__.num_instances = 0;
+
 var AutocompleteItem = function($input, available_elts) {
 	// jQuery element corresponding to a text input
 	// This text input will benefit from autocompletion feature
@@ -106,7 +134,8 @@ var AutocompleteItem = function($input, available_elts) {
 	// Each element should have the fields:
 	// - autocomplete_id
 	// - autocomplete_rawdata_on: text to display during completion
-	this.available_elts = available_elts;
+	// Or an object defining its toString method
+	this.available_elts = [];
 
 	// Callback called when selecting an element from the autocomplete-list
 	// Paramaters are: function($input, selected_elt)
@@ -149,6 +178,7 @@ var AutocompleteItem = function($input, available_elts) {
 
 	// Add autocompletion trigger to the input field
 	{
+		this.updateList(available_elts);
 		this.$input.keyup((function(self) { return function(event) { return self.reactKeyUp(event, $(this)); }; })(this));
 		this.$input.on('keypress', function(e) { return e.which !== 13; });
 		this.$input.parent().css('position', 'relative');
@@ -158,7 +188,10 @@ var AutocompleteItem = function($input, available_elts) {
 
 // Update available elements available
 AutocompleteItem.prototype.updateList = function(available_elts) {
-	this.available_elts = available_elts;
+	this.available_elts = [];
+	for (var i = 0 ; i != available_elts.length ; ++i) {
+		this.available_elts.push(new AutocompleteElementWrapper(available_elts[i]));
+	}
 };
 	
 AutocompleteItem.prototype.setOnSelectCallback = function(callback) {
@@ -381,7 +414,7 @@ AutocompleteItem.prototype.computeChoices = function(query) {
 	var elts_to_display = new Array();
 	for (var i = 0 ; i != this.available_elts.length ; ++i) {
 		if (this.onFilterChoicesCallback
-				&& this.onFilterChoicesCallback(this.$input, this.available_elts[i])) {
+				&& this.onFilterChoicesCallback(this.$input, this.available_elts[i].underlying)) {
 			continue;
 		}
 		var new_elt = this.computePriority(query, i);
@@ -464,8 +497,7 @@ AutocompleteItem.prototype.confirmChoice = function(selected_elt_id) {
 		}
 	}
 	if (i != this.available_elts.length) {
-		var choice = this.available_elts[i];
-		this.onSelectCallback(this.$input, this.available_elts[i]);
+		this.onSelectCallback(this.$input, this.available_elts[i].underlying);
 	}
 };
 	
