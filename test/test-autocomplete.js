@@ -293,12 +293,31 @@ QUnit.test("Click on choice without erase", function(assert) {
 QUnit.module("AutocompleteItem::reactKeyUp(event)");
 
 QUnit.test("Toggle menu with keydown", function(assert) {
-	var autocomp = buildAutocompleteFromArray(["Choice"]);
+	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
 	var event = $.Event("keyup");
 	event.keyCode = 40;
 	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
 	$("input#autocomplete").trigger(event);
 	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	assert.equal($(".autocomplete-list").children().length, 2, "Two items visible");
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
+});
+
+QUnit.test("Toggle menu with keyup", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+	var event = $.Event("keyup");
+	event.keyCode = 38;
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	assert.equal($(".autocomplete-list").children().length, 2, "Two items visible");
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
 });
 
 QUnit.test("Navigate with keydown/keyup", function(assert) {
