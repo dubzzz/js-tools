@@ -1,5 +1,13 @@
 function buildAutocompleteFromArray(choices) {
-	return new AutocompleteItem($("input#autocomplete"), choices);
+	var autocomplete_choices = new Array();
+	for (var i = 0 ; i != choices.length ; i++) {
+		autocomplete_choices.push({
+				internal_id: i,
+				value: choices[i],
+				toString: function() { return this.value; },
+		});
+	}
+	return new AutocompleteItem($("input#autocomplete"), autocomplete_choices);
 }
 
 QUnit.start();
@@ -116,7 +124,8 @@ QUnit.test("Eliminate mismatches", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Orange", "Red"]);
 	var choices = autocomp.computeChoices("Orange");
 	assert.equal(choices.length, 1, "Only a single match");
-	assert.strictEqual(choices[0].underlying, "Orange", "Correct match");
+	assert.strictEqual(choices[0].underlying.internal_id, 0, "Correct match");
+	assert.strictEqual(choices[0].underlying.value, "Orange", "Correct match");
 });
 
 QUnit.test("Order on score", function(assert) {
@@ -242,7 +251,7 @@ QUnit.test("Click on autocomplete list", function(assert) {
 QUnit.test("Click on choice", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
 	autocomp.setOnSelectCallback(function($input, selected_elt) {
-		assert.strictEqual(selected_elt, "Choice", "Selected item is #0");
+		assert.strictEqual(selected_elt.value, "Choice", "Selected item is #0");
 	});
 	autocomp.setAutomaticallyEraseValue(true); //prevent for change in default
 
@@ -262,7 +271,7 @@ QUnit.test("Click on choice", function(assert) {
 QUnit.test("Click on choice without erase", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice"]);
 	autocomp.setOnSelectCallback(function($input, selected_elt) {
-		assert.strictEqual(selected_elt, "Choice", "Selected item is #0");
+		assert.strictEqual(selected_elt.value, "Choice", "Selected item is #0");
 	});
 	autocomp.setAutomaticallyEraseValue(false);
 
@@ -449,7 +458,7 @@ QUnit.test("Keep selected item focused when typing", function(assert) {
 QUnit.test("Select with enter", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
 	autocomp.setOnSelectCallback(function($input, selected_elt) {
-		assert.strictEqual(selected_elt["autocomplete_id"], 0, "Selected item is #0");
+		assert.strictEqual(selected_elt.internal_id, 0, "Selected item is #0");
 	});
 
 	assert.expect(7);
