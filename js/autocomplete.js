@@ -1,3 +1,5 @@
+(function(exports) {
+
 function compareForSortOnBestScore(a, b) {
 	var a_score = a['autocomplete_score'];
 	var b_score = b['autocomplete_score'];
@@ -524,3 +526,8 @@ AutocompleteItem.prototype.clickSomewhere = function(event, $clicked) {
 	this.$input.parent().find(".autocomplete-list").remove();
 	this._selected_id = -1;
 };
+
+exports.AutocompleteItem = AutocompleteItem;
+exports.partialSort = partialSort;
+
+})(typeof module !== 'undefined' && typeof module.exports !== 'undefined' ? module.exports : window);
