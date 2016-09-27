@@ -186,15 +186,33 @@ AutocompleteItem.prototype.enableReversedOrder = function(reversedOrder) {
 	this.reversedOrder = reversedOrder;
 };
 
+// Called when an element from the list has been clicked
+AutocompleteItem.prototype._elementClick = function($element, id) {
+	this.confirmChoice(id);
+	if (this.automaticallyEraseValue) {
+		this.$input.val("");
+	}
+	$element.parent().remove(); //remove list
+};
+
+// Called when mouse moved over an element from the list
+AutocompleteItem.prototype._elementOver = function($element, id) {
+	var $autocomplete_list = $element.parent();
+	var $autocomplete_choices = $autocomplete_list.children();
+	for (var i = 0 ; i != $autocomplete_choices.length ; i++) {
+		$($autocomplete_choices[i]).removeClass('autocomplete-list-selected');
+	}
+	$element.addClass('autocomplete-list-selected');
+};
+
 // Behaviour on 'key up' event
 // Update autocomplete list
-AutocompleteItem.prototype.reactKeyUp = function(event, $clicked) {
-	var self = this;
+AutocompleteItem.prototype.reactKeyUp = function(event) {
 	// Refresh the content of the autocomplete list
-	// $clicked == self.jquery_input
+	// this.$input == self.jquery_input
 
 	// Get autocomplete list or create it if not displayed
-	var $input_parent = $clicked.parent();
+	var $input_parent = this.$input.parent();
 	var $autocomplete_list = $input_parent.find(".autocomplete-list");
 	if ($autocomplete_list.length == 0) {
 		$autocomplete_list = $("<ul/>");
@@ -203,8 +221,8 @@ AutocompleteItem.prototype.reactKeyUp = function(event, $clicked) {
 	}
 
 	// Show the autocomplete list at the right place
-	var position_left = $clicked.position()['left'];
-	var position_top = $clicked.position()['top'] + $clicked.outerHeight();
+	var position_left = this.$input.position()['left'];
+	var position_top = this.$input.position()['top'] + this.$input.outerHeight();
 	$autocomplete_list.css('left', position_left + 'px');
 	$autocomplete_list.css('top', position_top + 'px');
 	
@@ -214,14 +232,14 @@ AutocompleteItem.prototype.reactKeyUp = function(event, $clicked) {
 	if ($selected_elt.length == 1) {
 		selected_elt_id = parseInt($selected_elt.attr('data-autocomplete-id'));
 	}
-	if ((selected_elt_id != -1 || self.onAddCallback !== undefined) && event.keyCode == 13) { // Enter
+	if ((selected_elt_id != -1 || this.onAddCallback !== undefined) && event.keyCode == 13) { // Enter
 		if (selected_elt_id != -1) {
-			self.confirmChoice(selected_elt_id);
+			this.confirmChoice(selected_elt_id);
 		} else {
-			self.onAddCallback(self.$input, $clicked.val());
+			this.onAddCallback(this.$input, this.$input.val());
 		}
-		if (self.automaticallyEraseValue) {
-			$clicked.val("");
+		if (this.automaticallyEraseValue) {
+			this.$input.val("");
 		}
 		$autocomplete_list.remove();
 		event.preventDefault();
@@ -257,7 +275,7 @@ AutocompleteItem.prototype.reactKeyUp = function(event, $clicked) {
 	}
 	
 	// Create autocomplete list
-	var elts_to_display = self.computeChoices($clicked.val());
+	var elts_to_display = this.computeChoices(this.$input.val());
 	
 	// Display elements
 	$autocomplete_list.empty();
@@ -267,22 +285,9 @@ AutocompleteItem.prototype.reactKeyUp = function(event, $clicked) {
 		if (elts_to_display[i]['autocomplete_id'] == selected_elt_id) {
 			$autocomplete_elt.addClass('autocomplete-list-selected');
 		}
-		$autocomplete_elt.click(function() {
-			self.confirmChoice($(this).attr("data-autocomplete-id"));
-			if (self.automaticallyEraseValue) {
-				$(this).parent().parent().find("input").first().val("");
-			}
-			$(this).parent().remove(); //remove list
-		});
+		$autocomplete_elt.click((function(self, $elt, id) { return function() { self._elementClick($elt, id); }; })(this, $autocomplete_elt, elts_to_display[i]['autocomplete_id']));
 		$autocomplete_elt.html(elts_to_display[i]['autocomplete_display']);
-		$autocomplete_elt.mouseover(function() {
-			var $autocomplete_list = $(this).parent();
-			var $autocomplete_choices = $autocomplete_list.children();
-			for (var i = 0 ; i != $autocomplete_choices.length ; i++) {
-				$($autocomplete_choices[i]).removeClass('autocomplete-list-selected');
-			}
-			$(this).addClass('autocomplete-list-selected');
-		});
+		$autocomplete_elt.mouseover((function(self, $elt, id) { return function() { self._elementOver($elt, id); }; })(this, $autocomplete_elt, elts_to_display[i]['autocomplete_id']));
 		$autocomplete_list.append($autocomplete_elt);
 	}
 	if (elts_to_display.length == 0) {
