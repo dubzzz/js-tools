@@ -316,27 +316,21 @@ QUnit.test("Navigate with keydown/keyup", function(assert) {
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-			$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-			"0", "First item selected");
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
 
 	$("input#autocomplete").trigger(event);
 	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-			$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-			"1", "Second item selected");
+	assert.ok($(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item selected");
 
 	$("input#autocomplete").trigger(event);
 	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-			$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-			"1", "Second item selected");
+	assert.ok($(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item selected");
 
 	event.keyCode = 38;    
 	$("input#autocomplete").trigger(event);
@@ -344,9 +338,7 @@ QUnit.test("Navigate with keydown/keyup", function(assert) {
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-			$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-			"0", "First item selected");
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
 });
 
 QUnit.test("Hide menu with escape", function(assert) {
@@ -412,9 +404,8 @@ QUnit.test("Keep selected item focused when typing", function(assert) {
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-			$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-			"1", "Second item selected");
+	assert.ok($(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#2", "Choice#2 selected");
 
 	$("input#autocomplete").val("e2");
 	event.key = '2';
@@ -428,18 +419,16 @@ QUnit.test("Keep selected item focused when typing", function(assert) {
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-			$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-			"1", "Second item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#2", "Choice#2 selected");
 });
 
 QUnit.test("Select with enter", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
 	autocomp.setOnSelectCallback(function($input, selected_elt) {
-	assert.strictEqual(selected_elt["autocomplete_id"], 0, "Selected item is #0");
+		assert.strictEqual(selected_elt["autocomplete_id"], 0, "Selected item is #0");
 	});
 
-	assert.expect(6);
+	assert.expect(7);
 	var event = $.Event("keyup");
 	event.keyCode = 40;
 	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
@@ -450,9 +439,8 @@ QUnit.test("Select with enter", function(assert) {
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-		$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-		"0", "First item selected");
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#1", "Choice#1 selected");
 
 	event.keyCode = 13;    
 	$("input#autocomplete").trigger(event);
@@ -474,9 +462,8 @@ QUnit.test("Erase on selection", function(assert) {
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-			$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-			"0", "First item selected");
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#1", "Choice#1 selected");
 
 	event.keyCode = 13;    
 	$("input#autocomplete").trigger(event);
@@ -499,9 +486,8 @@ QUnit.test("Do not erase on selection", function(assert) {
 	assert.equal(
 			$(".autocomplete-list .autocomplete-list-selected").length,
 			1, "One item is selected");
-	assert.strictEqual(
-			$(".autocomplete-list .autocomplete-list-selected").attr('data-autocomplete-id'),
-			"0", "First item selected");
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#1", "Choice#1 selected");
 
 	event.keyCode = 13;    
 	$("input#autocomplete").trigger(event);
@@ -540,8 +526,8 @@ QUnit.test("Limit the number of results", function(assert) {
 			$(".autocomplete-list").children().length,
 			1, "Exactly one choice available due to limit");
 	assert.strictEqual(
-			$(".autocomplete-list li").attr('data-autocomplete-id'),
-			"0", "First item visible only");
+			$(".autocomplete-list li").text(),
+			"Choice#1", "First item visible only");
 
 	$("input#autocomplete").val("e2");
 	var event = $.Event("keyup");
@@ -554,8 +540,8 @@ QUnit.test("Limit the number of results", function(assert) {
 			$(".autocomplete-list").children().length,
 			1, "Exactly one choice available due to limit");
 	assert.strictEqual(
-			$(".autocomplete-list li").attr('data-autocomplete-id'),
-			"1", "Second item visible only");
+			$(".autocomplete-list li").text(),
+			"Choice#2", "Second item visible only");
 });
 
 QUnit.test("Very large dictionary set", function(assert) {
@@ -646,14 +632,14 @@ QUnit.test("Partial sort", function(assert) {
 	assert.equal($(".autocomplete-list li").length, 3, "Autocompletelist contains 3 items");
 
 	assert.strictEqual(
-			$($(".autocomplete-list li")[0]).attr('data-autocomplete-id'),
-			"3", "Choice#1");
+			$(".autocomplete-list li").eq(0).text(),
+			"Choice#1", "Choice#1");
 	assert.strictEqual(
-			$($(".autocomplete-list li")[1]).attr('data-autocomplete-id'),
-			"1", "Choice#2");
+			$(".autocomplete-list li").eq(1).text(),
+			"Choice#2", "Choice#2");
 	assert.strictEqual(
-			$($(".autocomplete-list li")[2]).attr('data-autocomplete-id'),
-			"4", "Choice#3");
+			$(".autocomplete-list li").eq(2).text(),
+			"Choice#3", "Choice#3");
 });
 
 QUnit.module("AutocompleteItem::mouseover");
@@ -669,15 +655,13 @@ QUnit.test("Highlight the item on onmouseover", function(assert) {
 	$("input#autocomplete").trigger(event);
 	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
 
-	$(".autocomplete-list [data-autocomplete-id=0]").mouseover();
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=0]").hasClass("autocomplete-list-selected"),
-			true, "First item selected");
+	$(".autocomplete-list").children().eq(0).mouseover();
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#1", "Choice#1 selected");
 	
-	$(".autocomplete-list [data-autocomplete-id=1]").mouseover();
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=1]").hasClass("autocomplete-list-selected"),
-			true, "Second item selected");
+	$(".autocomplete-list").children().eq(1).mouseover();
+	assert.ok($(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#2", "Choice#2 selected");
 });
 
 QUnit.test("Remove highlight from other items", function(assert) {
@@ -691,21 +675,15 @@ QUnit.test("Remove highlight from other items", function(assert) {
 	$("input#autocomplete").trigger(event);
 	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
 
-	$(".autocomplete-list [data-autocomplete-id=0]").mouseover();
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=0]").hasClass("autocomplete-list-selected"),
-			true, "First item selected");
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=1]").hasClass("autocomplete-list-selected"),
-			false, "Second item not selected");
-	
-	$(".autocomplete-list [data-autocomplete-id=1]").mouseover();
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=0]").hasClass("autocomplete-list-selected"),
-			false, "First item not selected");
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=1]").hasClass("autocomplete-list-selected"),
-			true, "Second item selected");
+	$(".autocomplete-list").children().eq(0).mouseover();
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
+	assert.ok(! $(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item not selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#1", "Choice#1 selected");
+
+	$(".autocomplete-list").children().eq(1).mouseover();
+	assert.ok(! $(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item not selected");
+	assert.ok($(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#2", "Choice#2 selected");
 });
 
 QUnit.test("Keep consistent with key up", function(assert) {
@@ -719,29 +697,20 @@ QUnit.test("Keep consistent with key up", function(assert) {
 	$("input#autocomplete").trigger(event);
 	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
 
-	$(".autocomplete-list [data-autocomplete-id=0]").mouseover();
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=0]").hasClass("autocomplete-list-selected"),
-			true, "First item selected");
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=1]").hasClass("autocomplete-list-selected"),
-			false, "Second item not selected");
+	$(".autocomplete-list").children().eq(0).mouseover();
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
+	assert.ok(! $(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item not selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#1", "Choice#1 selected");
 
 	$("input#autocomplete").trigger(event);
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=0]").hasClass("autocomplete-list-selected"),
-			false, "First item not selected");
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=1]").hasClass("autocomplete-list-selected"),
-			true, "Second item selected");
+	assert.ok(! $(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item not selected");
+	assert.ok($(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#2", "Choice#2 selected");
 	
-	$(".autocomplete-list [data-autocomplete-id=0]").mouseover();
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=0]").hasClass("autocomplete-list-selected"),
-			true, "First item selected");
-	assert.equal(
-			$(".autocomplete-list [data-autocomplete-id=1]").hasClass("autocomplete-list-selected"),
-			false, "Second item not selected");
+	$(".autocomplete-list").children().eq(0).mouseover();
+	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
+	assert.ok(! $(".autocomplete-list").children().eq(1).hasClass("autocomplete-list-selected"), "Second item not selected");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").first().text(), "Choice#1", "Choice#1 selected");
 });
 
 QUnit.module("::partialSort(tab, num_results)");
