@@ -320,6 +320,22 @@ QUnit.test("Toggle menu with keyup", function(assert) {
 	assert.ok($(".autocomplete-list").children().eq(0).hasClass("autocomplete-list-selected"), "First item selected");
 });
 
+QUnit.test("Toggle menu with enter", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+	var event = $.Event("keyup");
+	event.keyCode = 13;
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	assert.equal($(".autocomplete-list").children().length, 2, "Two items visible");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").length, 0, "No item selected");
+
+	$("input#autocomplete").trigger(event);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	assert.equal($(".autocomplete-list").children().length, 2, "Two items visible");
+	assert.strictEqual($(".autocomplete-list .autocomplete-list-selected").length, 0, "No item selected");
+});
+
 QUnit.test("Navigate with keydown/keyup", function(assert) {
 	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
 	var event = $.Event("keyup");
@@ -512,6 +528,98 @@ QUnit.test("Do not erase on selection", function(assert) {
 	$("input#autocomplete").trigger(event);
 	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
 	assert.strictEqual($("input#autocomplete").val(), "e", "Input is empty");
+});
+
+QUnit.test("Autocomplete with free text: empty", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+	
+	assert.expect(2);
+
+	var key_enter = $.Event("keyup");
+	key_enter.keyCode = 13;
+
+	// Call add for empty string
+	autocomp.setOnAddCallback(function($input, text) {
+		assert.strictEqual(text, "", "Call to add callback with ''");
+	});
+	$("input#autocomplete").trigger(key_enter);
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+});
+
+QUnit.test("Autocomplete with free text: with existing choices", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+	
+	assert.expect(3);
+
+	var key_enter = $.Event("keyup");
+	key_enter.keyCode = 13;
+	var key_e = $.Event("keyup");
+	key_e.key = 'e';
+	key_e.keyCode = 69;
+	key_e.which = 69;
+
+	// Call add for real string but existing choices
+	autocomp.setOnAddCallback(function($input, text) {
+		assert.strictEqual(text, "e", "Call to add callback with 'e'");
+	});
+	$("input#autocomplete").val("e");
+	$("input#autocomplete").trigger(key_e);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	$("input#autocomplete").trigger(key_enter);
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+});
+
+QUnit.test("Autocomplete with free text: without existing choices", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+	
+	assert.expect(4);
+
+	var key_enter = $.Event("keyup");
+	key_enter.keyCode = 13;
+	var key_e = $.Event("keyup");
+	key_e.key = 'e';
+	key_e.keyCode = 69;
+	key_e.which = 69;
+
+	// Call add for real string but non-existing choices
+	autocomp.setOnAddCallback(function($input, text) {
+		assert.strictEqual(text, "ee", "Call to add callback with 'ee'");
+	});
+	$("input#autocomplete").val("e");
+	$("input#autocomplete").trigger(key_e);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	$("input#autocomplete").val("ee");
+	$("input#autocomplete").trigger(key_e);
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+	$("input#autocomplete").trigger(key_enter);
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
+});
+
+QUnit.test("Autocomplete with free text: selected choice", function(assert) {
+	var autocomp = buildAutocompleteFromArray(["Choice#1", "Choice#2"]);
+	
+	assert.expect(3);
+
+	var key_enter = $.Event("keyup");
+	key_enter.keyCode = 13;
+	var key_down = $.Event("keyup");
+	key_down.keyCode = 40;
+	var key_e = $.Event("keyup");
+	key_e.key = 'e';
+	key_e.keyCode = 69;
+	key_e.which = 69;
+
+	// Do not call if on a real choice
+	autocomp.setOnAddCallback(function($input, text) {
+		assert.strictEqual(text, "e", "(not expected) Call to add callback with 'e'");
+	});
+	$("input#autocomplete").val("e");
+	$("input#autocomplete").trigger(key_e);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	$("input#autocomplete").trigger(key_down);
+	assert.equal($(".autocomplete-list").length, 1, "Autocompletelist is visible");
+	$("input#autocomplete").trigger(key_enter);
+	assert.equal($(".autocomplete-list").length, 0, "Autocompletelist is not visible");
 });
 
 QUnit.test("No item selected when showing the list", function(assert) {
