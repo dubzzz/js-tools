@@ -1191,7 +1191,7 @@ QUnit.test("Access settings with right click", function(assert) {
 	var num_hierarchy_columns = 1;
 	var settingsChanged = {column_id: undefined, key: undefined};
 	var htable = new HierarchyTable($table, items_columns, data, num_hierarchy_columns, undefined)
-			.registerOnSettingsChange(function(column_id, key) {
+			.registerOnSettingsChange(function(htable, column_id, key) {
 				settingsChanged["column_id"] = column_id;
 				settingsChanged["key"] = key;
 				return false;
@@ -1222,7 +1222,7 @@ QUnit.test("Access settings with right click", function(assert) {
 			["30",      ""]];
 	checkContent(assert, real_content, expected_content);
 
-	htable.registerOnSettingsChange(function(column_id, key) { return true; });
+	htable.registerOnSettingsChange(function(htable, column_id, key) { return true; });
 	assert.ok(true, "Right click on header of column 2");
 	$table.find("thead > tr > th").eq(1).contextmenu();
 

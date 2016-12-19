@@ -53,32 +53,32 @@
       <script type="text/javascript">
       <!--
         var choices = [
-            {autocomplete_id: 1, autocomplete_rawdata_on: "Blackberry"},
-            {autocomplete_id: 2, autocomplete_rawdata_on: "Kiwi"},
-            {autocomplete_id: 3, autocomplete_rawdata_on: "Raspberry"},
-            {autocomplete_id: 4, autocomplete_rawdata_on: "Strawberry"},
-            {autocomplete_id: 5, autocomplete_rawdata_on: "Apple"},
-            {autocomplete_id: 6, autocomplete_rawdata_on: "Apricot"},
-            {autocomplete_id: 7, autocomplete_rawdata_on: "Banana"},
-            {autocomplete_id: 8, autocomplete_rawdata_on: "Bilberry"},
-            {autocomplete_id: 9, autocomplete_rawdata_on: "Cherry"},
-            {autocomplete_id:10, autocomplete_rawdata_on: "Fig"},
-            {autocomplete_id:11, autocomplete_rawdata_on: "Grape"},
-            {autocomplete_id:12, autocomplete_rawdata_on: "Grapefruit"},
-            {autocomplete_id:13, autocomplete_rawdata_on: "Lemon"},
-            {autocomplete_id:14, autocomplete_rawdata_on: "Melon"},
-            {autocomplete_id:15, autocomplete_rawdata_on: "Orange"},
-            {autocomplete_id:16, autocomplete_rawdata_on: "Peach"},
-            {autocomplete_id:17, autocomplete_rawdata_on: "Watermelon"},
-            {autocomplete_id:18, autocomplete_rawdata_on: "Pear"},
-            {autocomplete_id:19, autocomplete_rawdata_on: "Pineapple"},
-            {autocomplete_id:20, autocomplete_rawdata_on: "Plum"},
-            {autocomplete_id:21, autocomplete_rawdata_on: "Tangerine"}];
+            "Blackberry"
+            , "Kiwi"
+            , "Raspberry"
+            , "Strawberry"
+            , "Apple"
+            , "Apricot"
+            , "Banana"
+            , "Bilberry"
+            , "Cherry"
+            , "Fig"
+            , "Grape"
+            , "Grapefruit"
+            , "Lemon"
+            , "Melon"
+            , "Orange"
+            , "Peach"
+            , "Watermelon"
+            , "Pear"
+            , "Pineapple"
+            , "Plum"
+            , "Tangerine"];
 
         var auto1 = new AutocompleteItem($("#autocomplete1"), choices);
         auto1.setAutomaticallyEraseValue(false);
         auto1.enableReversedOrder(true);
-        auto1.setOnSelectCallback(function($input, choice) { $input.val(choice["autocomplete_rawdata_on"]); });
+        auto1.setOnSelectCallback(function($input, choice) { $input.val(choice); });
 
         function refreshAuto2($field, known_values) {
           $field.val(known_values.join(";"));
@@ -108,7 +108,7 @@
         auto2.setOnSelectCallback(function($input, choice) {
             var $field = $("#autocomplete2");
             var $display = $("#autocomplete2_display");
-            var current = choice["autocomplete_rawdata_on"];
+            var current = choice;
             var known_values = $field.val().split(";");
             if (known_values.indexOf(current) == -1) {
               known_values.push(current);
@@ -126,7 +126,7 @@
         });
         auto2.setOnFilterChoicesCallback(function($input, choice) {
             var $field = $("#autocomplete2");
-            var current = choice["autocomplete_rawdata_on"];
+            var current = choice;
             var known_values = $field.val().split(";");
             return known_values.indexOf(current) != -1;
         });
